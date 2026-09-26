@@ -32,7 +32,7 @@ jobs:
 
       - name: check for ignored files committed
         run: |
-          files=$(git ls-files --cached --ignored --exlude-standard)
+          files=$(git ls-files --cached --ignored --exclude-standard)
           if [ -n "$files" ]; then
             echo "these files should be in .gitignore:"
             echo "$files"
