@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+  workflow_dispatch:
+
+jobs:
+  hygiene:
+    name: repo hygiene
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - name: check for orphaned .meta files
+        uses: DeNA/unity-meta-check@v4
+        with:
+          enable_pr_comment: ${{ github.event_name == 'pull_request' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: check LFS files stored as pointers
+        run: git lfs fsck --pointers
+
+      - name: check for ignored files committed
+        run: |
+          files=$(git ls-files --cached --ignored --exlude-standard)
+          if [ -n "$files" ]; then
+            echo "these files should be in .gitignore:"
+            echo "$files"
+            exit 1
+          fi
+
+      - name: run pre-commit hooks
+        run: pipx run pre-commit run --all-files --show-diff-on-failure
+        env:
+          SKIP: no-commit-to-branch
