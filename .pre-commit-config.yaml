@@ -7,3 +7,5 @@ repos:
       - id: check-case-conflict
       - id: check-added-large-files
         args: [--maxkb=1024, --enforce-all]
+      - id: no-commit-to-branch
+        args: [--branch, main, --branch, dev]
