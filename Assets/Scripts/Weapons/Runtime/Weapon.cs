@@ -21,6 +21,19 @@ public class Weapon
         return ammo > 0 && cooldown == 0;
     }
 
+    public bool Fire()
+    {
+        if (!CanFire())
+        {
+            return false;
+        }
+
+        ammo--;
+        cooldown = data.Cooldown;
+        data.Fire();
+        return true;
+    }
+
     public void AddAmmo(int amount)
     {
         ammo = Mathf.Min(ammo + amount, data.MaxAmmo);

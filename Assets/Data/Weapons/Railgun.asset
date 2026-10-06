@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0f0e39f5f0b92ac40960aa7ffd9c536a, type: 3}
   m_Name: Railgun
   m_EditorClassIdentifier: Assembly-CSharp::RailgunData
-  DisplayName: 
-  MaxAmmo: 10
-  PickupAmmo: 5
-  Cooldown: 0
+  displayName: Railgun
+  maxAmmo: 10
+  pickupAmmo: 5
+  cooldown: 0

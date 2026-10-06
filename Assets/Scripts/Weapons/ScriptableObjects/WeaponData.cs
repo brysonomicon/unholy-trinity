@@ -10,4 +10,10 @@ public abstract class WeaponData : ScriptableObject
     public string DisplayName => displayName;
     public int MaxAmmo => maxAmmo;
     public int PickupAmmo => pickupAmmo;
+    public int Cooldown => cooldown;
+
+    //TODO: once hex map exists
+    // public abstract List<AimTile> GetAimTiles(HexTile origin, HexTile target);
+
+    public abstract void Fire();
 }
