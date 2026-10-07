@@ -12,7 +12,8 @@ namespace UnholyTrinity.Hex.Editing
     [CustomEditor(typeof(MapManager))]
     public class MapManagerEditor : UnityEditor.Editor
     {
-        // Static so the palette survives reselecting the object.
+        // Static so the palette survives reselecting the object. Statics are reset by domain reloads
+        // (entering play mode, recompiling), so the palette is also mirrored to SessionState.
         static bool editing;
         static TileType paintType = TileType.Floor;
         static BoostSettings boost = BoostSettings.Along(1);
@@ -22,10 +23,65 @@ namespace UnholyTrinity.Hex.Editing
         static int fillRadius = 4;
         static bool fillWithWallBorder = true;
 
+        const string PaletteKey = "UnholyTrinity.Hex.MapManagerEditor.Palette";
+        static bool paletteLoaded;
+
+        [System.Serializable]
+        struct PaletteState
+        {
+            public bool Editing;
+            public TileType PaintType;
+            public BoostSettings Boost;
+            public WallSettings Wall;
+            public int PickupGroup;
+            public int PortalRotation;
+            public int FillRadius;
+            public bool FillWithWallBorder;
+        }
+
         HexCoord? pendingPortal;
         HexCoord? hovered;
 
+        void OnEnable() => LoadPalette();
+
         void OnDisable() => pendingPortal = null;
+
+        /// <summary>Restores the palette after a domain reload; does nothing if already loaded in this domain.</summary>
+        static void LoadPalette()
+        {
+            if (paletteLoaded)
+                return;
+            paletteLoaded = true;
+
+            var json = SessionState.GetString(PaletteKey, null);
+            if (string.IsNullOrEmpty(json))
+                return;
+            var state = JsonUtility.FromJson<PaletteState>(json);
+            editing = state.Editing;
+            paintType = state.PaintType;
+            boost = state.Boost;
+            wall = state.Wall;
+            pickupGroup = state.PickupGroup;
+            portalRotation = state.PortalRotation;
+            fillRadius = state.FillRadius;
+            fillWithWallBorder = state.FillWithWallBorder;
+        }
+
+        static void SavePalette()
+        {
+            var state = new PaletteState
+            {
+                Editing = editing,
+                PaintType = paintType,
+                Boost = boost,
+                Wall = wall,
+                PickupGroup = pickupGroup,
+                PortalRotation = portalRotation,
+                FillRadius = fillRadius,
+                FillWithWallBorder = fillWithWallBorder,
+            };
+            SessionState.SetString(PaletteKey, JsonUtility.ToJson(state));
+        }
 
         public override void OnInspectorGUI()
         {
@@ -47,7 +103,9 @@ namespace UnholyTrinity.Hex.Editing
                 EditorGUILayout.HelpBox("Painting edits the asset but does not affect the running map until it is rebuilt.", MessageType.None);
             }
 
-            editing = GUILayout.Toggle(editing, editing ? "Stop Editing" : "Edit Map", "Button", GUILayout.Height(24));
+            EditorGUI.BeginChangeCheck();
+
+            editing =GUILayout.Toggle(editing, editing ? "Stop Editing" : "Edit Map", "Button", GUILayout.Height(24));
             if (editing)
             {
                 EditorGUILayout.HelpBox("LMB paint, Shift+LMB erase, R rotate boost direction, Alt+drag orbits as usual.", MessageType.None);
@@ -91,6 +149,8 @@ namespace UnholyTrinity.Hex.Editing
                 fillRadius = EditorGUILayout.IntField("Hexagon Radius", fillRadius);
                 fillWithWallBorder = GUILayout.Toggle(fillWithWallBorder, "Wall border", GUILayout.Width(90));
             }
+            if (EditorGUI.EndChangeCheck())
+                SavePalette();
             using (new EditorGUILayout.HorizontalScope())
             {
                 if (GUILayout.Button("Fill Hexagon"))
@@ -155,6 +215,7 @@ namespace UnholyTrinity.Hex.Editing
                 case EventType.KeyDown when e.keyCode == KeyCode.R && paintType == TileType.Boost:
                     boost.Direction = boost.Direction.Rotate(e.shift ? -1 : 1);
                     boost.Mode = BoostMode.Fixed;
+                    SavePalette();
                     Repaint();
                     e.Use();
                     break;
