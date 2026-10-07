@@ -41,6 +41,15 @@ namespace UnholyTrinity.Hex.Editing
                     DrawArrow(layout, center, tile.Boost.Direction, Color.white);
                 Handles.Label(center, tile.Boost.Strength.ToString("+0;-0;0"), EditorStyles.whiteBoldLabel);
             }
+            else if (tile.Type == TileType.Wall && tile.WallSettings.Kind == WallKind.Bouncy)
+            {
+                Handles.Label(center, "B", EditorStyles.whiteBoldLabel);
+            }
+            else if (tile.Type == TileType.Wall && tile.WallSettings.Kind == WallKind.Spiked)
+            {
+                var scaled = tile.WallSettings.DamageMode == SpikeDamageMode.ScaledBySpeed ? "×v" : "";
+                Handles.Label(center, $"S{tile.WallSettings.Damage}{scaled}", EditorStyles.whiteBoldLabel);
+            }
             else if (tile.Type == TileType.PickupPoint)
             {
                 Handles.Label(center, $"P{tile.Pickup.SpawnGroup}", EditorStyles.boldLabel);

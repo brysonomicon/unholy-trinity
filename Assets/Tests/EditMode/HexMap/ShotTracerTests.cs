@@ -59,6 +59,46 @@ namespace UnholyTrinity.Hex.Tests
         }
 
         [Test]
+        public void BouncyWall_BlocksShotsByDefault()
+        {
+            var map = Field(5);
+            map.SetTile(HexTile.BouncyWall(At(3)));
+            var result = ShotTracer.Trace(map, At(0), HexDirection.D0, 10);
+
+            CollectionAssert.AreEqual(new[] { At(1), At(2) }, result.Path);
+            Assert.AreEqual(At(3), result.BlockedAt);
+            Assert.IsEmpty(result.Ricochets);
+        }
+
+        [Test]
+        public void Ricochet_ReversesShot_AndUsesNoRange()
+        {
+            var map = Field(5);
+            map.SetTile(HexTile.BouncyWall(At(3)));
+            var options = new ShotTraceOptions { RicochetOffBouncyWalls = true };
+            var result = ShotTracer.Trace(map, At(0), HexDirection.D0, 5, options);
+
+            // 5 hexes of range: out to (2, 0), off the wall, then back through the origin.
+            CollectionAssert.AreEqual(new[] { At(1), At(2), At(1), At(0), At(-1) }, result.Path);
+            CollectionAssert.AreEqual(new[] { At(3) }, result.Ricochets);
+            Assert.IsNull(result.BlockedAt);
+            Assert.AreEqual(HexDirection.D3, result.FinalDirection);
+        }
+
+        [Test]
+        public void Ricochet_WedgedBetweenBouncyWalls_IsBlocked()
+        {
+            var map = Field(5);
+            map.SetTile(HexTile.BouncyWall(At(-1)));
+            map.SetTile(HexTile.BouncyWall(At(1)));
+            var result = ShotTracer.Trace(map, At(0), HexDirection.D0, 5, new ShotTraceOptions { RicochetOffBouncyWalls = true });
+
+            Assert.IsEmpty(result.Path);
+            CollectionAssert.AreEqual(new[] { At(1) }, result.Ricochets);
+            Assert.AreEqual(At(-1), result.BlockedAt);
+        }
+
+        [Test]
         public void LineOfSight_BlockedByWallsBetween()
         {
             var map = Field(5);

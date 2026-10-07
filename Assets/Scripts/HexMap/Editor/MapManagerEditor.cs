@@ -16,6 +16,7 @@ namespace UnholyTrinity.Hex.Editing
         static bool editing;
         static TileType paintType = TileType.Floor;
         static BoostSettings boost = BoostSettings.Along(1);
+        static WallSettings wall = WallSettings.Normal;
         static int pickupGroup;
         static int portalRotation;
         static int fillRadius = 4;
@@ -60,6 +61,14 @@ namespace UnholyTrinity.Hex.Editing
             {
                 switch (paintType)
                 {
+                    case TileType.Wall:
+                        wall.Kind = (WallKind)EditorGUILayout.EnumPopup("Kind", wall.Kind);
+                        if (wall.Kind == WallKind.Spiked)
+                        {
+                            wall.Damage = EditorGUILayout.IntField("Damage", wall.Damage);
+                            wall.DamageMode = (SpikeDamageMode)EditorGUILayout.EnumPopup(new GUIContent("Damage Mode", "Scaled By Speed multiplies Damage by the unit's speed at impact."), wall.DamageMode);
+                        }
+                        break;
                     case TileType.Boost:
                         boost.Strength = EditorGUILayout.IntField(new GUIContent("Strength", "+ boosts, - is friction"), boost.Strength);
                         boost.Mode = (BoostMode)EditorGUILayout.EnumPopup("Mode", boost.Mode);
@@ -170,7 +179,7 @@ namespace UnholyTrinity.Hex.Editing
 
             var tile = paintType switch
             {
-                TileType.Wall => HexTile.Wall(coord),
+                TileType.Wall => HexTile.Wall(coord, wall.Kind == WallKind.Spiked ? wall : new WallSettings(wall.Kind)),
                 TileType.PickupPoint => HexTile.PickupPoint(coord, pickupGroup),
                 TileType.Boost => HexTile.BoostTile(coord, boost),
                 _ => HexTile.Floor(coord),
@@ -221,7 +230,7 @@ namespace UnholyTrinity.Hex.Editing
         }
 
         static bool SameTile(HexTile a, HexTile b) =>
-            a.Type == b.Type && a.Boost.Equals(b.Boost) && a.Pickup.Equals(b.Pickup) && a.Portal.Equals(b.Portal);
+            a.Type == b.Type && a.Boost.Equals(b.Boost) && a.Pickup.Equals(b.Pickup) && a.Portal.Equals(b.Portal) && a.WallSettings.Equals(b.WallSettings);
 
         static HexCoord? MouseToHex(HexLayout layout, Vector3 planeOrigin, Vector2 mousePosition)
         {

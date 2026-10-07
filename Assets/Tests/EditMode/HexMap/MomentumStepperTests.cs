@@ -151,5 +151,79 @@ namespace UnholyTrinity.Hex.Tests
             Assert.AreEqual(At(10), result.End);
             Assert.AreEqual(MoveEventType.StepCapReached, result.Events.Last().Type);
         }
+
+        static readonly HexDirection West = HexDirection.D3;
+
+        [Test]
+        public void BouncyWall_ReversesWithoutUsingAStep_AndKeepsSpeed()
+        {
+            var map = Corridor(10);
+            map.SetTile(HexTile.BouncyWall(At(7)));
+            var result = MomentumStepper.Slide(map, At(4), new HexVelocity(East, 5));
+
+            CollectionAssert.AreEqual(new[] { At(5), At(6), At(5), At(4), At(3) }, result.Path);
+            Assert.AreEqual(At(3), result.End);
+            Assert.AreEqual(new HexVelocity(West, 5), result.FinalVelocity);
+            Assert.AreEqual(5, result.StepsTaken);
+            var bounce = result.Events.Single();
+            Assert.AreEqual(MoveEventType.Bounced, bounce.Type);
+            Assert.AreEqual(At(6), bounce.Coord);
+            Assert.AreEqual(At(7), bounce.Other);
+        }
+
+        [Test]
+        public void BouncyCorridor_IsCappedByMaxSteps()
+        {
+            var map = Corridor(5);
+            map.SetTile(HexTile.BouncyWall(At(0)));
+            map.SetTile(HexTile.BouncyWall(At(4)));
+
+            var result = MomentumStepper.Slide(map, At(2), new HexVelocity(East, 20), maxSteps: 10);
+
+            Assert.AreEqual(10, result.StepsTaken);
+            Assert.AreEqual(MoveEventType.StepCapReached, result.Events.Last().Type);
+            Assert.AreEqual(20, result.FinalVelocity.Speed);
+        }
+
+        [Test]
+        public void WedgedBetweenBouncyWalls_StopsInsteadOfLooping()
+        {
+            var map = Corridor(3);
+            map.SetTile(HexTile.BouncyWall(At(0)));
+            map.SetTile(HexTile.BouncyWall(At(2)));
+
+            var result = MomentumStepper.Slide(map, At(1), new HexVelocity(East, 3));
+
+            Assert.AreEqual(At(1), result.End);
+            Assert.IsEmpty(result.Path);
+            Assert.AreEqual(new HexVelocity(West, 0), result.FinalVelocity);
+            CollectionAssert.AreEqual(new[] { MoveEventType.Bounced, MoveEventType.Collided }, result.Events.Select(e => e.Type));
+        }
+
+        [Test]
+        public void SpikedWall_StopsAndReportsFixedDamage()
+        {
+            var map = Corridor(10);
+            map.SetTile(HexTile.SpikedWall(At(3), 3));
+            var result = MomentumStepper.Slide(map, At(0), new HexVelocity(East, 5));
+
+            Assert.AreEqual(At(2), result.End);
+            Assert.AreEqual(0, result.FinalVelocity.Speed);
+            CollectionAssert.AreEqual(new[] { MoveEventType.Collided, MoveEventType.Spiked }, result.Events.Select(e => e.Type));
+            var spike = result.Events.Last();
+            Assert.AreEqual(3, spike.Amount);
+            Assert.AreEqual(At(2), spike.Coord);
+            Assert.AreEqual(At(3), spike.Other);
+        }
+
+        [Test]
+        public void SpikedWall_ScaledDamage_UsesSpeedAtImpact()
+        {
+            var map = Corridor(10);
+            map.SetTile(HexTile.SpikedWall(At(3), 2, SpikeDamageMode.ScaledBySpeed));
+            var result = MomentumStepper.Slide(map, At(0), new HexVelocity(East, 5));
+
+            Assert.AreEqual(10, result.Events.Last().Amount);
+        }
     }
 }

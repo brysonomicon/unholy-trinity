@@ -12,6 +12,13 @@ namespace UnholyTrinity.Hex
         Collided,
         /// <summary>The slide was cut short at <see cref="MoveEvent.Coord"/> by the step cap.</summary>
         StepCapReached,
+        /// <summary>Bounced at <see cref="MoveEvent.Coord"/> off the bouncy wall at <see cref="MoveEvent.Other"/>.</summary>
+        Bounced,
+        /// <summary>
+        /// Hit the spiked wall at <see cref="MoveEvent.Other"/> while at <see cref="MoveEvent.Coord"/>.
+        /// <see cref="MoveEvent.Amount"/> is the damage; always follows a <see cref="Collided"/> event.
+        /// </summary>
+        Spiked,
     }
 
     public readonly struct MoveEvent
@@ -20,16 +27,20 @@ namespace UnholyTrinity.Hex
         public readonly HexCoord Coord;
         public readonly HexCoord Other;
         public readonly HexVelocity VelocityAfter;
+        /// <summary>Damage for <see cref="MoveEventType.Spiked"/>; 0 for other events.</summary>
+        public readonly int Amount;
 
-        public MoveEvent(MoveEventType type, HexCoord coord, HexCoord other, HexVelocity velocityAfter)
+        public MoveEvent(MoveEventType type, HexCoord coord, HexCoord other, HexVelocity velocityAfter, int amount = 0)
         {
             Type = type;
             Coord = coord;
             Other = other;
             VelocityAfter = velocityAfter;
+            Amount = amount;
         }
 
-        public override string ToString() => $"{Type} at {Coord} (other {Other}) -> {VelocityAfter}";
+        public override string ToString() =>
+            Amount != 0 ? $"{Type} {Amount} at {Coord} (other {Other}) -> {VelocityAfter}" : $"{Type} at {Coord} (other {Other}) -> {VelocityAfter}";
     }
 
     public class SlideResult
@@ -50,6 +61,10 @@ namespace UnholyTrinity.Hex
     /// Rules:
     /// - Each step moves one hex in the current direction and uses one point of speed.
     /// - A wall or the map edge stops the unit in its current hex and resets speed to 0.
+    ///   A spiked wall does the same and also reports damage, worked out from the speed at impact.
+    /// - A bouncy wall reverses the direction without using a step, so the unit carries on with its
+    ///   remaining steps and keeps its speed. Bouncing twice without moving (wedged between two
+    ///   bouncy walls) counts as a normal collision.
     /// - Entering a portal teleports to its partner (no extra step) and rotates the direction.
     ///   Arriving on the partner does not trigger it again.
     /// - Entering a boost tile changes the velocity straight away, so the change affects the rest
@@ -64,6 +79,7 @@ namespace UnholyTrinity.Hex
         {
             var result = new SlideResult();
             var position = start;
+            bool bouncedSinceLastStep = false;
 
             while (result.StepsTaken < velocity.Speed)
             {
@@ -76,11 +92,26 @@ namespace UnholyTrinity.Hex
                 var next = position.Neighbor(velocity.Direction);
                 if (!map.IsWalkable(next))
                 {
+                    map.TryGetWall(next, out var wall);
+
+                    if (wall.Kind == WallKind.Bouncy && !bouncedSinceLastStep)
+                    {
+                        velocity = velocity.WithDirection(velocity.Direction.Opposite());
+                        result.Events.Add(new MoveEvent(MoveEventType.Bounced, position, next, velocity));
+                        bouncedSinceLastStep = true;
+                        continue;
+                    }
+
+                    // Damage depends on the speed at impact, so work it out before the speed is zeroed.
+                    int damage = wall.DamageFor(velocity.Speed);
                     velocity = velocity.WithSpeed(0);
                     result.Events.Add(new MoveEvent(MoveEventType.Collided, position, next, velocity));
+                    if (wall.Kind == WallKind.Spiked)
+                        result.Events.Add(new MoveEvent(MoveEventType.Spiked, position, next, velocity, damage));
                     break;
                 }
 
+                bouncedSinceLastStep = false;
                 position = next;
                 result.StepsTaken++;
                 result.Path.Add(position);

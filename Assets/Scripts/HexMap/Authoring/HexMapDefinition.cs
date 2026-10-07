@@ -20,6 +20,7 @@ namespace UnholyTrinity.Hex
             public BoostSettings Boost;
             public PortalLink Portal;
             public PickupPointData Pickup;
+            public WallSettings Wall;
 
             public TileEntry(HexTile tile)
             {
@@ -28,9 +29,10 @@ namespace UnholyTrinity.Hex
                 Boost = tile.Boost;
                 Portal = tile.Portal;
                 Pickup = tile.Pickup;
+                Wall = tile.WallSettings;
             }
 
-            public HexTile ToTile() => new HexTile(Coord, Type, Boost, Portal, Pickup);
+            public HexTile ToTile() => new HexTile(Coord, Type, Boost, Portal, Pickup, Wall);
         }
 
         [SerializeField] List<TileEntry> tiles = new List<TileEntry>();

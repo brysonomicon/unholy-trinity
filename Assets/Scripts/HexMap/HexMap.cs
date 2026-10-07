@@ -23,6 +23,21 @@ namespace UnholyTrinity.Hex
 
         public bool BlocksLineOfFire(HexCoord coord) => !tiles.TryGetValue(coord, out var tile) || tile.BlocksLineOfFire;
 
+        /// <summary>
+        /// The wall variant at <paramref name="coord"/>. False for non-wall tiles and for off-map hexes,
+        /// which callers should treat as normal walls.
+        /// </summary>
+        public bool TryGetWall(HexCoord coord, out WallSettings wall)
+        {
+            if (tiles.TryGetValue(coord, out var tile) && tile.Type == TileType.Wall)
+            {
+                wall = tile.WallSettings;
+                return true;
+            }
+            wall = default;
+            return false;
+        }
+
         public void SetTile(HexTile tile) => tiles[tile.Coord] = tile;
 
         public bool RemoveTile(HexCoord coord) => tiles.Remove(coord);
