@@ -40,12 +40,21 @@ namespace UnholyTrinity.Hex
 
         public Color FloorColor = new Color(0.55f, 0.55f, 0.58f);
         public Color WallColor = new Color(0.22f, 0.22f, 0.26f);
-        public Color BouncyWallColor = new Color(0.2f, 0.55f, 0.85f);
-        public Color SpikedWallColor = new Color(0.75f, 0.15f, 0.15f);
-        public Color PickupColor = new Color(0.95f, 0.8f, 0.2f);
-        public Color BoostColor = new Color(0.25f, 0.85f, 0.45f);
-        public Color FrictionColor = new Color(0.65f, 0.4f, 0.2f);
-        public Color PortalColor = new Color(0.55f, 0.3f, 0.95f);
+        // Wong colour-blind-safe palette.
+        public static readonly Color WongOrange = new Color32(0xE6, 0x9F, 0x00, 0xFF);
+        public static readonly Color WongSkyBlue = new Color32(0x56, 0xB4, 0xE9, 0xFF);
+        public static readonly Color WongBluishGreen = new Color32(0x00, 0x9E, 0x73, 0xFF);
+        public static readonly Color WongYellow = new Color32(0xF0, 0xE4, 0x42, 0xFF);
+        public static readonly Color WongBlue = new Color32(0x00, 0x72, 0xB2, 0xFF);
+        public static readonly Color WongVermillion = new Color32(0xD5, 0x5E, 0x00, 0xFF);
+        public static readonly Color WongReddishPurple = new Color32(0xCC, 0x79, 0xA7, 0xFF);
+
+        public Color BouncyWallColor = WongSkyBlue;
+        public Color SpikedWallColor = WongVermillion;
+        public Color PickupColor = WongYellow;
+        public Color BoostColor = WongBluishGreen;
+        public Color FrictionColor = WongOrange;
+        public Color PortalColor = WongReddishPurple;
         public Color ArrowColor = Color.white;
 
         public static HexTileStyle CreateDefault()

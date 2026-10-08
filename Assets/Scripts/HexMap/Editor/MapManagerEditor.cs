@@ -182,11 +182,11 @@ namespace UnholyTrinity.Hex.Editing
             hovered = MouseToHex(layout, manager.transform.position, e.mousePosition);
 
             if (hovered.HasValue)
-                HexMapGizmos.OutlineHex(layout, hovered.Value, e.shift ? Color.red : Color.yellow);
+                HexMapGizmos.OutlineHex(layout, hovered.Value, e.shift ? HexTileStyle.WongVermillion : HexTileStyle.WongYellow);
             if (pendingPortal.HasValue)
-                HexMapGizmos.OutlineHex(layout, pendingPortal.Value, new Color(0.7f, 0.4f, 1f), 5f);
+                HexMapGizmos.OutlineHex(layout, pendingPortal.Value, HexTileStyle.WongReddishPurple, 5f);
             if (paintType == TileType.Boost && boost.Mode == BoostMode.Fixed && hovered.HasValue)
-                HexMapGizmos.DrawArrow(layout, layout.HexToWorld(hovered.Value), boost.Direction, Color.yellow);
+                HexMapGizmos.DrawArrow(layout, layout.HexToWorld(hovered.Value), boost.Direction, HexTileStyle.WongYellow);
 
             switch (e.type)
             {

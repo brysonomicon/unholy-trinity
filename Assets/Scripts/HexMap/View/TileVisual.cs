@@ -16,8 +16,8 @@ namespace UnholyTrinity.Hex
         [SerializeField, Tooltip("Tinted with boostTint / frictionTint on boost tiles via _BaseColor.")]
         Renderer[] tintRenderers = new Renderer[0];
         [SerializeField] bool tintBoostTiles = true;
-        [SerializeField] Color boostTint = new Color(0.25f, 0.85f, 0.45f);
-        [SerializeField] Color frictionTint = new Color(0.65f, 0.4f, 0.2f);
+        [SerializeField] Color boostTint = HexTileStyle.WongBluishGreen;
+        [SerializeField] Color frictionTint = HexTileStyle.WongOrange;
 
         [SerializeField, Tooltip("Invoked with the boost strength, e.g. to scale particle emission or animation speed.")]
         UnityEvent<int> onStrength = new UnityEvent<int>();

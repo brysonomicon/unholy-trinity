@@ -28,6 +28,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 0
       r: -1
@@ -43,6 +47,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 1
       r: -2
@@ -58,6 +66,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 2
       r: -2
@@ -73,6 +85,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 2
       r: -1
@@ -88,6 +104,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 1
       r: 0
@@ -103,6 +123,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -1
       r: 1
@@ -118,6 +142,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 0
       r: 0
@@ -133,6 +161,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 0
       r: 1
@@ -148,6 +180,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -1
       r: 0
@@ -163,6 +199,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 0
       r: -2
@@ -178,6 +218,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -1
       r: -1
@@ -193,6 +237,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -3
       r: 1
@@ -208,6 +256,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -2
       r: 0
@@ -223,6 +275,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -2
       r: 1
@@ -238,6 +294,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -2
       r: 2
@@ -253,6 +313,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -1
       r: 2
@@ -268,6 +332,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 0
       r: 2
@@ -283,6 +351,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 1
       r: 1
@@ -298,6 +370,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 2
       r: 0
@@ -313,6 +389,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 3
       r: -1
@@ -328,6 +408,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 3
       r: -2
@@ -343,6 +427,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 3
       r: -3
@@ -358,6 +446,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -4
       r: 0
@@ -373,6 +465,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -4
       r: 1
@@ -388,6 +484,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -4
       r: 2
@@ -403,6 +503,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -4
       r: 3
@@ -418,6 +522,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -4
       r: 4
@@ -433,6 +541,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -3
       r: -1
@@ -448,6 +560,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -3
       r: 0
@@ -463,6 +579,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -3
       r: 2
@@ -478,6 +598,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -3
       r: 3
@@ -493,6 +617,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -3
       r: 4
@@ -508,6 +636,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -2
       r: -2
@@ -523,6 +655,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -2
       r: -1
@@ -538,6 +674,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -2
       r: 3
@@ -553,6 +693,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -2
       r: 4
@@ -568,6 +712,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -1
       r: -3
@@ -583,6 +731,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -1
       r: -2
@@ -598,6 +750,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -1
       r: 3
@@ -613,6 +769,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -1
       r: 4
@@ -628,6 +788,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 0
       r: -4
@@ -643,6 +807,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 0
       r: -3
@@ -658,6 +826,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 0
       r: 3
@@ -673,6 +845,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 0
       r: 4
@@ -688,6 +864,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 1
       r: -4
@@ -703,6 +883,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 1
       r: -3
@@ -718,6 +902,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 1
       r: 2
@@ -733,6 +921,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 1
       r: 3
@@ -748,6 +940,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 2
       r: -4
@@ -763,6 +959,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 2
       r: -3
@@ -778,6 +978,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 2
       r: 1
@@ -793,6 +997,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 2
       r: 2
@@ -808,6 +1016,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 3
       r: -4
@@ -823,6 +1035,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 3
       r: 0
@@ -838,6 +1054,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 3
       r: 1
@@ -853,6 +1073,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 4
       r: -4
@@ -868,6 +1092,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 4
       r: -3
@@ -883,6 +1111,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 4
       r: -2
@@ -898,6 +1130,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 4
       r: -1
@@ -913,6 +1149,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 4
       r: 0
@@ -928,6 +1168,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -5
       r: 5
@@ -943,6 +1187,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -4
       r: 5
@@ -958,6 +1206,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -3
       r: 5
@@ -973,6 +1225,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -2
       r: 5
@@ -988,6 +1244,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -1
       r: 5
@@ -1003,6 +1263,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 0
       r: 5
@@ -1018,6 +1282,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 1
       r: 4
@@ -1033,6 +1301,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 1
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 2
       r: 3
@@ -1048,6 +1320,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 1
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 3
       r: 2
@@ -1063,6 +1339,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 1
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 4
       r: 1
@@ -1078,6 +1358,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 1
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 5
       r: 0
@@ -1093,6 +1377,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 5
       r: -1
@@ -1108,6 +1396,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 5
       r: -2
@@ -1123,21 +1415,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
-  - Coord:
-      q: 5
-      r: -3
-    Type: 1
-    Boost:
-      Strength: 0
-      Mode: 0
-      Direction: 0
-    Portal:
-      Target:
-        q: 0
-        r: 0
-      RotationSteps: 0
-    Pickup:
-      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 5
       r: -4
@@ -1153,6 +1434,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 5
       r: -5
@@ -1168,10 +1453,14 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 4
       r: -5
-    Type: 1
+    Type: 0
     Boost:
       Strength: 0
       Mode: 0
@@ -1183,10 +1472,14 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 3
       r: -5
-    Type: 1
+    Type: 0
     Boost:
       Strength: 0
       Mode: 0
@@ -1198,10 +1491,14 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 2
       r: -5
-    Type: 1
+    Type: 0
     Boost:
       Strength: 0
       Mode: 0
@@ -1213,10 +1510,14 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 1
       r: -5
-    Type: 1
+    Type: 0
     Boost:
       Strength: 0
       Mode: 0
@@ -1228,6 +1529,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: 0
       r: -5
@@ -1243,6 +1548,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -1
       r: -4
@@ -1258,6 +1567,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -2
       r: -3
@@ -1273,6 +1586,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -3
       r: -2
@@ -1288,6 +1605,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -4
       r: -1
@@ -1303,6 +1624,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -5
       r: 0
@@ -1318,6 +1643,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -5
       r: 1
@@ -1333,6 +1662,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -5
       r: 2
@@ -1348,6 +1681,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -5
       r: 3
@@ -1363,6 +1700,10 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
   - Coord:
       q: -5
       r: 4
@@ -1378,3 +1719,843 @@ MonoBehaviour:
       RotationSteps: 0
     Pickup:
       SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 5
+      r: -6
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 2
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 4
+      r: -6
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 3
+      r: -6
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 2
+      r: -6
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 1
+      r: -6
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 2
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 2
+      r: -7
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 2
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 3
+      r: -7
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 4
+      r: -7
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 5
+      r: -7
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 2
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 6
+      r: -8
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 2
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 5
+      r: -8
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 4
+      r: -8
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 3
+      r: -8
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 3
+      r: -9
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 2
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 2
+      r: -8
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 2
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 4
+      r: -9
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 5
+      r: -9
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 6
+      r: -9
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 2
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 6
+      r: -10
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 5
+      r: -10
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 4
+      r: -10
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 3
+      r: -10
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 2
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 5
+      r: -11
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 6
+      r: -11
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 7
+      r: -11
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 2
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 5
+      r: -12
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 6
+      r: -12
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 4
+      r: -11
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 2
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 7
+      r: -10
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 2
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 8
+      r: -12
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 2
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 4
+      r: -12
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 2
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 7
+      r: -12
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 5
+      r: -3
+    Type: 3
+    Boost:
+      Strength: 10
+      Mode: 1
+      Direction: 1
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 6
+      r: -3
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 6
+      r: -5
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 7
+      r: -4
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 8
+      r: -5
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 7
+      r: -6
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 8
+      r: -7
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 9
+      r: -6
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 6
+      r: -4
+    Type: 3
+    Boost:
+      Strength: 10
+      Mode: 1
+      Direction: 1
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 7
+      r: -5
+    Type: 3
+    Boost:
+      Strength: 10
+      Mode: 1
+      Direction: 1
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 8
+      r: -6
+    Type: 3
+    Boost:
+      Strength: 10
+      Mode: 1
+      Direction: 1
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      q: 9
+      r: -7
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        q: 0
+        r: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 2
+      Damage: 0
+      DamageMode: 1
