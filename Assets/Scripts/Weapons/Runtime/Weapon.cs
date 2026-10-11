@@ -1,49 +1,53 @@
 using UnityEngine;
 
-[System.Serializable]
-public class Weapon
+namespace UnholyTrinity.Weapons
 {
-    [SerializeField] private WeaponData data;
-    [SerializeField] private int ammo;
-    [SerializeField] private int cooldown;
-
-    public WeaponData Data => data;
-    public int Ammo => ammo;
-
-    public Weapon (WeaponData data)
+    [System.Serializable]
+    public class Weapon
     {
-        this.data = data;
-        ammo = data.PickupAmmo;
-    }
+        [SerializeField] private WeaponData data;
+        [SerializeField] private int ammo;
+        [SerializeField] private int cooldown;
 
-    public bool CanFire()
-    {
-        return ammo > 0 && cooldown == 0;
-    }
+        public WeaponData Data => data;
+        public int Ammo => ammo;
 
-    public bool Fire()
-    {
-        if (!CanFire())
+        public Weapon (WeaponData data)
         {
-            return false;
+            this.data = data;
+            ammo = data.PickupAmmo;
         }
 
-        ammo--;
-        cooldown = data.Cooldown;
-        data.Fire();
-        return true;
-    }
-
-    public void AddAmmo(int amount)
-    {
-        ammo = Mathf.Min(ammo + amount, data.MaxAmmo);
-    }
-
-    public void TickCooldown()
-    {
-        if (cooldown > 0)
+        public bool CanFire()
         {
-            cooldown--;
+            return ammo > 0 && cooldown == 0;
+        }
+
+        public bool Fire()
+        {
+            if (!CanFire())
+            {
+                return false;
+            }
+
+            ammo--;
+            cooldown = data.Cooldown;
+            data.Fire();
+            return true;
+        }
+
+        public void AddAmmo(int amount)
+        {
+            ammo = Mathf.Min(ammo + amount, data.MaxAmmo);
+        }
+
+        public void TickCooldown()
+        {
+            if (cooldown > 0)
+            {
+                cooldown--;
+            }
         }
     }
 }
+

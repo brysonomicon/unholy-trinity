@@ -1,10 +1,13 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "RailgunData", menuName = "Unholy Trinity/RailgunData")]
-public class RailgunData : WeaponData
+namespace UnholyTrinity.Weapons
 {
-    public override void Fire()
+    [CreateAssetMenu(fileName = "RailgunData", menuName = "Unholy Trinity/RailgunData")]
+    public class RailgunData : WeaponData
     {
-        // TODO: roll hit chance per aimed tile depending on falloff, full damage on hit
+        public override void Fire()
+        {
+            // TODO: roll hit chance per aimed tile depending on falloff, full damage on hit
+        }
     }
 }

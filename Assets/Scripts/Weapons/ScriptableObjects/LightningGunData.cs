@@ -1,10 +1,14 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "LightningGunData", menuName = "Unholy Trinity/LightningGunData")]
-public class LightningGunData : WeaponData
+namespace UnholyTrinity.Weapons
 {
-    public override void Fire()
+    [CreateAssetMenu(fileName = "LightningGunData", menuName = "Unholy Trinity/LightningGunData")]
+    public class LightningGunData : WeaponData
     {
-        //TODO: damage per AimTile scaled by falloff percent
+        public override void Fire()
+        {
+            //TODO: damage per AimTile scaled by falloff percent
+        }
     }
 }
+

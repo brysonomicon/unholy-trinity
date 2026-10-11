@@ -1,10 +1,14 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "RocketLauncherData", menuName = "Unholy Trinity/RocketLauncherData")]
-public class RocketLauncherData : WeaponData
+namespace UnholyTrinity.Weapons
 {
-    public override void Fire()
+    [CreateAssetMenu(fileName = "RocketLauncherData", menuName = "Unholy Trinity/RocketLauncherData")]
+    public class RocketLauncherData : WeaponData
     {
-        // TODO: spawn projectile toward target, splash falloff at impact
+        public override void Fire()
+        {
+            // TODO: spawn projectile toward target, splash falloff at impact
+        }
     }
 }
+
