@@ -62,7 +62,7 @@ namespace UnholyTrinity.Players
             foreach (AimTile aimTile in weapon.Data.GetAimTiles(mapManager.Map, coord, aimDirection))
             {
                 Gizmos.color = Color.Lerp(Color.yellow, Color.red, aimTile.Falloff);
-                Gizmos.DrawSphere(mapManager.Layout.HexToWorld(aimTile.Coord) + Vector3.up * 0.3f, 0.2f);
+                Gizmos.DrawSphere(mapManager.Layout.HexToWorld(aimTile.Coord) + Vector3.up * 0.6f, 0.2f);
             }
         }
     }
