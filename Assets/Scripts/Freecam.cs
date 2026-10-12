@@ -7,17 +7,17 @@ public class Freecam : MonoBehaviour
     public float fastMultiplier = 4f;
     public float lookSensitivity = 0.1f;
 
-    float yaw;
-    float pitch;
+    private float _yaw;
+    private float _pitch;
 
-    void Start()
+    private void Start()
     {
         Vector3 euler = transform.eulerAngles;
-        yaw = euler.y;
-        pitch = euler.x > 180f ? euler.x - 360f : euler.x;
+        _yaw = euler.y;
+        _pitch = euler.x > 180f ? euler.x - 360f : euler.x;
     }
 
-    void Update()
+    private void Update()
     {
         var keyboard = Keyboard.current;
         var mouse = Mouse.current;
@@ -31,9 +31,9 @@ public class Freecam : MonoBehaviour
         if (looking)
         {
             Vector2 delta = mouse.delta.ReadValue() * lookSensitivity;
-            yaw += delta.x;
-            pitch = Mathf.Clamp(pitch - delta.y, -89f, 89f);
-            transform.rotation = Quaternion.Euler(pitch, yaw, 0f);
+            _yaw += delta.x;
+            _pitch = Mathf.Clamp(_pitch - delta.y, -89f, 89f);
+            transform.rotation = Quaternion.Euler(_pitch, _yaw, 0f);
         }
 
         // Scroll wheel adjusts base speed

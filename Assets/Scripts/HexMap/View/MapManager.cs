@@ -14,98 +14,120 @@ namespace UnholyTrinity.Hex
     {
         const string VisualRootName = "Tiles";
 
-        [SerializeField] HexMapDefinition definition;
-        [SerializeField] HexTileStyle style;
-        [SerializeField] HexOrientation orientation = HexOrientation.PointyTop;
-        [SerializeField, Min(0.01f)] float hexSize = 1f;
-        [SerializeField, Tooltip("Debug key that flips pointy/flat orientation in play mode. None disables it.")]
-        Key orientationToggleKey = Key.F2;
+        [SerializeField] private HexMapDefinition definition;
+        [SerializeField] private HexTileStyle style;
 
-        Transform visualRoot;
-        HexTileStyle runtimeDefaultStyle;
-        Material runtimeMaterial;
-        MaterialPropertyBlock propertyBlock;
-        bool visualsDirty;
+        [SerializeField]
+        private HexOrientation orientation = HexOrientation.PointyTop;
 
-        static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
-        static readonly int ColorId = Shader.PropertyToID("_Color");
+        [SerializeField, Min(0.01f)] private float hexSize = 1f;
+
+        [SerializeField,
+         Tooltip(
+             "Debug key that flips pointy/flat orientation in play mode. None disables it.")]
+        private Key orientationToggleKey = Key.F2;
+
+        private Transform _visualRoot;
+        private HexTileStyle _runtimeDefaultStyle;
+        private Material _runtimeMaterial;
+        private MaterialPropertyBlock _propertyBlock;
+        private bool _visualsDirty;
+
+        private static readonly int BaseColorId =
+            Shader.PropertyToID("_BaseColor");
+
+        private static readonly int ColorId = Shader.PropertyToID("_Color");
 
         public HexMap Map { get; private set; }
         public HexMapDefinition Definition => definition;
         public HexOrientation Orientation => orientation;
         public float HexSize => hexSize;
-        public HexLayout Layout => new HexLayout(orientation, hexSize, transform.position);
+
+        public HexLayout Layout =>
+            new HexLayout(orientation, hexSize, transform.position);
 
         /// <summary>Raised after the layout changes (e.g. orientation toggled), so units can re-position.</summary>
         public event Action LayoutChanged;
 
-        void Awake() => Rebuild();
+        private void Awake() => Rebuild();
 
-        void Update()
+        private void Update()
         {
-            if (orientationToggleKey != Key.None && Keyboard.current != null && Keyboard.current[orientationToggleKey].wasPressedThisFrame)
-                ToggleOrientation();
-
-            if (visualsDirty)
+            if (orientationToggleKey != Key.None
+                && Keyboard.current != null
+                && Keyboard.current[orientationToggleKey].wasPressedThisFrame)
             {
-                visualsDirty = false;
-                SpawnVisuals();
-                LayoutChanged?.Invoke();
+                ToggleOrientation();
             }
+
+
+            if (!_visualsDirty)
+            {
+                return;
+            }
+
+            _visualsDirty = false;
+            SpawnVisuals();
+            LayoutChanged?.Invoke();
         }
 
-        void OnValidate()
+        private void OnValidate()
         {
             // Inspector edits during play mode (orientation, size, style) refresh the spawned tiles next frame.
-            if (Application.isPlaying && Map != null)
-                visualsDirty = true;
+            if (Application.isPlaying && Map is not null)
+                _visualsDirty = true;
         }
 
-        void OnDestroy()
+        private void OnDestroy()
         {
-            if (runtimeDefaultStyle != null)
-                Destroy(runtimeDefaultStyle);
-            if (runtimeMaterial != null)
-                Destroy(runtimeMaterial);
+            if (_runtimeDefaultStyle is not null)
+                Destroy(_runtimeDefaultStyle);
+            if (_runtimeMaterial is not null)
+                Destroy(_runtimeMaterial);
         }
 
         /// <summary>Rebuilds the logical map from the definition and respawns the visuals.</summary>
-        public void Rebuild()
+        private void Rebuild()
         {
-            if (definition == null)
+            if (definition is null)
             {
-                Debug.LogWarning($"{nameof(MapManager)} on '{name}' has no map definition assigned.", this);
+                Debug.LogWarning(
+                    $"{nameof(MapManager)} on '{name}' has no map definition assigned.",
+                    this);
                 Map = new HexMap();
                 return;
             }
 
             foreach (var problem in definition.Validate())
-                Debug.LogWarning($"Hex map '{definition.name}': {problem}", definition);
+                Debug.LogWarning($"Hex map '{definition.name}': {problem}",
+                    definition);
 
             Map = definition.Build();
             SpawnVisuals();
         }
 
-        public void SetOrientation(HexOrientation value)
+        private void SetOrientation(HexOrientation value)
         {
             if (orientation == value)
                 return;
             orientation = value;
             if (Application.isPlaying)
-                visualsDirty = true;
+                _visualsDirty = true;
         }
 
         [ContextMenu("Toggle Orientation")]
         public void ToggleOrientation() =>
-            SetOrientation(orientation == HexOrientation.PointyTop ? HexOrientation.FlatTop : HexOrientation.PointyTop);
+            SetOrientation(orientation == HexOrientation.PointyTop
+                ? HexOrientation.FlatTop
+                : HexOrientation.PointyTop);
 
-        void SpawnVisuals()
+        private void SpawnVisuals()
         {
-            if (visualRoot != null)
-                Destroy(visualRoot.gameObject);
+            if (_visualRoot is not null)
+                Destroy(_visualRoot.gameObject);
 
-            visualRoot = new GameObject(VisualRootName).transform;
-            visualRoot.SetParent(transform, false);
+            _visualRoot = new GameObject(VisualRootName).transform;
+            _visualRoot.SetParent(transform, false);
 
             var activeStyle = ResolveStyle();
             var layout = Layout;
@@ -113,76 +135,102 @@ namespace UnholyTrinity.Hex
             foreach (var tile in Map.Tiles)
             {
                 var prefab = activeStyle.PrefabFor(tile);
-                var go = prefab != null ? SpawnPrefab(prefab, tile, layout) : SpawnProcedural(activeStyle, tile, layout);
+                var go = prefab != null
+                    ? SpawnPrefab(prefab, tile, layout)
+                    : SpawnProcedural(activeStyle, tile, layout);
                 go.name = $"{tile.Type} {tile.Coord}";
                 go.AddComponent<HexTileView>().Init(tile);
             }
         }
 
-        GameObject SpawnPrefab(GameObject prefab, HexTile tile, HexLayout layout)
+        private GameObject SpawnPrefab(
+            GameObject prefab,
+            HexTile tile,
+            HexLayout layout)
         {
-            // Prefabs are authored pointy-top at hex size 1; flat-top is the same hex turned 30 degrees.
-            var rotation = orientation == HexOrientation.FlatTop ? Quaternion.Euler(0f, 30f, 0f) : Quaternion.identity;
-            var go = Instantiate(prefab, layout.HexToWorld(tile.Coord), rotation, visualRoot);
+            // Prefabs are authored pointy-top at hex size 1;
+            // flat-top is the same hex turned 30 degrees.
+            var rotation = orientation == HexOrientation.FlatTop
+                ? Quaternion.Euler(0f, 30f, 0f)
+                : Quaternion.identity;
+            var go = Instantiate(prefab, layout.HexToWorld(tile.Coord),
+                rotation, _visualRoot);
             go.transform.localScale = prefab.transform.localScale * hexSize;
-            foreach (var visual in go.GetComponentsInChildren<ITileVisual>(true))
+            foreach (var visual in
+                     go.GetComponentsInChildren<ITileVisual>(true))
                 visual.Configure(tile, layout);
             return go;
         }
 
-        GameObject SpawnProcedural(HexTileStyle activeStyle, HexTile tile, HexLayout layout)
+        private GameObject SpawnProcedural(
+            HexTileStyle activeStyle, 
+            HexTile tile,
+            HexLayout layout)
         {
             var material = ResolveMaterial(activeStyle);
-            propertyBlock ??= new MaterialPropertyBlock();
+            _propertyBlock ??= new MaterialPropertyBlock();
             float height = activeStyle.HeightFor(tile);
-            var go = CreateMeshObject("Tile", visualRoot,
-                HexMeshFactory.Prism(orientation, hexSize * activeStyle.TileScale, height), material, activeStyle.ColorFor(tile));
+            var go = CreateMeshObject("Tile", _visualRoot,
+                HexMeshFactory.Prism(orientation,
+                    hexSize * activeStyle.TileScale, height), material,
+                activeStyle.ColorFor(tile));
             go.transform.position = layout.HexToWorld(tile.Coord);
 
-            if (tile.Type == TileType.Boost && tile.Boost.Mode == BoostMode.Fixed)
+            if (tile.Type != TileType.Boost ||
+                tile.Boost.Mode != BoostMode.Fixed)
             {
-                var arrow = CreateMeshObject("Arrow", go.transform, HexMeshFactory.Arrow(hexSize), material, activeStyle.ArrowColor);
-                arrow.transform.localPosition = Vector3.up * (height + 0.01f);
-                arrow.transform.rotation = Quaternion.LookRotation(layout.DirectionToWorld(tile.Boost.Direction), Vector3.up);
+                return go;
             }
+            
+            var arrow = CreateMeshObject("Arrow", go.transform,
+                HexMeshFactory.Arrow(hexSize), material,
+                activeStyle.ArrowColor);
+            arrow.transform.localPosition = Vector3.up * (height + 0.01f);
+            arrow.transform.rotation = Quaternion.LookRotation(
+                layout.DirectionToWorld(tile.Boost.Direction), Vector3.up);
+
             return go;
         }
 
-        GameObject CreateMeshObject(string objectName, Transform parent, Mesh mesh, Material material, Color color)
+        private GameObject CreateMeshObject(string objectName, Transform parent,
+            Mesh mesh, Material material, Color color)
         {
             var go = new GameObject(objectName);
             go.transform.SetParent(parent, false);
             go.AddComponent<MeshFilter>().sharedMesh = mesh;
             var meshRenderer = go.AddComponent<MeshRenderer>();
             meshRenderer.sharedMaterial = material;
-            propertyBlock.Clear();
-            propertyBlock.SetColor(BaseColorId, color);
-            propertyBlock.SetColor(ColorId, color);
-            meshRenderer.SetPropertyBlock(propertyBlock);
+            _propertyBlock.Clear();
+            _propertyBlock.SetColor(BaseColorId, color);
+            _propertyBlock.SetColor(ColorId, color);
+            meshRenderer.SetPropertyBlock(_propertyBlock);
             return go;
         }
 
-        HexTileStyle ResolveStyle()
+        private HexTileStyle ResolveStyle()
         {
-            if (style != null)
+            if (style is not null)
                 return style;
-            if (runtimeDefaultStyle == null)
-                runtimeDefaultStyle = HexTileStyle.CreateDefault();
-            return runtimeDefaultStyle;
+            _runtimeDefaultStyle ??= HexTileStyle.CreateDefault();
+            return _runtimeDefaultStyle;
         }
 
-        Material ResolveMaterial(HexTileStyle activeStyle)
+        private Material ResolveMaterial(HexTileStyle activeStyle)
         {
-            if (activeStyle.TileMaterial != null)
-                return activeStyle.TileMaterial;
-            if (runtimeMaterial == null)
+            if (activeStyle.TileMaterial is not null)
             {
-                var shader = Shader.Find("Universal Render Pipeline/Lit");
-                if (shader == null)
-                    shader = Shader.Find("Standard");
-                runtimeMaterial = new Material(shader) { name = "HexTile (Runtime)" };
+                return activeStyle.TileMaterial;
             }
-            return runtimeMaterial;
+            if (_runtimeMaterial is not null)
+            {
+                return _runtimeMaterial;
+            }
+            var shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
+            
+            _runtimeMaterial = new Material(shader)
+                { name = "HexTile (Runtime)" };
+
+            return _runtimeMaterial;
         }
     }
 }

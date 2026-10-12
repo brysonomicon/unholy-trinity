@@ -1,5 +1,4 @@
 using UnholyTrinity.Hex;
-using UnityEngine;
 
 namespace UnholyTrinity.Weapons
 {
