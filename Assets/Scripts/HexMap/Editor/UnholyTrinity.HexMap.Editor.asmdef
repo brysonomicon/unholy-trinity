@@ -1,0 +1,18 @@
+{
+    "name": "UnholyTrinity.HexMap.Editor",
+    "rootNamespace": "UnholyTrinity.Hex.Editing",
+    "references": [
+        "UnholyTrinity.HexMap"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
