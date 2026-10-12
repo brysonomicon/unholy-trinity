@@ -23,7 +23,7 @@ namespace UnholyTrinity.Weapons
         public int PickupAmmo => pickupAmmo;
         public int Cooldown => cooldown;
 
-        public virtual List<AimTile> GetAimTiles(HexMap map, HexCoord origin, HexDirection direction)
+        public virtual List<AimTile> GetAimTiles(HexMap map, HexCoord origin, AimDirection direction)
         {
             List<AimTile> aimTiles = new List<AimTile>();
             Vector3 aim = AngleLayout.HexToWorld(direction.ToOffset());

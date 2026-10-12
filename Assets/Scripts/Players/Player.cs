@@ -13,7 +13,7 @@ namespace UnholyTrinity.Players
 
         [Header("Combat")]
         [SerializeField] private Weapon weapon;
-        [SerializeField] private HexDirection aimDirection;
+        [SerializeField] private AimDirection aimDirection;
 
         private void OnEnable()
         {
