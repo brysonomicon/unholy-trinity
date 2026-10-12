@@ -18,6 +18,7 @@ namespace UnholyTrinity.Hex.Editing
         static TileType paintType = TileType.Floor;
         static BoostSettings boost = BoostSettings.Along(1);
         static WallSettings wall = WallSettings.Normal;
+        static HealthTileSettings health = HealthTileSettings.Harm(1);
         static int pickupGroup;
         static int portalRotation;
         static int fillRadius = 4;
@@ -33,6 +34,7 @@ namespace UnholyTrinity.Hex.Editing
             public TileType PaintType;
             public BoostSettings Boost;
             public WallSettings Wall;
+            public HealthTileSettings Health;
             public int PickupGroup;
             public int PortalRotation;
             public int FillRadius;
@@ -61,6 +63,7 @@ namespace UnholyTrinity.Hex.Editing
             paintType = state.PaintType;
             boost = state.Boost;
             wall = state.Wall;
+            health = state.Health;
             pickupGroup = state.PickupGroup;
             portalRotation = state.PortalRotation;
             fillRadius = state.FillRadius;
@@ -75,6 +78,7 @@ namespace UnholyTrinity.Hex.Editing
                 PaintType = paintType,
                 Boost = boost,
                 Wall = wall,
+                Health = health,
                 PickupGroup = pickupGroup,
                 PortalRotation = portalRotation,
                 FillRadius = fillRadius,
@@ -135,6 +139,12 @@ namespace UnholyTrinity.Hex.Editing
                         break;
                     case TileType.PickupPoint:
                         pickupGroup = EditorGUILayout.IntField("Spawn Group", pickupGroup);
+                        break;
+                    case TileType.Health:
+                        health.Lethal = EditorGUILayout.Toggle(new GUIContent("Lethal", "Kills outright and ends the slide, e.g. lava or a void."), health.Lethal);
+                        if (!health.Lethal)
+                            health.Amount = EditorGUILayout.IntField(new GUIContent("Amount", "+ heals, - harms"), health.Amount);
+                        health.Trigger = (HealthTrigger)EditorGUILayout.EnumPopup(new GUIContent("Trigger", "On Enter fires for every hex slid into; On Stop only where the slide ends."), health.Trigger);
                         break;
                     case TileType.Portal:
                         portalRotation = EditorGUILayout.IntSlider(new GUIContent("Rotation (A to B)", "60 degree CCW steps applied when exiting at B; B to A uses the inverse."), portalRotation, 0, 5);
@@ -243,6 +253,7 @@ namespace UnholyTrinity.Hex.Editing
                 TileType.Wall => HexTile.Wall(coord, wall.Kind == WallKind.Spiked ? wall : new WallSettings(wall.Kind)),
                 TileType.PickupPoint => HexTile.PickupPoint(coord, pickupGroup),
                 TileType.Boost => HexTile.BoostTile(coord, boost),
+                TileType.Health => HexTile.HealthTile(coord, health.Lethal ? HealthTileSettings.Kill(health.Trigger) : health),
                 _ => HexTile.Floor(coord),
             };
 
@@ -291,7 +302,7 @@ namespace UnholyTrinity.Hex.Editing
         }
 
         static bool SameTile(HexTile a, HexTile b) =>
-            a.Type == b.Type && a.Boost.Equals(b.Boost) && a.Pickup.Equals(b.Pickup) && a.Portal.Equals(b.Portal) && a.WallSettings.Equals(b.WallSettings);
+            a.Type == b.Type && a.Boost.Equals(b.Boost) && a.Pickup.Equals(b.Pickup) && a.Portal.Equals(b.Portal) && a.WallSettings.Equals(b.WallSettings) && a.Health.Equals(b.Health);
 
         static HexCoord? MouseToHex(HexLayout layout, Vector3 planeOrigin, Vector2 mousePosition)
         {

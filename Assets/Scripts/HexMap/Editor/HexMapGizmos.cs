@@ -54,6 +54,13 @@ namespace UnholyTrinity.Hex.Editing
             {
                 Handles.Label(center, $"P{tile.Pickup.SpawnGroup}", EditorStyles.boldLabel);
             }
+            else if (tile.Type == TileType.Health)
+            {
+                var label = tile.Health.Lethal ? "KILL" : $"H{tile.Health.Amount:+0;-0;0}";
+                if (tile.Health.Trigger == HealthTrigger.OnStop)
+                    label += " stop";
+                Handles.Label(center, label, EditorStyles.whiteBoldLabel);
+            }
         }
 
         public static void FillHex(HexLayout layout, Vector3 center, float scale, Color color, float alpha)
