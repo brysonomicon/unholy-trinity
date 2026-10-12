@@ -15,7 +15,7 @@ namespace UnholyTrinity.Hex
     /// Positive strength speeds units up, negative strength (friction) slows them down.
     /// </summary>
     [Serializable]
-    public struct BoostSettings
+    public struct BoostSettings : IEquatable<BoostSettings>
     {
         public int Strength;
         public BoostMode Mode;
@@ -47,6 +47,21 @@ namespace UnholyTrinity.Hex
             }
 
             return new HexVelocity(Direction, Math.Max(0, velocity.Speed + Strength));
+        }
+
+        public bool Equals(BoostSettings other)
+        {
+            return Strength == other.Strength && Mode == other.Mode && Direction == other.Direction;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is BoostSettings other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Strength, (int)Mode, (int)Direction);
         }
     }
 }
