@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using UnholyTrinity.Hex;
 using UnityEngine;
 
 namespace UnholyTrinity.Weapons
@@ -14,8 +16,7 @@ namespace UnholyTrinity.Weapons
         public int PickupAmmo => pickupAmmo;
         public int Cooldown => cooldown;
 
-        //TODO: once hex map exists
-        // public abstract List<AimTile> GetAimTiles(HexTile origin, HexTile target);
+        public abstract List<AimTile> GetAimTiles(HexMap map, HexCoord origin, HexDirection direction);
 
         public abstract void Fire();
     }

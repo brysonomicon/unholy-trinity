@@ -131,4 +131,9 @@ MonoBehaviour:
   coord:
     q: 0
     r: 0
-  heightOffset: 0.75
+  heightOffset: 0.6
+  weapon:
+    data: {fileID: 0}
+    ammo: 0
+    cooldown: 0
+  aimDirection: 0

@@ -1,13 +1,19 @@
 using UnholyTrinity.Hex;
+using UnholyTrinity.Weapons;
 using UnityEngine;
 
 namespace UnholyTrinity.Players
 {
     public class Player : MonoBehaviour
     {
+        [Header("Map")]
         [SerializeField] private MapManager mapManager;
         [SerializeField] private HexCoord coord;
         [SerializeField] private float heightOffset = 0.5f;
+
+        [Header("Combat")]
+        [SerializeField] private Weapon weapon;
+        [SerializeField] private HexDirection aimDirection;
 
         private void OnEnable()
         {
@@ -40,6 +46,23 @@ namespace UnholyTrinity.Players
                 !mapManager.Map.IsWalkable(coord))
             {
                 Debug.LogWarning($"{name} is on non walkable coord {coord}");
+            }
+        }
+
+        private void OnDrawGizmos()
+        {
+            if (mapManager == null ||
+                mapManager.Map == null ||
+                weapon == null ||
+                weapon.Data == null)
+            {
+                return;
+            }
+
+            foreach (AimTile aimTile in weapon.Data.GetAimTiles(mapManager.Map, coord, aimDirection))
+            {
+                Gizmos.color = Color.Lerp(Color.yellow, Color.red, aimTile.Falloff);
+                Gizmos.DrawSphere(mapManager.Layout.HexToWorld(aimTile.Coord) + Vector3.up * 0.3f, 0.2f);
             }
         }
     }
