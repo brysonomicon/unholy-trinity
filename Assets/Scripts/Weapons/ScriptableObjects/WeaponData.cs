@@ -9,19 +9,14 @@ namespace UnholyTrinity.Weapons
         private static readonly HexLayout AngleLayout = new HexLayout(HexOrientation.PointyTop, 1f, Vector3.zero);
 
         [Header("Properties")]
-        [SerializeField] private string displayName;
-        [SerializeField] private int maxAmmo = 10;
-        [SerializeField] private int pickupAmmo = 5;
-        [SerializeField] private int cooldown = 0;
+        [field: SerializeField] public string DisplayName { get; private set; }
+        [field: SerializeField] public int MaxAmmo { get; private set; } = 10;
+        [field: SerializeField] public int PickupAmmo { get; private set; } = 5;
+        [field: SerializeField][Min(0)] public int Cooldown { get; private set; }
 
         [Header("Aim Cone")]
         [SerializeField] private float[] tierMaxAngles = { 1f, 20f, 30f };
         [SerializeField] private float[] tierFalloff = { 1f, 0.66f, 0.33f };
-
-        public string DisplayName => displayName;
-        public int MaxAmmo => maxAmmo;
-        public int PickupAmmo => pickupAmmo;
-        public int Cooldown => cooldown;
 
         public virtual List<AimTile> GetAimTiles(HexMap map, HexCoord origin, AimDirection direction)
         {

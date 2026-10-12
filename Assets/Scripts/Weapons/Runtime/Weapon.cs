@@ -5,40 +5,34 @@ namespace UnholyTrinity.Weapons
     [System.Serializable]
     public class Weapon
     {
-        [SerializeField] private WeaponData data;
-        [SerializeField] private int ammo;
+        [field: SerializeField] public WeaponData Data { get; private set; }
+        [field: SerializeField] public int Ammo {get; private set;}
         [SerializeField] private int cooldown;
-
-        public WeaponData Data => data;
-        public int Ammo => ammo;
+        
+        public bool CanFire => Ammo > 0 && cooldown > 0;
 
         public Weapon (WeaponData data)
         {
-            this.data = data;
-            ammo = data.PickupAmmo;
-        }
-
-        public bool CanFire()
-        {
-            return ammo > 0 && cooldown == 0;
+            this.Data = data;
+            Ammo = data.PickupAmmo;
         }
 
         public bool Fire()
         {
-            if (!CanFire())
+            if (!CanFire)
             {
                 return false;
             }
 
-            ammo--;
-            cooldown = data.Cooldown;
-            data.Fire();
+            Ammo--;
+            cooldown = Data.Cooldown;
+            Data.Fire();
             return true;
         }
 
         public void AddAmmo(int amount)
         {
-            ammo = Mathf.Min(ammo + amount, data.MaxAmmo);
+            Ammo = Mathf.Min(Ammo + amount, Data.MaxAmmo);
         }
 
         public void TickCooldown()
