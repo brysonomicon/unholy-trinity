@@ -1,21 +1,20 @@
 using System;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.UI;
 
 public class ActionCard : MonoBehaviour
 {
+    [SerializeField] private Button button;
     [SerializeField] private Color textColor;
-    [SerializeField] private TMP_Text cardNameField;
-    [SerializeField] protected GameObject extraInfoPlaceholder;
-    [SerializeField] private TMP_Text tickCostField;
-
+    [SerializeField] private TextMeshProUGUI cardNameField;
+    [SerializeField] protected TextMeshProUGUI extraInfoPlaceholder;
+    [SerializeField] private TextMeshProUGUI tickCostField;
+    private UnityAction _buttonClick;
+    
     private static readonly Color DefaultTextColor = Color.black;
 
-    private void Start()
-    {
-        cardNameField.color = textColor;
-        tickCostField.color = textColor;
-    }
 
     public string CardName
     {
@@ -38,30 +37,25 @@ public class ActionCard : MonoBehaviour
         set => tickCostField.text = value.ToString();
     }
 
-    public static ActionCard Factory(string cardName, int tickCost,
-        Color? textColor)
+    public void Setup(string cardName, int tickCost,  UnityAction callback,
+        Color? newTextColor = null, string extraInfoText = "")
     {
-        textColor ??= DefaultTextColor;
-
-        GameObject card = new GameObject();
-        ActionCard actionCard = card.AddComponent<ActionCard>();
-
-        GameObject cardNameContainer = new();
-        actionCard.cardNameField = cardNameContainer.AddComponent<TMP_Text>();
-        actionCard.CardName = cardName;
-        actionCard.cardNameField.color = (Color)textColor;
-        cardNameContainer.transform.SetParent(card.transform);
-
-        actionCard.extraInfoPlaceholder = new GameObject();
-        actionCard.extraInfoPlaceholder.transform.SetParent(cardNameContainer
-            .transform);
-
-        GameObject tickCostContainer = new();
-        actionCard.tickCostField = tickCostContainer.AddComponent<TMP_Text>();
-        actionCard.tickCostField.color = (Color)textColor;
-        actionCard.TickCost= tickCost;
-        tickCostContainer.transform.SetParent(card.transform);
-
-        return actionCard;
+        CardName = cardName;
+        TickCost = tickCost;
+        extraInfoPlaceholder.text = extraInfoText;
+        
+        //If the passed in color is null, use default
+        newTextColor ??= DefaultTextColor;
+        
+        cardNameField.color = newTextColor.Value;
+        tickCostField.color = newTextColor.Value;
+        extraInfoPlaceholder.color = newTextColor.Value;
+        
+        if (_buttonClick != null)
+        {
+            button.onClick.RemoveListener(_buttonClick);
+        }
+        _buttonClick = callback;
+        button.onClick.AddListener(_buttonClick);
     }
 }

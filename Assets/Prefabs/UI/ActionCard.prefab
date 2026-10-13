@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1985341225689636013}
   - component: {fileID: 4319245724486592800}
-  - component: {fileID: 5770073775055080221}
+  - component: {fileID: 2014357388161266496}
   m_Layer: 5
   m_Name: TextCardName
   m_TagString: Untagged
@@ -45,7 +45,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4327540985989284735}
   m_CullTransparentMesh: 1
---- !u!114 &5770073775055080221
+--- !u!114 &2014357388161266496
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -92,10 +92,10 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 38.45
-  m_fontSizeBase: 24
+  m_fontSize: 38
+  m_fontSizeBase: 38
   m_fontWeight: 400
-  m_enableAutoSizing: 1
+  m_enableAutoSizing: 0
   m_fontSizeMin: 0
   m_fontSizeMax: 50
   m_fontStyle: 0
@@ -146,12 +146,11 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5953898896537342856}
+  - component: {fileID: -6489289596826860074}
   - component: {fileID: 2102041234177211952}
   - component: {fileID: 6617490466113501925}
   - component: {fileID: 6577792596367645795}
   - component: {fileID: 7199430467480248535}
-  - component: {fileID: -6489289596826860074}
-  - component: {fileID: 8942952929402238633}
   m_Layer: 5
   m_Name: ActionCard
   m_TagString: Untagged
@@ -181,6 +180,23 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 250, y: 250}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &-6489289596826860074
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4954437024962326897}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 462e5ac9ddb6aee408956cad377d3e20, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  button: {fileID: 6577792596367645795}
+  textColor: {r: 0, g: 0, b: 0, a: 0}
+  cardNameField: {fileID: 2014357388161266496}
+  extraInfoPlaceholder: {fileID: 4994903376001017192}
+  tickCostField: {fileID: 2187329556792157313}
 --- !u!222 &2102041234177211952
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -289,42 +305,6 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
---- !u!114 &-6489289596826860074
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4954437024962326897}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 462e5ac9ddb6aee408956cad377d3e20, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  textColor: {r: 0, g: 0, b: 0, a: 0}
-  cardNameField: {fileID: 5770073775055080221}
-  extraInfoPlaceholder: {fileID: 5363478067879410278}
-  tickCostField: {fileID: 6396233954028594021}
---- !u!114 &8942952929402238633
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4954437024962326897}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.LayoutElement
-  m_IgnoreLayout: 0
-  m_MinWidth: -1
-  m_MinHeight: -1
-  m_PreferredWidth: 250
-  m_PreferredHeight: 250
-  m_FlexibleWidth: -1
-  m_FlexibleHeight: -1
-  m_LayoutPriority: 1
 --- !u!1 &5363478067879410278
 GameObject:
   m_ObjectHideFlags: 0
@@ -335,7 +315,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1119415171181783205}
   - component: {fileID: 7725259403670076477}
-  - component: {fileID: 7152207869664208045}
+  - component: {fileID: 4994903376001017192}
   m_Layer: 5
   m_Name: ExtraInfoPlaceholder
   m_TagString: Untagged
@@ -370,7 +350,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5363478067879410278}
   m_CullTransparentMesh: 1
---- !u!114 &7152207869664208045
+--- !u!114 &4994903376001017192
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -420,7 +400,7 @@ MonoBehaviour:
   m_fontSize: 36
   m_fontSizeBase: 36
   m_fontWeight: 400
-  m_enableAutoSizing: 1
+  m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
@@ -472,7 +452,7 @@ GameObject:
   m_Component:
   - component: {fileID: 328907500843155350}
   - component: {fileID: 2037496146994065879}
-  - component: {fileID: 6396233954028594021}
+  - component: {fileID: 2187329556792157313}
   m_Layer: 5
   m_Name: CostText
   m_TagString: Untagged
@@ -507,7 +487,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8042758227229738401}
   m_CullTransparentMesh: 1
---- !u!114 &6396233954028594021
+--- !u!114 &2187329556792157313
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -554,10 +534,10 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 50
-  m_fontSizeBase: 24
+  m_fontSize: 45
+  m_fontSizeBase: 45
   m_fontWeight: 400
-  m_enableAutoSizing: 1
+  m_enableAutoSizing: 0
   m_fontSizeMin: 0
   m_fontSizeMax: 50
   m_fontStyle: 0
