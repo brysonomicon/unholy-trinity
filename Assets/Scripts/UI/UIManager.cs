@@ -1,4 +1,6 @@
+using System;
 using UnholyTrinity.Players;
+using UnholyTrinity.Weapons;
 using UnityEngine;
 
 public class UIManager : MonoBehaviour
@@ -45,21 +47,35 @@ public class UIManager : MonoBehaviour
                 1,
                 () => current.RotatePlayer(false),
                 Color.black);
-
-        // [CB] TODO: Add logic for enabling and disabling cards based on if weapons can fire.
+        
         ActionCard weaponCard = Instantiate(cardPrefab, cardSection.transform)
-            .GetComponent<ActionCard>()
-            .Setup($"Fire {player.CurrentWeapon.Data.DisplayName}",
-                player.CurrentWeapon.Data.TickCost,
-                () => player.Fire(player.CurrentWeapon),
-                Color.black,
-                $"{player.CurrentWeapon.Ammo}/{player.CurrentWeapon.Data.MaxAmmo}");
-        if (!player.CurrentWeapon.CanFire)
-        {
-            weaponCard.DisableClickable();
-        }
+            .GetComponent<ActionCard>();
 
-        // cardSection.MarkDirty();
+        SetupWeaponCard(player.CurrentWeapon);
+        
+
+        return;
+
+        void SetupWeaponCard(Weapon weapon, Action beforeSetup = null)
+        {
+            beforeSetup?.Invoke();
+            string weaponCardTitle =
+                $"Fire {weapon.Data.DisplayName}";
+            int weaponCardTickCost = weapon.Data.TickCost;
+            Debug.Log($"Setting ammo to {weapon.Ammo}");
+            weaponCard.Setup(weaponCardTitle, weaponCardTickCost,
+                () => SetupWeaponCard(weapon, () => player.Fire(weapon)), Color.black,
+                $"{weapon.Ammo}/{weapon.Data.MaxAmmo}");
+            
+            if (weapon.CanFire)
+            {
+                weaponCard.EnableClickable();
+            }
+            else
+            {
+                weaponCard.DisableClickable();
+            }
+        }
     }
 
     private void ClearCardSection()
