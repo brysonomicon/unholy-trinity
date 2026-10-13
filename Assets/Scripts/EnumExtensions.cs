@@ -1,5 +1,6 @@
 
 using System;
+using UnholyTrinity.Hex;
 
 public static class EnumExtensions
 {
@@ -15,5 +16,12 @@ public static class EnumExtensions
         T[] arr = (T[])Enum.GetValues(src.GetType());
         int j = Array.IndexOf<T>(arr, src) - 1;
         return (j < 0) ? arr[^1] : arr[j];
+    }
+
+    public static bool IsPoint<T>(this T src) where T : Enum
+    {
+        T[] arr = (T[])Enum.GetValues(src.GetType());
+        int j = Array.IndexOf<T>(arr, src);
+        return (j % 2) == 0;
     }
 }
