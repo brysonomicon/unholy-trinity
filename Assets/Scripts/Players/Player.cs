@@ -87,5 +87,13 @@ namespace UnholyTrinity.Players
                 : CurrentAimDirection.Previous();
             Debug.Log($"{name} is now facing {CurrentAimDirection}");
         }
+
+        public void Fire(Weapon weapon)
+        {
+            if (weapon.CanFire)
+            {
+                weapon.Fire();
+            }
+        }
     }
 }

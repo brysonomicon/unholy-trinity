@@ -1,4 +1,3 @@
-using TMPro;
 using UnholyTrinity.Players;
 using UnityEngine;
 
@@ -36,18 +35,31 @@ public class UIManager : MonoBehaviour
         //TODO: Pass in rotation after clicking on card somehow.
         Instantiate(cardPrefab, cardSection.transform)
             .GetComponent<ActionCard>()
-            .Setup("Rotate Clockwise", 
+            .Setup("Rotate CW",
                 1,
                 () => current.RotatePlayer(true),
                 Color.black);
         Instantiate(cardPrefab, cardSection.transform)
             .GetComponent<ActionCard>()
-            .Setup("Rotate CCW", 
+            .Setup("Rotate CCW",
                 1,
                 () => current.RotatePlayer(false),
                 Color.black);
-        
-        cardSection.MarkDirty();
+
+        // [CB] TODO: Add logic for enabling and disabling cards based on if weapons can fire.
+        ActionCard weaponCard = Instantiate(cardPrefab, cardSection.transform)
+            .GetComponent<ActionCard>()
+            .Setup($"Fire {player.CurrentWeapon.Data.DisplayName}",
+                player.CurrentWeapon.Data.TickCost,
+                () => player.Fire(player.CurrentWeapon),
+                Color.black,
+                $"{player.CurrentWeapon.Ammo}/{player.CurrentWeapon.Data.MaxAmmo}");
+        if (!player.CurrentWeapon.CanFire)
+        {
+            weaponCard.DisableClickable();
+        }
+
+        // cardSection.MarkDirty();
     }
 
     private void ClearCardSection()

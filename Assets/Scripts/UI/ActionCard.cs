@@ -37,7 +37,7 @@ public class ActionCard : MonoBehaviour
         set => tickCostField.text = value.ToString();
     }
 
-    public void Setup(string cardName, int tickCost,  UnityAction callback,
+    public ActionCard Setup(string cardName, int tickCost,  UnityAction callback,
         Color? newTextColor = null, string extraInfoText = "")
     {
         CardName = cardName;
@@ -57,5 +57,17 @@ public class ActionCard : MonoBehaviour
         }
         _buttonClick = callback;
         button.onClick.AddListener(_buttonClick);
+        
+        return this;
+    }
+    
+    public void EnableClickable()
+    {
+        button.interactable = true;
+    }
+
+    public void DisableClickable()
+    {
+        button.interactable = false;
     }
 }
