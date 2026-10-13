@@ -34,7 +34,7 @@ public class CameraHandler : MonoBehaviour
     [Header("Smoothing")]
     public float sharpness = 5f;
 
-    [Header("Input (bindings editable in Inspector)")]
+    [Header("Input")]
     [SerializeField] InputAction toggleSwoopAction =
         new InputAction("ToggleSwoop", InputActionType.Button, "<Keyboard>/tab");
 
