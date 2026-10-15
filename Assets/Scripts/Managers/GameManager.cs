@@ -79,6 +79,7 @@ public class GameManager : ScriptableObject
 
         _players.Add(player);
         Debug.Log($"Registering {player.gameObject.name}");
+        //Start the game when we get enough players.
         if(_players.Count == maxPlayers)
         {
             NewTurnEvent?.Invoke(_players.First());
@@ -95,6 +96,9 @@ public class GameManager : ScriptableObject
         else
         {
             Debug.Log($"Invoking new phase in GM: {newPhase}");
+            // [CB] We could cache the above Task and check if it's done
+            // If it isn't we create another Task and check in that thread
+            // until it's done and *then* invoke this.
             NewTurnEvent?.Invoke(newPhase == TurnPhase.PlayerOne ? _players.First() : _players.Last());
         }
     }

@@ -1,3 +1,4 @@
+using System;
 using UnholyTrinity.Hex;
 using UnholyTrinity.Weapons;
 using UnityEngine;
@@ -29,11 +30,15 @@ namespace UnholyTrinity.Players
             mapManager.LayoutChanged -= SnapToCoord;
         }
 
+        private void Awake()
+        {
+            GameManager.NewTurnEvent += OnNewTurn;
+        }
+
         private void Start()
         {
             SnapToCoord();
             gm.RegisterPlayer(this);
-            GameManager.NewTurnEvent += OnNewTurn;
         }
 
         private void OnNewTurn(Player obj)

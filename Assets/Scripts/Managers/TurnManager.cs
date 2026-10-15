@@ -51,7 +51,7 @@ public class TurnManager : ScriptableObject
         GameManager.NewRoundEvent -= OnRoundChanged;
     }
 
-    private void EndTurn()
+    public void EndTurn()
     {
         TurnPhase previous = _turnPhase.Dequeue();
         _turnPhase.Enqueue(previous);

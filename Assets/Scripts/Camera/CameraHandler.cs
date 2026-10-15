@@ -42,6 +42,7 @@ public class CameraHandler : MonoBehaviour
 
     [Header("Smoothing")] public float sharpness = 5f;
 
+    //TODO: Remove this; integrate into a proper InputAction object
     [Header("Input")] [SerializeField] private InputAction toggleSwoopAction =
         new("ToggleSwoop", InputActionType.Button,
             "<Keyboard>/tab");
@@ -52,28 +53,31 @@ public class CameraHandler : MonoBehaviour
     private Camera cam;
     float phaseTime;
 
-    private void Awake() {
-        
-        cam ??= GetComponent<Camera>();
-    }
-    
-
-    private void OnEnable()
+    private void Awake() 
     {
         TurnManager.NewPhaseEvent += HandleNewPhaseEvent;
         toggleSwoopAction.performed += OnToggleSwoop;
+    }
+
+    private void OnEnable()
+    {
         toggleSwoopAction.Enable();
     }
 
     private void OnDisable()
     {
+        toggleSwoopAction.Disable();
+    }
+
+    private void OnDestroy()
+    {
         TurnManager.NewPhaseEvent -= HandleNewPhaseEvent;
         toggleSwoopAction.performed -= OnToggleSwoop;
-        toggleSwoopAction.Disable();
     }
 
     void Start()
     {
+        cam ??= GetComponent<Camera>();
         ComputePose(out var p, out var r, out var f);
         transform.SetPositionAndRotation(p, r);
         cam.fieldOfView = f;

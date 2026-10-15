@@ -2,38 +2,48 @@ using System;
 using UnholyTrinity.Players;
 using UnholyTrinity.Weapons;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
+    [SerializeField] private Button endTurnButton;
     [SerializeField] private GameObject cardSection;
-
     [SerializeField] private GameObject cardPrefab;
+
     private void Awake()
     {
         GameManager.NewTurnEvent += OnNextTurn;
-        TurnManager.NewPhaseEvent += OnPhaseChange;
+        TurnManager.NewPhaseEvent += OnNewPhase;
     }
 
     private void OnDestroy()
     {
         GameManager.NewTurnEvent -= OnNextTurn;
-        TurnManager.NewPhaseEvent -= OnPhaseChange;
+        TurnManager.NewPhaseEvent -= OnNewPhase;
     }
 
     private void OnNextTurn(Player player)
     {
-        ClearCardSection();
-        
         GenerateDefaultCards(player);
     }
-    
-    private void OnPhaseChange(TurnPhase obj)
+
+    private void OnNewPhase(TurnPhase newPhase)
     {
         ClearCardSection();
+        if (newPhase == TurnPhase.Resolution)
+        {
+            return;
+        }
+        GenerateDefaultCards(GameManager.Instance.CurrentPlayer);
     }
 
     private void GenerateDefaultCards(Player current)
     {
+        Instantiate(cardPrefab, cardSection.transform)
+            .GetComponent<ActionCard>()
+            .Setup("End Turn", 0,
+                () => TurnManager.Instance.EndTurn());
+        
         Instantiate(cardPrefab, cardSection.transform)
             .GetComponent<ActionCard>()
             .Setup("Move", 1, current.MovePlayer, Color.black);
@@ -51,12 +61,14 @@ public class UIManager : MonoBehaviour
                 1,
                 () => current.RotatePlayer(false),
                 Color.black);
-        
+
         ActionCard weaponCard = Instantiate(cardPrefab, cardSection.transform)
             .GetComponent<ActionCard>();
 
         SetupWeaponCard(current.CurrentWeapon);
-        
+
+
+
 
         return;
 
@@ -68,9 +80,10 @@ public class UIManager : MonoBehaviour
             int weaponCardTickCost = weapon.Data.TickCost;
             Debug.Log($"Setting ammo to {weapon.Ammo}");
             weaponCard.Setup(weaponCardTitle, weaponCardTickCost,
-                () => SetupWeaponCard(weapon, () => current.Fire(weapon)), Color.black,
+                () => SetupWeaponCard(weapon, () => current.Fire(weapon)),
+                Color.black,
                 $"{weapon.Ammo}/{weapon.Data.MaxAmmo}");
-            
+
             if (weapon.CanFire)
             {
                 weaponCard.EnableClickable();
@@ -85,7 +98,7 @@ public class UIManager : MonoBehaviour
     private void ClearCardSection()
     {
         //? [CB] I wonder if it'd be worth caching and enabling/disabling cards
-        foreach (var child in cardSection.GetComponentsInChildren<Transform>())
+        foreach (var child in cardSection.GetComponentsInChildren<ActionCard>())
         {
             Destroy(child.gameObject);
         }
