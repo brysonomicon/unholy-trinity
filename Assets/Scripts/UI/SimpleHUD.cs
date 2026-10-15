@@ -6,14 +6,12 @@ public class SimpleHUD : MonoBehaviour
 {
     [SerializeField] private TurnManager turns;
 
-    [Header("Panels")] [Header("Center")] [SerializeField]
-    private TMP_Text roundNumberText;
-
+    [Header("Panels")] 
+    [SerializeField] private TMP_Text roundNumberText;
     [SerializeField] private TMP_Text phaseText;
     [SerializeField] private Button endTurnButton;
 
-    [Header("Optional swoop toggle")] 
-    public CameraHandler cameraHandler;
+    [Header("Optional swoop toggle")] public CameraHandler cameraHandler;
     public Button swoopButton;
 
     // private void OnEnable() => TurnManager.NewPhaseEvent += Refresh;
@@ -40,11 +38,11 @@ public class SimpleHUD : MonoBehaviour
         OnNewRound(GameManager.Instance.Round);
         OnNewPhase(TurnManager.Instance.CurrentPhase);
     }
-    
+
     private void OnDestroy()
     {
         TurnManager.NewPhaseEvent -= OnNewPhase;
-        GameManager.NewRoundEvent -= OnNewRound;       
+        GameManager.NewRoundEvent -= OnNewRound;
     }
 
     private void OnNewRound(int roundNumber)
@@ -78,7 +76,8 @@ public class SimpleHUD : MonoBehaviour
 
 
         // banner.text = cur
-        //     ? $"ROUND {GameManager.Round}  -  {cur.name.ToUpperInvariant()}'S TURN"
+        //     ? $"ROUND {GameManager.Round}
+        //          -  {cur.name.ToUpperInvariant()}'S TURN"
         //     : "RESOLVING...";
     }
 }
