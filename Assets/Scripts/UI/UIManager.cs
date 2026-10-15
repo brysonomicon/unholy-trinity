@@ -14,18 +14,23 @@ public class UIManager : MonoBehaviour
     private void Start()
     {
         GenerateDefaultCards(player);
-        GameManager.TurnChangedEvent += OnNextTurn;
+        TurnManager.PhaseChangedEvent += OnNextTurn;
     }
 
     private void OnDestroy()
     {
-        GameManager.TurnChangedEvent -= OnNextTurn;
+        TurnManager.PhaseChangedEvent -= OnNextTurn;
     }
 
-    private void OnNextTurn(Player currentPlayer)
+    private void OnNextTurn(TurnPhase newPhase)
     {
         ClearCardSection();
-        GenerateDefaultCards(currentPlayer);
+        if (newPhase == TurnPhase.Resolution)
+        {
+            return;
+        }
+        
+        GenerateDefaultCards(TurnManager.Instance.CurrentPlayer);
     }
 
     private void GenerateDefaultCards(Player current)
