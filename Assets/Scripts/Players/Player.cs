@@ -17,6 +17,8 @@ namespace UnholyTrinity.Players
         [field: SerializeField]
         public AimDirection CurrentAimDirection { get; private set; }
 
+        private TurnPhase _activePhase;
+
         private void OnEnable()
         {
             mapManager.LayoutChanged += SnapToCoord;
@@ -30,6 +32,17 @@ namespace UnholyTrinity.Players
         private void Start()
         {
             SnapToCoord();
+            _activePhase = TurnManager.Instance.RegisterPlayer(this);
+            TurnManager.PhaseChangedEvent += OnPhaseChanged;
+        }
+
+        private void OnPhaseChanged(TurnPhase newPhase)
+        {
+            if (newPhase.Equals(_activePhase))
+            {
+                // [CB] TODO: enable UI callbacks here.
+                Debug.Log($"{name} turn has started.");
+            }
         }
 
         private void OnValidate()
