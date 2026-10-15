@@ -278,7 +278,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2944736289029645573, guid: c560c3193c1df7f488f308a030123633, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: -3.47
       objectReference: {fileID: 0}
     - target: {fileID: 2944736289029645573, guid: c560c3193c1df7f488f308a030123633, type: 3}
       propertyPath: m_LocalRotation.w
@@ -414,6 +414,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61d820e7cd5a40b8b811d16b062b2b8c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SimpleHUD
+  turns: {fileID: 11400000, guid: e0a137fa641acb64fafc8baac28caf4f, type: 2}
   roundNumberText: {fileID: 337222168}
   phaseText: {fileID: 773839595}
   endTurnButton: {fileID: 1624300941}
@@ -1085,7 +1086,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2944736289029645573, guid: c560c3193c1df7f488f308a030123633, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: 3.04
       objectReference: {fileID: 0}
     - target: {fileID: 2944736289029645573, guid: c560c3193c1df7f488f308a030123633, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1382,63 +1383,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: -457.99997}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!1001 &1624261187
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 13343013480110391, guid: 4e72398b764e2a841bff5e9f260d74d0, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 367.63385
-      objectReference: {fileID: 0}
-    - target: {fileID: 13343013480110391, guid: 4e72398b764e2a841bff5e9f260d74d0, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 251.98483
-      objectReference: {fileID: 0}
-    - target: {fileID: 13343013480110391, guid: 4e72398b764e2a841bff5e9f260d74d0, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 13343013480110391, guid: 4e72398b764e2a841bff5e9f260d74d0, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 13343013480110391, guid: 4e72398b764e2a841bff5e9f260d74d0, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 13343013480110391, guid: 4e72398b764e2a841bff5e9f260d74d0, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 13343013480110391, guid: 4e72398b764e2a841bff5e9f260d74d0, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 13343013480110391, guid: 4e72398b764e2a841bff5e9f260d74d0, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 13343013480110391, guid: 4e72398b764e2a841bff5e9f260d74d0, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 13343013480110391, guid: 4e72398b764e2a841bff5e9f260d74d0, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4648332953327454542, guid: 4e72398b764e2a841bff5e9f260d74d0, type: 3}
-      propertyPath: m_Name
-      value: GameManager
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 4e72398b764e2a841bff5e9f260d74d0, type: 3}
 --- !u!1 &1624300937
 GameObject:
   m_ObjectHideFlags: 0
@@ -1559,7 +1503,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1624300939}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 11400000, guid: e0a137fa641acb64fafc8baac28caf4f, type: 2}
+        m_TargetAssemblyTypeName: TurnManager, Assembly-CSharp
+        m_MethodName: EndTurn
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &1755950573
 GameObject:
   m_ObjectHideFlags: 0
@@ -1864,14 +1820,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Main Camera
       objectReference: {fileID: 0}
-    - target: {fileID: 7674134751778812938, guid: 7a931a340e94442499836627fc8cc9f0, type: 3}
-      propertyPath: turns
-      value: 
-      objectReference: {fileID: 11400000, guid: e0a137fa641acb64fafc8baac28caf4f, type: 2}
-    - target: {fileID: 7674134751778812938, guid: 7a931a340e94442499836627fc8cc9f0, type: 3}
-      propertyPath: allowSwoop
-      value: 0
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1888,5 +1836,4 @@ SceneRoots:
   - {fileID: 1062663408}
   - {fileID: 539030636}
   - {fileID: 1161106280}
-  - {fileID: 1624261187}
   - {fileID: 1084867337}

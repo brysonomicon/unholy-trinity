@@ -6,6 +6,7 @@ namespace UnholyTrinity.Players
 {
     public class Player : MonoBehaviour
     {
+        [SerializeField] private GameManager gm;
         [Header("Map")] [SerializeField] private MapManager mapManager;
         [field: SerializeField] public HexCoord Coord { get; private set; }
         [SerializeField] private float heightOffset = 0.5f;
@@ -16,8 +17,7 @@ namespace UnholyTrinity.Players
 
         [field: SerializeField]
         public AimDirection CurrentAimDirection { get; private set; }
-
-        private TurnPhase _activePhase;
+        
 
         private void OnEnable()
         {
@@ -32,16 +32,20 @@ namespace UnholyTrinity.Players
         private void Start()
         {
             SnapToCoord();
-            _activePhase = TurnManager.Instance.RegisterPlayer(this);
-            TurnManager.PhaseChangedEvent += OnPhaseChanged;
+            gm.RegisterPlayer(this);
+            GameManager.NewTurnEvent += OnNewTurn;
         }
 
-        private void OnPhaseChanged(TurnPhase newPhase)
+        private void OnNewTurn(Player obj)
         {
-            if (newPhase.Equals(_activePhase))
+            // [CB] This might be entirely handled by the UI manager. IDK.
+            if(obj == this)
             {
-                // [CB] TODO: enable UI callbacks here.
-                Debug.Log($"{name} turn has started.");
+                // Do stuff to enable actions
+            }
+            else
+            {
+                // Do stuff to disable actions
             }
         }
 

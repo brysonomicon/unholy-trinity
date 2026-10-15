@@ -127,6 +127,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c66919e6bc9091459af9c00b08f97fa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnholyTrinity.Players.Player
+  gm: {fileID: 11400000, guid: df4deffeedcb94d4bb67ddca6e302f96, type: 2}
   mapManager: {fileID: 0}
   <Coord>k__BackingField:
     <Q>k__BackingField: 0

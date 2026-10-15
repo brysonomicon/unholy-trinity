@@ -1,3 +1,6 @@
+using System;
+using System.Linq;
+using UnholyTrinity.Players;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -11,6 +14,8 @@ public class CameraHandler : MonoBehaviour
 {
     [SerializeReference]
     private TurnManager turns;
+    [SerializeReference]
+        private GameManager gm;
     
     [Header("Top-Down Hover")] [Range(40f, 90f)]
     public float pitch = 65f;
@@ -43,21 +48,26 @@ public class CameraHandler : MonoBehaviour
 
     public bool Swooped { get; private set; }
 
-    Camera cam;
+    [SerializeField]
+    private Camera cam;
     float phaseTime;
 
-    void Awake() => cam = GetComponent<Camera>();
+    private void Awake() {
+        
+        cam ??= GetComponent<Camera>();
+    }
+    
 
-    void OnEnable()
+    private void OnEnable()
     {
-        TurnManager.PhaseChangedEvent += PhaseChangedEvent;
+        TurnManager.NewPhaseEvent += HandleNewPhaseEvent;
         toggleSwoopAction.performed += OnToggleSwoop;
         toggleSwoopAction.Enable();
     }
 
-    void OnDisable()
+    private void OnDisable()
     {
-        TurnManager.PhaseChangedEvent -= PhaseChangedEvent;
+        TurnManager.NewPhaseEvent -= HandleNewPhaseEvent;
         toggleSwoopAction.performed -= OnToggleSwoop;
         toggleSwoopAction.Disable();
     }
@@ -71,7 +81,7 @@ public class CameraHandler : MonoBehaviour
 
     void OnToggleSwoop(InputAction.CallbackContext _) => ToggleSwoop();
 
-    void PhaseChangedEvent(TurnPhase _)
+    private void HandleNewPhaseEvent(TurnPhase _)
     {
         Swooped = false;
         phaseTime = 0f;
@@ -79,13 +89,16 @@ public class CameraHandler : MonoBehaviour
 
     public void ToggleSwoop()
     {
-        if (allowSwoop && turns.CurrentPlayer != null) Swooped = !Swooped;
+        if (allowSwoop && turns.IsPlayerTurn)
+        {
+            Swooped = !Swooped;
+        };
     }
 
-    void LateUpdate()
+    private void LateUpdate()
     {
         phaseTime += Time.deltaTime;
-        if (allowSwoop && autoSwoopIn && !Swooped && turns.CurrentPlayer
+        if (allowSwoop && autoSwoopIn && !Swooped && turns.IsPlayerTurn
             && phaseTime >= autoSwoopDelay)
         {
             Swooped = true;
@@ -98,14 +111,15 @@ public class CameraHandler : MonoBehaviour
         cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, f, k);
     }
 
-    void ComputePose(out Vector3 pos, out Quaternion rot, out float f)
+    private void ComputePose(out Vector3 pos, out Quaternion rot, out float f)
     {
-        GameObject cur = turns.CurrentPlayer.gameObject;
+        GameObject cur = gm.CurrentPlayer?.gameObject;
 
         if (!cur) // resolution
         {
-            Vector3 a = turns.CurrentPlayer.transform.position;
-            Vector3 b = turns.OtherPlayer.transform.position;
+            var currentPlayerPos = gm.CurrentPlayerPositions;
+            Vector3 a = currentPlayerPos.First();
+            Vector3 b = currentPlayerPos.Last();
             float d = Mathf.Max(distance,
                 Vector3.Distance(a, b) * spreadFactor);
             Hover((a + b) * 0.5f, d, out pos, out rot);
@@ -113,8 +127,12 @@ public class CameraHandler : MonoBehaviour
         }
         else if (Swooped) // optional close third-person
         {
-            ThirdPerson(cur, turns.OtherPlayer.gameObject, out pos,
-                out rot);
+            ThirdPerson(
+                cur,
+                gm.OtherPlayer.gameObject,
+                out pos,
+                out rot
+            );
             f = tpFov;
         }
         else // hover over active player
@@ -124,14 +142,18 @@ public class CameraHandler : MonoBehaviour
         }
     }
 
-    void Hover(Vector3 focus, float dist, out Vector3 pos, out Quaternion rot)
+    private void Hover(Vector3 focus, float dist, out Vector3 pos, out Quaternion rot)
     {
         rot = Quaternion.Euler(pitch, 0f, 0f);
         pos = focus - rot * Vector3.forward * dist;
     }
 
-    void ThirdPerson(GameObject who, GameObject opponent, out Vector3 pos,
-        out Quaternion rot)
+    private void ThirdPerson(
+        GameObject who, 
+        GameObject opponent, 
+        out Vector3 pos,
+        out Quaternion rot
+    )
     {
         Vector3 p = who.transform.position;
         Vector3 fwd = opponent.transform.position - p;

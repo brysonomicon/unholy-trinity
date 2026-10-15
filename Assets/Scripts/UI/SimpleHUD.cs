@@ -4,7 +4,7 @@ using TMPro;
 
 public class SimpleHUD : MonoBehaviour
 {
-    private TurnManager _turns = TurnManager.Instance;
+    [SerializeField] private TurnManager turns;
 
     [Header("Panels")] [Header("Center")] [SerializeField]
     private TMP_Text roundNumberText;
@@ -16,15 +16,17 @@ public class SimpleHUD : MonoBehaviour
     public CameraHandler cameraHandler;
     public Button swoopButton;
 
-    private void OnEnable() => TurnManager.PhaseChangedEvent += Refresh;
-    private void OnDisable() => TurnManager.PhaseChangedEvent -= Refresh;
+    // private void OnEnable() => TurnManager.NewPhaseEvent += Refresh;
+    // private void OnDisable() => TurnManager.NewPhaseEvent -= Refresh;
+
+    private void Awake()
+    {
+        TurnManager.NewPhaseEvent += OnNewPhase;
+        GameManager.NewRoundEvent += OnNewRound;
+    }
 
     private void Start()
     {
-        TurnManager.PhaseChangedEvent += OnPhaseChanged;
-        GameManager.RoundChangedEvent += OnRoundChanged;
-        endTurnButton.onClick.AddListener(_turns.EndTurn);
-
         if (swoopButton)
         {
             bool isEnabled = cameraHandler && cameraHandler.allowSwoop;
@@ -35,19 +37,34 @@ public class SimpleHUD : MonoBehaviour
             }
         }
 
-        Refresh(_turns.CurrentPhase);
-        OnPhaseChanged(TurnManager.Instance.CurrentPhase);
+        OnNewRound(GameManager.Instance.Round);
+        OnNewPhase(TurnManager.Instance.CurrentPhase);
+    }
+    
+    private void OnDestroy()
+    {
+        TurnManager.NewPhaseEvent -= OnNewPhase;
+        GameManager.NewRoundEvent -= OnNewRound;       
     }
 
-    private void OnRoundChanged(int roundNumber)
+    private void OnNewRound(int roundNumber)
     {
         roundNumberText.text = "ROUND " + roundNumber;
     }
 
-    private void OnPhaseChanged(TurnPhase newPhase)
+    private void OnNewPhase(TurnPhase newPhase)
     {
+        bool isResolution = newPhase == TurnPhase.Resolution;
+        endTurnButton.interactable = !isResolution;
+        if (swoopButton != null)
+        {
+            swoopButton.interactable = !isResolution;
+        }
+
         phaseText.text =
             newPhase.ToString().PascalToString().ToUpperInvariant();
+
+        Debug.Log($"Phase: {newPhase}\nInteract: {!isResolution}");
     }
 
     private void Refresh(TurnPhase phase)

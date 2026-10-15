@@ -5,32 +5,31 @@ using UnityEngine;
 
 public class UIManager : MonoBehaviour
 {
-    [SerializeField] private Player player;
-
     [SerializeField] private GameObject cardSection;
 
     [SerializeField] private GameObject cardPrefab;
-
-    private void Start()
+    private void Awake()
     {
-        GenerateDefaultCards(player);
-        TurnManager.PhaseChangedEvent += OnNextTurn;
+        GameManager.NewTurnEvent += OnNextTurn;
+        TurnManager.NewPhaseEvent += OnPhaseChange;
     }
 
     private void OnDestroy()
     {
-        TurnManager.PhaseChangedEvent -= OnNextTurn;
+        GameManager.NewTurnEvent -= OnNextTurn;
+        TurnManager.NewPhaseEvent -= OnPhaseChange;
     }
 
-    private void OnNextTurn(TurnPhase newPhase)
+    private void OnNextTurn(Player player)
     {
         ClearCardSection();
-        if (newPhase == TurnPhase.Resolution)
-        {
-            return;
-        }
         
-        GenerateDefaultCards(TurnManager.Instance.CurrentPlayer);
+        GenerateDefaultCards(player);
+    }
+    
+    private void OnPhaseChange(TurnPhase obj)
+    {
+        ClearCardSection();
     }
 
     private void GenerateDefaultCards(Player current)
@@ -56,7 +55,7 @@ public class UIManager : MonoBehaviour
         ActionCard weaponCard = Instantiate(cardPrefab, cardSection.transform)
             .GetComponent<ActionCard>();
 
-        SetupWeaponCard(player.CurrentWeapon);
+        SetupWeaponCard(current.CurrentWeapon);
         
 
         return;
@@ -69,7 +68,7 @@ public class UIManager : MonoBehaviour
             int weaponCardTickCost = weapon.Data.TickCost;
             Debug.Log($"Setting ammo to {weapon.Ammo}");
             weaponCard.Setup(weaponCardTitle, weaponCardTickCost,
-                () => SetupWeaponCard(weapon, () => player.Fire(weapon)), Color.black,
+                () => SetupWeaponCard(weapon, () => current.Fire(weapon)), Color.black,
                 $"{weapon.Ammo}/{weapon.Data.MaxAmmo}");
             
             if (weapon.CanFire)

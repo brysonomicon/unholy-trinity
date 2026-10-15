@@ -150,13 +150,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2056ed65a337a664eb0c53d9a39f1a2f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraHandler
-  turns: {fileID: 0}
+  turns: {fileID: 11400000, guid: e0a137fa641acb64fafc8baac28caf4f, type: 2}
+  gm: {fileID: 11400000, guid: df4deffeedcb94d4bb67ddca6e302f96, type: 2}
   pitch: 65
   distance: 14
   fov: 40
   spreadFactor: 1.1
   allowSwoop: 1
-  autoSwoopIn: 0
+  autoSwoopIn: 1
   autoSwoopDelay: 1
   tpDistance: 4
   tpHeight: 1.8
@@ -183,3 +184,4 @@ MonoBehaviour:
       m_Flags: 0
     m_Flags: 0
     m_Priority: 0
+  cam: {fileID: 947171729331511816}
