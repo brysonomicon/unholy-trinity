@@ -9,7 +9,7 @@ namespace UnholyTrinity.Weapons
         [field: SerializeField] public int Ammo {get; private set;}
         [SerializeField] private int cooldown;
         
-        public bool CanFire => Ammo > 0 && cooldown > 0;
+        public bool CanFire => Ammo > 0 && cooldown <= 0;
 
         public Weapon (WeaponData data)
         {
@@ -23,7 +23,7 @@ namespace UnholyTrinity.Weapons
             {
                 return false;
             }
-
+            Debug.Log($"Firing {Data.DisplayName}");
             Ammo--;
             cooldown = Data.Cooldown;
             Data.Fire();

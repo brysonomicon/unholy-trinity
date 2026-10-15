@@ -1,3 +1,6 @@
+using System;
+using System.Linq;
+using UnholyTrinity.Players;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -9,19 +12,25 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(Camera))]
 public class CameraHandler : MonoBehaviour
 {
-    public TurnManager turns;
+    [SerializeReference]
+    private TurnManager turns;
+    [SerializeReference]
+        private GameManager gm;
+    
+    [Header("Top-Down Hover")] [Range(40f, 90f)]
+    public float pitch = 65f;
 
-    [Header("Top-Down Hover")]
-    [Range(40f, 90f)] public float pitch = 65f;
     public float distance = 14f;
     public float fov = 40f;
 
     [Header("Resolution")]
-    [Tooltip("Frames the midpoint; pulls back further as the players separate.")]
+    [Tooltip(
+        "Frames the midpoint; pulls back further as the players separate.")]
     public float spreadFactor = 1.1f;
 
     [Header("Optional: Close Third-Person Swoop")]
     public bool allowSwoop = true;
+
     public bool autoSwoopIn = false;
     public float autoSwoopDelay = 1f;
     public float tpDistance = 4f;
@@ -31,36 +40,44 @@ public class CameraHandler : MonoBehaviour
     public float tpLookAhead = 4f;
     public float tpFov = 65f;
 
-    [Header("Smoothing")]
-    public float sharpness = 5f;
+    [Header("Smoothing")] public float sharpness = 5f;
 
-    [Header("Input")]
-    [SerializeField] InputAction toggleSwoopAction =
-        new InputAction("ToggleSwoop", InputActionType.Button, "<Keyboard>/tab");
+    //TODO: Remove this; integrate into a proper InputAction object
+    [Header("Input")] [SerializeField] private InputAction toggleSwoopAction =
+        new("ToggleSwoop", InputActionType.Button,
+            "<Keyboard>/tab");
 
     public bool Swooped { get; private set; }
 
-    Camera cam;
+    [SerializeField]
+    private Camera cam;
     float phaseTime;
 
-    void Awake() => cam = GetComponent<Camera>();
-
-    void OnEnable()
+    private void Awake() 
     {
-        turns.PhaseChanged += OnPhaseChanged;
+        TurnManager.NewPhaseEvent += HandleNewPhaseEvent;
         toggleSwoopAction.performed += OnToggleSwoop;
+    }
+
+    private void OnEnable()
+    {
         toggleSwoopAction.Enable();
     }
 
-    void OnDisable()
+    private void OnDisable()
     {
-        if (turns != null) turns.PhaseChanged -= OnPhaseChanged;
-        toggleSwoopAction.performed -= OnToggleSwoop;
         toggleSwoopAction.Disable();
+    }
+
+    private void OnDestroy()
+    {
+        TurnManager.NewPhaseEvent -= HandleNewPhaseEvent;
+        toggleSwoopAction.performed -= OnToggleSwoop;
     }
 
     void Start()
     {
+        cam ??= GetComponent<Camera>();
         ComputePose(out var p, out var r, out var f);
         transform.SetPositionAndRotation(p, r);
         cam.fieldOfView = f;
@@ -68,7 +85,7 @@ public class CameraHandler : MonoBehaviour
 
     void OnToggleSwoop(InputAction.CallbackContext _) => ToggleSwoop();
 
-    void OnPhaseChanged(TurnPhase _)
+    private void HandleNewPhaseEvent(TurnPhase _)
     {
         Swooped = false;
         phaseTime = 0f;
@@ -76,15 +93,20 @@ public class CameraHandler : MonoBehaviour
 
     public void ToggleSwoop()
     {
-        if (allowSwoop && turns.Current != null) Swooped = !Swooped;
+        if (allowSwoop && turns.IsPlayerTurn)
+        {
+            Swooped = !Swooped;
+        };
     }
 
-    void LateUpdate()
+    private void LateUpdate()
     {
         phaseTime += Time.deltaTime;
-        if (allowSwoop && autoSwoopIn && !Swooped && turns.Current != null
+        if (allowSwoop && autoSwoopIn && !Swooped && turns.IsPlayerTurn
             && phaseTime >= autoSwoopDelay)
+        {
             Swooped = true;
+        }
 
         ComputePose(out var pos, out var rot, out var f);
         float k = 1f - Mathf.Exp(-sharpness * Time.deltaTime);
@@ -93,37 +115,49 @@ public class CameraHandler : MonoBehaviour
         cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, f, k);
     }
 
-    void ComputePose(out Vector3 pos, out Quaternion rot, out float f)
+    private void ComputePose(out Vector3 pos, out Quaternion rot, out float f)
     {
-        GameObject cur = turns.Current;
+        GameObject cur = gm.CurrentPlayer?.gameObject;
 
-        if (cur == null)                       // resolution
+        if (!cur) // resolution
         {
-            Vector3 a = turns.playerOne.transform.position;
-            Vector3 b = turns.playerTwo.transform.position;
-            float d = Mathf.Max(distance, Vector3.Distance(a, b) * spreadFactor);
+            var currentPlayerPos = gm.CurrentPlayerPositions;
+            Vector3 a = currentPlayerPos.First();
+            Vector3 b = currentPlayerPos.Last();
+            float d = Mathf.Max(distance,
+                Vector3.Distance(a, b) * spreadFactor);
             Hover((a + b) * 0.5f, d, out pos, out rot);
             f = fov;
         }
-        else if (Swooped)                      // optional close third-person
+        else if (Swooped) // optional close third-person
         {
-            ThirdPerson(cur, turns.Other(cur), out pos, out rot);
+            ThirdPerson(
+                cur,
+                gm.OtherPlayer.gameObject,
+                out pos,
+                out rot
+            );
             f = tpFov;
         }
-        else                                   // hover over active player
+        else // hover over active player
         {
             Hover(cur.transform.position, distance, out pos, out rot);
             f = fov;
         }
     }
 
-    void Hover(Vector3 focus, float dist, out Vector3 pos, out Quaternion rot)
+    private void Hover(Vector3 focus, float dist, out Vector3 pos, out Quaternion rot)
     {
         rot = Quaternion.Euler(pitch, 0f, 0f);
         pos = focus - rot * Vector3.forward * dist;
     }
 
-    void ThirdPerson(GameObject who, GameObject opponent, out Vector3 pos, out Quaternion rot)
+    private void ThirdPerson(
+        GameObject who, 
+        GameObject opponent, 
+        out Vector3 pos,
+        out Quaternion rot
+    )
     {
         Vector3 p = who.transform.position;
         Vector3 fwd = opponent.transform.position - p;

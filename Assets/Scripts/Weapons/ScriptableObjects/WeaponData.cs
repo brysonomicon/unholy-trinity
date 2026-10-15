@@ -12,6 +12,7 @@ namespace UnholyTrinity.Weapons
         [field: SerializeField] public string DisplayName { get; private set; }
         [field: SerializeField] public int MaxAmmo { get; private set; } = 10;
         [field: SerializeField] public int PickupAmmo { get; private set; } = 5;
+        [field: SerializeField][Min(1)] public int TickCost { get; private set; } = 1;
         [field: SerializeField][Min(0)] public int Cooldown { get; private set; }
 
         [Header("Aim Cone")]

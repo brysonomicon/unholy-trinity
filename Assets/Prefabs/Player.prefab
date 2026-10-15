@@ -68,7 +68,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 29939dca9e989c84082a420ec7b46342, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -127,13 +127,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c66919e6bc9091459af9c00b08f97fa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnholyTrinity.Players.Player
+  gm: {fileID: 11400000, guid: df4deffeedcb94d4bb67ddca6e302f96, type: 2}
   mapManager: {fileID: 0}
-  coord:
-    q: 0
-    r: 0
+  <Coord>k__BackingField:
+    <Q>k__BackingField: 0
+    <R>k__BackingField: 0
   heightOffset: 0.6
-  weapon:
-    data: {fileID: 0}
-    ammo: 0
+  <CurrentWeapon>k__BackingField:
+    <Data>k__BackingField: {fileID: 11400000, guid: 6d3c5020ba2fab449a084dc37927c5db, type: 2}
+    <Ammo>k__BackingField: 0
     cooldown: 0
-  aimDirection: 0
+  <CurrentAimDirection>k__BackingField: 0
