@@ -6,7 +6,6 @@ using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
-    [SerializeField] private Button endTurnButton;
     [SerializeField] private GameObject cardSection;
     [SerializeField] private GameObject cardPrefab;
 
