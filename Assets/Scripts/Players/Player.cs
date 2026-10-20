@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnholyTrinity.Hex;
 using UnholyTrinity.Weapons;
 using UnityEngine;
@@ -146,10 +147,15 @@ namespace UnholyTrinity.Players
 
         public void Fire(Weapon weapon)
         {
-            if (weapon.CanFire)
+            bool weaponFired = weapon.Fire();
+
+            if (!weaponFired)
             {
-                weapon.Fire();
+                return;
             }
+
+            List<AimTile> aimTiles = weapon.Data.GetAimTiles(mapManager.Map, Coord, CurrentAimDirection);
+            gm.ResolveShot(this, weapon.Data, aimTiles);
         }
 
         public void TakeDamage(int damageAmount)

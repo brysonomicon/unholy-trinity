@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using UnholyTrinity.Players;
+using UnholyTrinity.Weapons;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "NewGameManager",
@@ -84,6 +85,37 @@ public class GameManager : ScriptableObject
         {
             NewTurnEvent?.Invoke(_players.First());
         }
+    }
+
+    public void ResolveShot(Player shooter, WeaponData weaponData, List<AimTile> aimTiles)
+    {
+        Player opponent = GetOpponent(shooter);
+
+        // shoot the opponent if they are in the aim cone of the shooter
+        foreach (AimTile at in aimTiles)
+        {
+            if (at.Coord != opponent.Coord)
+            {
+                continue;
+            }
+
+            int damageAmount = weaponData.GetDamage(at);
+
+            if (damageAmount > 0)
+            {
+                Debug.Log($"{shooter.name} hit {opponent.name} with {weaponData.DisplayName} for {damageAmount} damage");
+                opponent.TakeDamage(damageAmount);
+            }
+            else 
+            {
+                Debug.Log($"{shooter.name} missed");
+            }
+        }
+    }
+
+    private Player GetOpponent(Player shooter)
+    {
+        return _players.First(player => player != shooter);
     }
 
     private void OnPhaseChanged(TurnPhase newPhase)
