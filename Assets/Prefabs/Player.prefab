@@ -128,13 +128,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnholyTrinity.Players.Player
   gm: {fileID: 11400000, guid: df4deffeedcb94d4bb67ddca6e302f96, type: 2}
-  mapManager: {fileID: 0}
   <Coord>k__BackingField:
     <Q>k__BackingField: 0
     <R>k__BackingField: 0
   heightOffset: 0.6
+  startingWeapon: {fileID: 11400000, guid: e725bc1c13b3e2b4c92a4eab21521cba, type: 2}
   <CurrentWeapon>k__BackingField:
-    <Data>k__BackingField: {fileID: 11400000, guid: 6d3c5020ba2fab449a084dc37927c5db, type: 2}
+    <Data>k__BackingField: {fileID: 0}
     <Ammo>k__BackingField: 0
     cooldown: 0
   <CurrentAimDirection>k__BackingField: 0
+  startingHealth: 100
+  <CurrentHealth>k__BackingField: 0
