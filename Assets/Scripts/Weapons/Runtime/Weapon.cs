@@ -26,7 +26,6 @@ namespace UnholyTrinity.Weapons
             Debug.Log($"Firing {Data.DisplayName}");
             Ammo--;
             cooldown = Data.Cooldown;
-            Data.Fire();
             return true;
         }
 

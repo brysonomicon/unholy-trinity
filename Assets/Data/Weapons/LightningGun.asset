@@ -12,7 +12,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 400e5710dd29a7a4dad9cf22d84a1d06, type: 3}
   m_Name: LightningGun
   m_EditorClassIdentifier: Assembly-CSharp::LightningGunData
-  displayName: Lightning Gun
-  maxAmmo: 10
-  pickupAmmo: 5
-  cooldown: 0
+  <DisplayName>k__BackingField: Lightning Gun
+  <MaxAmmo>k__BackingField: 10
+  <PickupAmmo>k__BackingField: 5
+  <TickCost>k__BackingField: 1
+  <Cooldown>k__BackingField: 0
+  tierMaxAngles:
+  - 1
+  - 20
+  - 30
+  tierFalloff:
+  - 1
+  - 0.66
+  - 0.33
+  range: 4
+  damage: 21

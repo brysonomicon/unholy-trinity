@@ -12,7 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1a2bc2c77e0ce8d42a9b7c841657d992, type: 3}
   m_Name: RocketLauncher
   m_EditorClassIdentifier: Assembly-CSharp::RocketLauncherData
-  displayName: Rocket Launcher
-  maxAmmo: 10
-  pickupAmmo: 5
-  cooldown: 0
+  <DisplayName>k__BackingField: Rocket Launcher
+  <MaxAmmo>k__BackingField: 10
+  <PickupAmmo>k__BackingField: 5
+  <TickCost>k__BackingField: 1
+  <Cooldown>k__BackingField: 0
+  tierMaxAngles:
+  - 1
+  - 20
+  - 30
+  tierFalloff:
+  - 1
+  - 0.66
+  - 0.33
+  damage: 100

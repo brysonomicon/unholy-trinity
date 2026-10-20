@@ -279,8 +279,12 @@ PrefabInstance:
       objectReference: {fileID: 495801503}
     - target: {fileID: 9068410019634648079, guid: c560c3193c1df7f488f308a030123633, type: 3}
       propertyPath: <CurrentWeapon>k__BackingField.<Ammo>k__BackingField
-      value: 1
+      value: 5
       objectReference: {fileID: 0}
+    - target: {fileID: 9068410019634648079, guid: c560c3193c1df7f488f308a030123633, type: 3}
+      propertyPath: <CurrentWeapon>k__BackingField.<Data>k__BackingField
+      value: 
+      objectReference: {fileID: 11400000, guid: e725bc1c13b3e2b4c92a4eab21521cba, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

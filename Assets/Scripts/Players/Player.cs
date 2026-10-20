@@ -18,6 +18,14 @@ namespace UnholyTrinity.Players
 
         [field: SerializeField]
         public AimDirection CurrentAimDirection { get; private set; }
+
+        [Header("Health")]
+        [SerializeField, Min(1)] private int startingHealth = 100;
+
+        [field: SerializeField]
+        public int CurrentHealth { get; private set; }
+
+        public bool IsDead => CurrentHealth <= 0;
         
 
         private void OnEnable()
@@ -32,6 +40,7 @@ namespace UnholyTrinity.Players
 
         private void Awake()
         {
+            CurrentHealth = startingHealth;
             GameManager.NewTurnEvent += OnNewTurn;
         }
 
@@ -116,6 +125,28 @@ namespace UnholyTrinity.Players
             {
                 weapon.Fire();
             }
+        }
+
+        public void TakeDamage(int damageAmount)
+        {
+             if (IsDead)
+             {
+                return;
+             }
+
+             CurrentHealth = Mathf.Max(CurrentHealth - damageAmount, 0);
+             Debug.Log($"{name} took {damageAmount} damage (ouch), {CurrentHealth} health remaining");
+
+             if (IsDead)
+             {
+                Debug.Log($"{name} died. RIP");
+             }
+        }
+
+        [ContextMenu("Debug: Take Damage")]
+        private void TestTakeDamage()
+        {
+            TakeDamage(25);
         }
     }
 }
