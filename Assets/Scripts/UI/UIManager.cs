@@ -79,11 +79,11 @@ public class UIManager : MonoBehaviour
             int weaponCardTickCost = weapon.Data.TickCost;
             Debug.Log($"Setting ammo to {weapon.Ammo}");
             weaponCard.Setup(weaponCardTitle, weaponCardTickCost,
-                () => SetupWeaponCard(weapon, () => current.Fire(weapon)),
+                () => SetupWeaponCard(weapon, () => current.QueueShot(weapon)),
                 Color.black,
-                $"{weapon.Ammo}/{weapon.Data.MaxAmmo}");
+                $"{current.GetUnplannedAmmo(weapon)}/{weapon.Data.MaxAmmo}");
 
-            if (weapon.CanFire)
+            if (current.CanQueueShot(weapon))
             {
                 weaponCard.EnableClickable();
             }

@@ -1,4 +1,4 @@
-using System;
+using System.Linq;
 using System.Collections.Generic;
 using UnholyTrinity.Hex;
 using UnholyTrinity.Weapons;
@@ -20,6 +20,10 @@ namespace UnholyTrinity.Players
         [Header("Combat")]
         [SerializeField] private WeaponData startingWeapon;
         [SerializeField] private AimPreview aimPreview;
+        private int nextFireTick;
+        private readonly List<Weapon> plannedShots = new();
+        private int plannedNextFireTick;
+
         [field: SerializeField] 
         public Weapon CurrentWeapon { get; private set; }
 
@@ -33,17 +37,10 @@ namespace UnholyTrinity.Players
         public int CurrentHealth { get; private set; }
 
         public bool IsDead => CurrentHealth <= 0;
-        
 
-        // private void OnEnable()
-        // {
-        //     mapManager.LayoutChanged += SnapToCoord;
-        // }
+        private int NextPlannedTick => gm.CurrentTick + 1 + plannedShots.Count;
 
-        // private void OnDisable()
-        // {
-        //     mapManager.LayoutChanged -= SnapToCoord;
-        // }
+        // Unity Lifecycle
 
         private void Awake()
         {
@@ -59,56 +56,6 @@ namespace UnholyTrinity.Players
             if (mapManager != null)
             {
                 mapManager.LayoutChanged -= SnapToCoord;
-            }
-        }
-
-        // called by the spawner 
-        public void Initialize(MapManager mapManager, HexCoord spawnCoord)
-        {
-            this.mapManager = mapManager;
-            Coord = spawnCoord;
-            mapManager.LayoutChanged += SnapToCoord;
-            SnapToCoord();
-        }
-
-        // private void Start()
-        // {
-        //     SnapToCoord();
-        //     gm.RegisterPlayer(this);
-        // }
-
-        private void OnNewTurn(Player obj)
-        {
-            // [CB] This might be entirely handled by the UI manager. IDK.
-            if(obj == this)
-            {
-                // Do stuff to enable actions
-                RefreshAimPreview();
-            }
-            else
-            {
-                // Do stuff to disable actions
-                aimPreview.Hide();
-            }
-        }
-
-        // private void OnValidate()
-        // {
-        //     if (mapManager != null)
-        //     {
-        //         SnapToCoord();
-        //     }
-        // }
-
-        private void SnapToCoord()
-        {
-            transform.position = mapManager.Layout.HexToWorld(Coord) +
-                                 Vector3.up * heightOffset;
-
-            if (mapManager.Map != null &&
-                !mapManager.Map.IsWalkable(Coord))
-            {
-                Debug.LogWarning($"{name} is on non walkable coord {Coord}");
             }
         }
 
@@ -133,10 +80,37 @@ namespace UnholyTrinity.Players
             }
         }
 
+        // Setup
+
+        // called by the spawner 
+        public void Initialize(MapManager mapManager, HexCoord spawnCoord)
+        {
+            this.mapManager = mapManager;
+            Coord = spawnCoord;
+            mapManager.LayoutChanged += SnapToCoord;
+            SnapToCoord();
+        }
+
+        private void SnapToCoord()
+        {
+            transform.position = mapManager.Layout.HexToWorld(Coord) +
+                                 Vector3.up * heightOffset;
+
+            if (mapManager.Map != null &&
+                !mapManager.Map.IsWalkable(Coord))
+            {
+                Debug.LogWarning($"{name} is on non walkable coord {Coord}");
+            }
+        }
+
+        // Movement
+
         public void MovePlayer()
         {
             Debug.Log($"{name} is moving");
         }
+
+        // Aim
 
         public void RotatePlayer(bool clockwise)
         {
@@ -150,18 +124,79 @@ namespace UnholyTrinity.Players
             RefreshAimPreview();
         }
 
-        public void Fire(Weapon weapon)
+        private void RefreshAimPreview()
         {
-            bool weaponFired = weapon.Fire();
+            List<AimTile> aimTiles = CurrentWeapon.Data.GetAimTiles(
+                mapManager.Map, Coord, CurrentAimDirection);
+            aimPreview.Show(aimTiles, mapManager.Layout);
+        }
 
-            if (!weaponFired)
+        // Planning
+
+        public bool CanQueueShot(Weapon weapon)
+        {
+            return plannedShots.Count < TurnManager.Instance.TicksPerTurn &&
+                    GetUnplannedAmmo(weapon) > 0 &&
+                    NextPlannedTick >= plannedNextFireTick;
+        }
+
+        public void QueueShot(Weapon weapon)
+        {
+            if (!CanQueueShot(weapon))
             {
                 return;
             }
 
+            Debug.Log($"{name} queued {weapon.Data.DisplayName} on tick {NextPlannedTick}");
+            plannedNextFireTick = NextPlannedTick + 1 + weapon.Data.Cooldown;
+            plannedShots.Add(weapon);
+        }
+
+        public int GetUnplannedAmmo(Weapon weapon)
+        {
+            return weapon.Ammo - plannedShots.Count(plannedWeapon => plannedWeapon == weapon);
+        }
+
+        private void ClearPlannedShots()
+        {
+            plannedShots.Clear();
+            plannedNextFireTick = nextFireTick;
+        }
+
+        // Resolution
+
+        // called by the game manager in the shoot phase of each tick
+        public void ResolvePlannedShot(int tickIndex)
+        {
+            if (tickIndex < plannedShots.Count &&
+                plannedShots[tickIndex] != null)
+            {
+                Fire(plannedShots[tickIndex]);
+            }
+        }
+
+        private void Fire(Weapon weapon)
+        {
+            if (!CanFire(weapon))
+            {
+                return;
+            }
+
+            weapon.Fire();
+            nextFireTick = gm.CurrentTick + 1 + weapon.Data.Cooldown;
+
             List<AimTile> aimTiles = weapon.Data.GetAimTiles(mapManager.Map, Coord, CurrentAimDirection);
             gm.ResolveShot(this, weapon.Data, aimTiles);
         }
+
+        // weapon cooldowns are global, no weapon can be fired until the cooldown of the last
+        // fired weapon has expired
+        private bool CanFire(Weapon weapon)
+        {
+            return weapon.HasAmmo && gm.CurrentTick >= nextFireTick;
+        }
+
+        // Health
 
         public void TakeDamage(int damageAmount)
         {
@@ -179,11 +214,22 @@ namespace UnholyTrinity.Players
              }
         }
 
-        private void RefreshAimPreview()
+        // Event Handlers
+
+        private void OnNewTurn(Player obj)
         {
-            List<AimTile> aimTiles = CurrentWeapon.Data.GetAimTiles(
-                mapManager.Map, Coord, CurrentAimDirection);
-            aimPreview.Show(aimTiles, mapManager.Layout);
+            // [CB] This might be entirely handled by the UI manager. IDK.
+            if(obj == this)
+            {
+                // Do stuff to enable actions
+                ClearPlannedShots();
+                RefreshAimPreview();
+            }
+            else
+            {
+                // Do stuff to disable actions
+                aimPreview.Hide();
+            }
         }
     }
 }

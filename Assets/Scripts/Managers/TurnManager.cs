@@ -10,7 +10,6 @@ public enum TurnPhase
     Resolution
 }
 
-/// P1 plans -> P2 plans -> resolution (just a pause for now) -> repeat.
 [CreateAssetMenu(fileName = "NewTurnManager",
     menuName = "Managers/TurnManager")]
 public class TurnManager : ScriptableObject
@@ -30,9 +29,6 @@ public class TurnManager : ScriptableObject
         TurnPhase.PlayerTwo,
         TurnPhase.Resolution,
     });
-
-    /// The player currently planning, or null during resolution.
-    
 
     private void OnEnable()
     {
@@ -66,5 +62,11 @@ public class TurnManager : ScriptableObject
         EndTurn();
     }
 
-
+    public void ResetPhases()
+    {
+        _turnPhase.Clear();
+        _turnPhase.Enqueue(TurnPhase.PlayerOne);
+        _turnPhase.Enqueue(TurnPhase.PlayerTwo);
+        _turnPhase.Enqueue(TurnPhase.Resolution);
+    }
 }

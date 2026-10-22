@@ -14,15 +14,20 @@ public class GameManager : ScriptableObject
     public static GameManager Instance {get; private set;}
     public static event Action<int> NewRoundEvent;
     public static event Action<Player> NewTurnEvent;
-    public int Round { get; private set; }
     
     [SerializeField]
     private int maxPlayers = 2;
     
     [SerializeField]
     private TurnManager turnManager;
+
+    // second between ticks so resolution can be watched
+    [SerializeField][Min(0.1f)] private float tickDuration = 1f;
         
     private readonly List<Player> _players = new();
+
+    public int Round { get; private set; }
+    public int CurrentTick { get; private set; }
 
     [CanBeNull]
     public Player CurrentPlayer =>
@@ -45,10 +50,7 @@ public class GameManager : ScriptableObject
 
     public List<Vector3> CurrentPlayerPositions => new (_players.Select(x => x.transform.position).ToList());
 
-    // second between ticks so resolution can be watched
-    [SerializeField][Min(0.1f)] private float tickDuration = 1f;
-
-    public int CurrentTick { get; private set; }
+    // Unity Lifecycle
 
     private void OnEnable()
     {
@@ -70,6 +72,16 @@ public class GameManager : ScriptableObject
         TurnManager.NewPhaseEvent -= OnPhaseChanged;
     }
 
+    // Setup
+
+    public void ResetGame()
+    {
+        Round = 1;
+        CurrentTick = 0;
+        _players.Clear();
+        turnManager.ResetPhases();
+    }
+
     public void RegisterPlayer(Player player)
     {
         if(_players.Contains(player))
@@ -89,6 +101,37 @@ public class GameManager : ScriptableObject
             NewTurnEvent?.Invoke(_players.First());
         }
     }
+
+    // Resolution
+
+    private async void ResolutionRoutine()
+    {
+        for (int i = 0; i < turnManager.TicksPerTurn; i ++)
+        {
+            CurrentTick++;
+            ResolveTick(i);
+            await Task.Delay((int)(tickDuration * 1000));
+        }
+        //! [CB] Fun fact, there's a race condition if you don't wait long enough
+        Round++;
+        Debug.Log($"New round: {Round}");
+        NewRoundEvent?.Invoke(Round);
+    }
+
+    private void ResolveTick(int tickIndex)
+    {
+        Debug.Log($"Resolving tick {CurrentTick}");
+        // shot -> aim -> move -> LG damage so that LG can be applied according to 
+        // opponent move path relative to shooter aim cone
+
+        // shoot phase
+        foreach (Player player in _players)
+        {
+            player.ResolvePlannedShot(tickIndex);
+        }
+    }
+
+    // Combat
 
     public void ResolveShot(Player shooter, WeaponData weaponData, List<AimTile> aimTiles)
     {
@@ -121,6 +164,8 @@ public class GameManager : ScriptableObject
         return _players.First(player => player != shooter);
     }
 
+    // Event Handlers
+
     private void OnPhaseChanged(TurnPhase newPhase)
     {
         if (newPhase == TurnPhase.Resolution)
@@ -136,26 +181,5 @@ public class GameManager : ScriptableObject
             // until it's done and *then* invoke this.
             NewTurnEvent?.Invoke(newPhase == TurnPhase.PlayerOne ? _players.First() : _players.Last());
         }
-    }
-
-    private async void ResolutionRoutine()
-    {
-        for (int i = 0; i < turnManager.TicksPerTurn; i ++)
-        {
-            CurrentTick++;
-            ResolveTick();
-            await Task.Delay((int)(tickDuration * 1000));
-        }
-        //! [CB] Fun fact, there's a race condition if you don't wait long enough
-        Round++;
-        Debug.Log($"New round: {Round}");
-        NewRoundEvent?.Invoke(Round);
-    }
-
-    private void ResolveTick()
-    {
-        Debug.Log($"Resolving tick {CurrentTick}");
-        // shot -> aim -> move -> LG damage so that LG can be applied according to 
-        // opponent move path relative to shooter aim cone
     }
 }

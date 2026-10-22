@@ -15,6 +15,8 @@ namespace UnholyTrinity.Players
 
         private void Start()
         {
+            gameManager.ResetGame();
+            
             for (int i = 0; i < spawnCoords.Length; i++)
             {
                 Player spawnedPlayer = Instantiate(playerPrefab);
