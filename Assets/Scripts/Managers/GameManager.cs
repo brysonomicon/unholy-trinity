@@ -27,6 +27,8 @@ public class GameManager : ScriptableObject
     private readonly List<Player> _players = new();
 
     public int Round { get; private set; }
+    // counts every tick of the game and only resets with ResetGame.
+    // cooldowns are stored as the tick they expire on
     public int CurrentTick { get; private set; }
 
     [CanBeNull]
@@ -118,6 +120,10 @@ public class GameManager : ScriptableObject
         NewRoundEvent?.Invoke(Round);
     }
 
+    // each player gets a shoot, aim, and move "lane" with one slot per tick
+    // a phase runs for every player before the next phase starts. both players
+    // actions in the same phase happen at the same time. tickIndex is the slot
+    // within this turn's lanes
     private void ResolveTick(int tickIndex)
     {
         Debug.Log($"Resolving tick {CurrentTick}");

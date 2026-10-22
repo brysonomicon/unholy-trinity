@@ -20,8 +20,17 @@ namespace UnholyTrinity.Players
         [Header("Combat")]
         [SerializeField] private WeaponData startingWeapon;
         [SerializeField] private AimPreview aimPreview;
+
+        // ticks counted for the whole game, so a cooldown can block ticks
+        // subsequent turns
         private int nextFireTick;
+
+        // the "shoot lane". one slot per tick of the turn. 0 index resolves
+        // on the first tick of a turn, null slot holds fire for that tick
         private readonly List<Weapon> plannedShots = new();
+
+        // copy of the nexFireTick that increments as shots are planned so
+        // planning follows the same cooldown rules without changing the real cooldown
         private int plannedNextFireTick;
 
         [field: SerializeField] 
@@ -38,6 +47,8 @@ namespace UnholyTrinity.Players
 
         public bool IsDead => CurrentHealth <= 0;
 
+        // the game tick the next queued slot will resolve on. planning happens between
+        // ticks, so the turns first tick is CurrentTick + 1
         private int NextPlannedTick => gm.CurrentTick + 1 + plannedShots.Count;
 
         // Unity Lifecycle
@@ -133,6 +144,11 @@ namespace UnholyTrinity.Players
 
         // Planning
 
+        // actions gets queued into lanes during the players turn and only take
+        // effect during resolution. nothing in planning changes ammo, aim, or position
+
+        // a shot can be queued if the lane has a free tick, there is ammo left
+        // and the planned cooldown has expired by that tick
         public bool CanQueueShot(Weapon weapon)
         {
             return plannedShots.Count < TurnManager.Instance.TicksPerTurn &&
@@ -164,6 +180,10 @@ namespace UnholyTrinity.Players
         }
 
         // Resolution
+
+        // planned actions get carried out one tick at a time. Fire() checks
+        // cooldown and ammo against the real tick so planning shouldn't break
+        // the rules
 
         // called by the game manager in the shoot phase of each tick
         public void ResolvePlannedShot(int tickIndex)
