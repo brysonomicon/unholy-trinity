@@ -18,6 +18,8 @@ public class TurnManager : ScriptableObject
     public static TurnManager Instance { get; private set; }
     
     public static event Action<TurnPhase> NewPhaseEvent;
+
+    [field: SerializeField][Min(0.1f)] public int TicksPerTurn { get; private set; } = 3;
     
     public TurnPhase CurrentPhase => _turnPhase.Peek();
     public bool IsPlayerTurn => CurrentPhase != TurnPhase.Resolution;

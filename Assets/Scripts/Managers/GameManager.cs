@@ -45,7 +45,10 @@ public class GameManager : ScriptableObject
 
     public List<Vector3> CurrentPlayerPositions => new (_players.Select(x => x.transform.position).ToList());
 
-    [SerializeField][Min(0)] private int resolutionDuration = 4;
+    // second between ticks so resolution can be watched
+    [SerializeField][Min(0.1f)] private float tickDuration = 1f;
+
+    public int CurrentTick { get; private set; }
 
     private void OnEnable()
     {
@@ -137,10 +140,22 @@ public class GameManager : ScriptableObject
 
     private async void ResolutionRoutine()
     {
+        for (int i = 0; i < turnManager.TicksPerTurn; i ++)
+        {
+            CurrentTick++;
+            ResolveTick();
+            await Task.Delay((int)(tickDuration * 1000));
+        }
         //! [CB] Fun fact, there's a race condition if you don't wait long enough
-        await Task.Delay(resolutionDuration * 1000);
         Round++;
         Debug.Log($"New round: {Round}");
         NewRoundEvent?.Invoke(Round);
+    }
+
+    private void ResolveTick()
+    {
+        Debug.Log($"Resolving tick {CurrentTick}");
+        // shot -> aim -> move -> LG damage so that LG can be applied according to 
+        // opponent move path relative to shooter aim cone
     }
 }
