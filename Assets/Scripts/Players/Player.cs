@@ -51,6 +51,9 @@ namespace UnholyTrinity.Players
         // ticks, so the turns first tick is CurrentTick + 1
         private int NextPlannedTick => gm.CurrentTick + 1 + plannedShots.Count;
 
+        // true while the shoot lane still has a free tick this turn
+        public bool HasFreeShotSlot => plannedShots.Count < TurnManager.Instance.TicksPerTurn;
+
         // Unity Lifecycle
 
         private void Awake()
@@ -151,7 +154,7 @@ namespace UnholyTrinity.Players
         // and the planned cooldown has expired by that tick
         public bool CanQueueShot(Weapon weapon)
         {
-            return plannedShots.Count < TurnManager.Instance.TicksPerTurn &&
+            return HasFreeShotSlot &&
                     GetUnplannedAmmo(weapon) > 0 &&
                     NextPlannedTick >= plannedNextFireTick;
         }
@@ -168,12 +171,25 @@ namespace UnholyTrinity.Players
             plannedShots.Add(weapon);
         }
 
+        // fills the next tick of the shoot lane without firing
+        public void HoldFire()
+        {
+            if (!HasFreeShotSlot)
+            {
+                return;
+            }
+
+            Debug.Log($"{name} holds fire on tick {NextPlannedTick}");
+            plannedShots.Add(null);
+        }
+
         public int GetUnplannedAmmo(Weapon weapon)
         {
             return weapon.Ammo - plannedShots.Count(plannedWeapon => plannedWeapon == weapon);
         }
 
-        private void ClearPlannedShots()
+        // empties every lane. used at turn start and to undo planned actions
+        public void ClearPlan()
         {
             plannedShots.Clear();
             plannedNextFireTick = nextFireTick;
@@ -242,7 +258,7 @@ namespace UnholyTrinity.Players
             if(obj == this)
             {
                 // Do stuff to enable actions
-                ClearPlannedShots();
+                ClearPlan();
                 RefreshAimPreview();
             }
             else
