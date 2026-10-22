@@ -19,6 +19,7 @@ namespace UnholyTrinity.Players
 
         [Header("Combat")]
         [SerializeField] private WeaponData startingWeapon;
+        [SerializeField] private AimPreview aimPreview;
         [field: SerializeField] 
         public Weapon CurrentWeapon { get; private set; }
 
@@ -82,10 +83,12 @@ namespace UnholyTrinity.Players
             if(obj == this)
             {
                 // Do stuff to enable actions
+                RefreshAimPreview();
             }
             else
             {
                 // Do stuff to disable actions
+                aimPreview.Hide();
             }
         }
 
@@ -143,6 +146,8 @@ namespace UnholyTrinity.Players
                 ? CurrentAimDirection.Next()
                 : CurrentAimDirection.Previous();
             Debug.Log($"{name} is now facing {CurrentAimDirection}");
+
+            RefreshAimPreview();
         }
 
         public void Fire(Weapon weapon)
@@ -172,6 +177,13 @@ namespace UnholyTrinity.Players
              {
                 Debug.Log($"{name} died. RIP");
              }
+        }
+
+        private void RefreshAimPreview()
+        {
+            List<AimTile> aimTiles = CurrentWeapon.Data.GetAimTiles(
+                mapManager.Map, Coord, CurrentAimDirection);
+            aimPreview.Show(aimTiles, mapManager.Layout);
         }
     }
 }
