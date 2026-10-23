@@ -7,5 +7,6 @@ namespace UnholyTrinity.Hex
         PickupPoint = 2,
         Boost = 3,
         Portal = 4,
+        Health = 5,
     }
 }

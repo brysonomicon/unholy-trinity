@@ -93,6 +93,9 @@ namespace UnholyTrinity.Hex.Tests
                 map.SetTile(HexTile.BoostTile(new HexCoord(0, 1), BoostSettings.Fixed(-2, HexDirection.D4)));
                 map.SetTile(HexTile.PortalTile(new HexCoord(1, 1), new HexCoord(2, 1), 2));
                 map.SetTile(HexTile.PortalTile(new HexCoord(2, 1), new HexCoord(1, 1), 4));
+                map.SetTile(HexTile.HealTile(new HexCoord(3, 1), 2));
+                map.SetTile(HexTile.HarmTile(new HexCoord(4, 1), 3, HealthTrigger.OnStop));
+                map.SetTile(HexTile.KillTile(new HexCoord(0, 2)));
 
                 definition.Write(map);
                 var rebuilt = definition.Build();
@@ -106,6 +109,7 @@ namespace UnholyTrinity.Hex.Tests
                     Assert.AreEqual(tile.Portal, other.Portal);
                     Assert.AreEqual(tile.Pickup, other.Pickup);
                     Assert.AreEqual(tile.WallSettings, other.WallSettings);
+                    Assert.AreEqual(tile.Health, other.Health);
                 }
                 Assert.IsEmpty(definition.Validate());
             }

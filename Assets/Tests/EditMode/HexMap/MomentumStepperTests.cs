@@ -225,5 +225,113 @@ namespace UnholyTrinity.Hex.Tests
 
             Assert.AreEqual(10, result.Events.Last().Amount);
         }
+
+        [Test]
+        public void HealTile_OnEnter_FiresWhenSlidOver_AndSlideContinues()
+        {
+            var map = Corridor(10);
+            map.SetTile(HexTile.HealTile(At(2), 4));
+            var result = MomentumStepper.Slide(map, At(0), new HexVelocity(East, 5));
+
+            Assert.AreEqual(At(5), result.End);
+            Assert.AreEqual(new HexVelocity(East, 5), result.FinalVelocity);
+            var heal = result.Events.Single();
+            Assert.AreEqual(MoveEventType.Healed, heal.Type);
+            Assert.AreEqual(4, heal.Amount);
+            Assert.AreEqual(At(2), heal.Coord);
+        }
+
+        [Test]
+        public void HarmTile_OnEnter_ReportsPositiveDamage()
+        {
+            var map = Corridor(10);
+            map.SetTile(HexTile.HarmTile(At(2), 3));
+            var result = MomentumStepper.Slide(map, At(0), new HexVelocity(East, 5));
+
+            var harm = result.Events.Single();
+            Assert.AreEqual(MoveEventType.Harmed, harm.Type);
+            Assert.AreEqual(3, harm.Amount);
+        }
+
+        [Test]
+        public void HealthTile_OnStop_IgnoredWhenSlidOver()
+        {
+            var map = Corridor(10);
+            map.SetTile(HexTile.HarmTile(At(2), 3, HealthTrigger.OnStop));
+            var result = MomentumStepper.Slide(map, At(0), new HexVelocity(East, 5));
+
+            Assert.IsEmpty(result.Events);
+        }
+
+        [Test]
+        public void HealthTile_OnStop_FiresOnceWhereSlideEnds()
+        {
+            var map = Corridor(10);
+            map.SetTile(HexTile.HarmTile(At(3), 3, HealthTrigger.OnStop));
+            var result = MomentumStepper.Slide(map, At(0), new HexVelocity(East, 3));
+
+            Assert.AreEqual(At(3), result.End);
+            var harm = result.Events.Single();
+            Assert.AreEqual(MoveEventType.Harmed, harm.Type);
+            Assert.AreEqual(At(3), harm.Coord);
+        }
+
+        [Test]
+        public void HealthTile_OnStop_FiresForStationaryUnit()
+        {
+            var map = Corridor(5);
+            map.SetTile(HexTile.HarmTile(At(1), 2, HealthTrigger.OnStop));
+            var result = MomentumStepper.Slide(map, At(1), HexVelocity.Zero);
+
+            Assert.AreEqual(MoveEventType.Harmed, result.Events.Single().Type);
+        }
+
+        [Test]
+        public void HealthTile_OnEnter_AtEndOfSlide_FiresOnce()
+        {
+            var map = Corridor(10);
+            map.SetTile(HexTile.HealTile(At(3), 1));
+            var result = MomentumStepper.Slide(map, At(0), new HexVelocity(East, 3));
+
+            Assert.AreEqual(At(3), result.End);
+            Assert.AreEqual(MoveEventType.Healed, result.Events.Single().Type);
+        }
+
+        [Test]
+        public void KillTile_OnEnter_EndsSlideThere_WithZeroSpeed()
+        {
+            var map = Corridor(10);
+            map.SetTile(HexTile.KillTile(At(2)));
+            var result = MomentumStepper.Slide(map, At(0), new HexVelocity(East, 5));
+
+            Assert.AreEqual(At(2), result.End);
+            CollectionAssert.AreEqual(new[] { At(1), At(2) }, result.Path);
+            Assert.AreEqual(0, result.FinalVelocity.Speed);
+            var kill = result.Events.Single();
+            Assert.AreEqual(MoveEventType.Killed, kill.Type);
+            Assert.AreEqual(At(2), kill.Coord);
+        }
+
+        [Test]
+        public void KillTile_OnStop_OnlyKillsWhereSlideEnds()
+        {
+            var map = Corridor(10);
+            map.SetTile(HexTile.KillTile(At(2), HealthTrigger.OnStop));
+            var passOver = MomentumStepper.Slide(map, At(0), new HexVelocity(East, 5));
+            var stopOn = MomentumStepper.Slide(map, At(0), new HexVelocity(East, 2));
+
+            Assert.IsEmpty(passOver.Events);
+            Assert.AreEqual(MoveEventType.Killed, stopOn.Events.Single().Type);
+            Assert.AreEqual(0, stopOn.FinalVelocity.Speed);
+        }
+
+        [Test]
+        public void HealthTiles_DoNotBlockMovementOrShots()
+        {
+            var map = Corridor(5);
+            map.SetTile(HexTile.KillTile(At(2)));
+            Assert.IsTrue(map.IsWalkable(At(2)));
+            Assert.IsFalse(map.BlocksLineOfFire(At(2)));
+        }
     }
 }

@@ -22,6 +22,10 @@ namespace UnholyTrinity.Hex
             public GameObject BouncyPrefab;
             [Tooltip("Optional: used instead of Prefab for spiked walls.")]
             public GameObject SpikedPrefab;
+            [Tooltip("Optional: used instead of Prefab for health tiles with negative amount (Prefab is the heal look).")]
+            public GameObject HarmPrefab;
+            [Tooltip("Optional: used instead of Prefab for lethal health tiles, e.g. lava, or an empty prefab for a void.")]
+            public GameObject KillPrefab;
         }
 
         [Tooltip("Prefabs are authored pointy-top for a hex of size 1 with the base at y = 0. MapManager scales them by " +
@@ -37,6 +41,8 @@ namespace UnholyTrinity.Hex
 
         public float FloorHeight = 0.1f;
         public float WallHeight = 1.2f;
+        [Tooltip("Height of lethal tiles; lower than FloorHeight so they read as sunken. Keep above 0.")]
+        public float PitHeight = 0.01f;
 
         public Color FloorColor = new Color(0.55f, 0.55f, 0.58f);
         public Color WallColor = new Color(0.22f, 0.22f, 0.26f);
@@ -55,6 +61,9 @@ namespace UnholyTrinity.Hex
         public Color BoostColor = WongBluishGreen;
         public Color FrictionColor = WongOrange;
         public Color PortalColor = WongReddishPurple;
+        public Color HealColor = WongBlue;
+        public Color HarmColor = WongVermilion;
+        public Color KillColor = new Color(0.08f, 0.08f, 0.1f);
         public Color ArrowColor = Color.white;
 
         public static HexTileStyle CreateDefault()
@@ -80,11 +89,23 @@ namespace UnholyTrinity.Hex
                     : FrictionColor,
                 TileType.Portal => PortalColor,
                 TileType.Floor => FloorColor,
+                TileType.Health => tile.Health.Lethal
+                    ? KillColor
+                    : tile.Health.Amount >= 0
+                        ? HealColor
+                        : HarmColor,
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
 
-        public float HeightFor(HexTile tile) => tile.Type == TileType.Wall ? WallHeight : FloorHeight;
+        public float HeightFor(HexTile tile)
+        {
+            if (tile.Type == TileType.Wall)
+                return WallHeight;
+            if (tile.Type == TileType.Health && tile.Health.Lethal)
+                return PitHeight;
+            return FloorHeight;
+        }
 
         /// <summary>The prefab for this tile, or null to use the procedural fallback.</summary>
         public GameObject PrefabFor(HexTile tile)
@@ -99,6 +120,10 @@ namespace UnholyTrinity.Hex
                     return entry.BouncyPrefab;
                 if (tile.Type == TileType.Wall && tile.WallSettings.Kind == WallKind.Spiked && entry.SpikedPrefab != null)
                     return entry.SpikedPrefab;
+                if (tile.Type == TileType.Health && tile.Health.Lethal && entry.KillPrefab != null)
+                    return entry.KillPrefab;
+                if (tile.Type == TileType.Health && !tile.Health.Lethal && tile.Health.Amount < 0 && entry.HarmPrefab != null)
+                    return entry.HarmPrefab;
                 return entry.Prefab;
             }
             return null;

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace UnholyTrinity.Hex
@@ -19,6 +20,12 @@ namespace UnholyTrinity.Hex
         /// <see cref="MoveEvent.Amount"/> is the damage; always follows a <see cref="Collided"/> event.
         /// </summary>
         Spiked,
+        /// <summary>A heal tile at <see cref="MoveEvent.Coord"/> fired; <see cref="MoveEvent.Amount"/> is the HP restored.</summary>
+        Healed,
+        /// <summary>A harm tile at <see cref="MoveEvent.Coord"/> fired; <see cref="MoveEvent.Amount"/> is the damage.</summary>
+        Harmed,
+        /// <summary>A lethal tile at <see cref="MoveEvent.Coord"/> fired. The slide ends there with speed 0.</summary>
+        Killed,
     }
 
     public readonly struct MoveEvent
@@ -27,7 +34,7 @@ namespace UnholyTrinity.Hex
         public readonly HexCoord Coord;
         public readonly HexCoord Other;
         public readonly HexVelocity VelocityAfter;
-        /// <summary>Damage for <see cref="MoveEventType.Spiked"/>; 0 for other events.</summary>
+        /// <summary>Damage for <see cref="MoveEventType.Spiked"/> / <see cref="MoveEventType.Harmed"/>, HP for <see cref="MoveEventType.Healed"/>; 0 for other events.</summary>
         public readonly int Amount;
 
         public MoveEvent(MoveEventType type, HexCoord coord, HexCoord other, HexVelocity velocityAfter, int amount = 0)
@@ -69,6 +76,9 @@ namespace UnholyTrinity.Hex
     ///   Arriving on the partner does not trigger it again.
     /// - Entering a boost tile changes the velocity straight away, so the change affects the rest
     ///   of this slide as well as the velocity carried into the next turn.
+    /// - A health tile reports Healed / Harmed, either every time it is entered (OnEnter) or only when the
+    ///   slide ends on it, including a unit that didn't move (OnStop). A lethal tile reports Killed instead
+    ///   and ends the slide there with speed 0. Applying HP is up to turn resolution.
     /// - <c>maxSteps</c> caps the slide so boost chains cannot run forever.
     /// </summary>
     public static class MomentumStepper
@@ -129,11 +139,42 @@ namespace UnholyTrinity.Hex
                     velocity = tile.Boost.Apply(velocity);
                     result.Events.Add(new MoveEvent(MoveEventType.Boosted, position, position, velocity));
                 }
+                else if (tile.Type == TileType.Health && tile.Health.Trigger == HealthTrigger.OnEnter)
+                {
+                    if (TryHealthEvent(tile.Health, position, ref velocity, out var healthEvent))
+                        result.Events.Add(healthEvent);
+                    if (tile.Health.Lethal)
+                        break;
+                }
             }
+
+            if (map.TryGetTile(position, out var endTile) && endTile.Type == TileType.Health
+                && endTile.Health.Trigger == HealthTrigger.OnStop
+                && TryHealthEvent(endTile.Health, position, ref velocity, out var stopEvent))
+                result.Events.Add(stopEvent);
 
             result.End = position;
             result.FinalVelocity = velocity;
             return result;
+        }
+
+        /// <summary>The event for a health tile firing at <paramref name="coord"/>; false for a non-lethal tile with no amount. A kill zeroes the speed.</summary>
+        static bool TryHealthEvent(HealthTileSettings health, HexCoord coord, ref HexVelocity velocity, out MoveEvent moveEvent)
+        {
+            if (health.Lethal)
+            {
+                velocity = velocity.WithSpeed(0);
+                moveEvent = new MoveEvent(MoveEventType.Killed, coord, coord, velocity);
+                return true;
+            }
+            if (health.Amount == 0)
+            {
+                moveEvent = default;
+                return false;
+            }
+            var type = health.Amount > 0 ? MoveEventType.Healed : MoveEventType.Harmed;
+            moveEvent = new MoveEvent(type, coord, coord, velocity, Math.Abs(health.Amount));
+            return true;
         }
     }
 }

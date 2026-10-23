@@ -1,5 +1,6 @@
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace UnholyTrinity.Hex.Editing
 {
@@ -21,14 +22,24 @@ namespace UnholyTrinity.Hex.Editing
 
             var layout = manager.Layout;
             var style = DefaultStyle;
-            foreach (var entry in manager.Definition.Entries)
+
+            var previousZTest = Handles.zTest;
+            Handles.zTest = CompareFunction.LessEqual;
+            try
             {
-                var tile = entry.ToTile();
-                DrawTile(layout, tile, style.ColorFor(tile));
+                foreach (var entry in manager.Definition.Entries)
+                {
+                    var tile = entry.ToTile();
+                    DrawTile(layout, tile, style.ColorFor(tile));
+                }
+                foreach (var entry in manager.Definition.Entries)
+                    if (entry.Type == TileType.Portal)
+                        DrawPortalLink(layout, entry.Coord, entry.Portal.Target, style.PortalColor);
             }
-            foreach (var entry in manager.Definition.Entries)
-                if (entry.Type == TileType.Portal)
-                    DrawPortalLink(layout, entry.Coord, entry.Portal.Target, style.PortalColor);
+            finally
+            {
+                Handles.zTest = previousZTest;
+            }
         }
 
         public static void DrawTile(HexLayout layout, HexTile tile, Color color)
@@ -54,6 +65,13 @@ namespace UnholyTrinity.Hex.Editing
             else if (tile.Type == TileType.PickupPoint)
             {
                 Handles.Label(center, $"P{tile.Pickup.SpawnGroup}", EditorStyles.boldLabel);
+            }
+            else if (tile.Type == TileType.Health)
+            {
+                var label = tile.Health.Lethal ? "KILL" : $"H{tile.Health.Amount:+0;-0;0}";
+                if (tile.Health.Trigger == HealthTrigger.OnStop)
+                    label += " stop";
+                Handles.Label(center, label, EditorStyles.whiteBoldLabel);
             }
         }
 
