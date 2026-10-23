@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -11,26 +12,26 @@ namespace UnholyTrinity.Hex
     public class TileVisual : MonoBehaviour, ITileVisual
     {
         [SerializeField, Tooltip("Rotated to face a fixed boost's direction (+Z forward). Hidden for other tiles.")]
-        Transform directionPivot;
+        private Transform directionPivot;
 
         [SerializeField, Tooltip("Tinted with boostTint / frictionTint on boost tiles via _BaseColor.")]
-        Renderer[] tintRenderers = new Renderer[0];
-        [SerializeField] bool tintBoostTiles = true;
-        [SerializeField] Color boostTint = HexTileStyle.WongBluishGreen;
-        [SerializeField] Color frictionTint = HexTileStyle.WongOrange;
+        private Renderer[] tintRenderers = Array.Empty<Renderer>();
+        [SerializeField] private bool tintBoostTiles = true;
+        [SerializeField] private Color boostTint = HexTileStyle.WongBluishGreen;
+        [SerializeField] private Color frictionTint = HexTileStyle.WongOrange;
 
         [SerializeField, Tooltip("Invoked with the boost strength, e.g. to scale particle emission or animation speed.")]
-        UnityEvent<int> onStrength = new UnityEvent<int>();
+        private UnityEvent<int> onStrength = new();
 
         static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
         static readonly int ColorId = Shader.PropertyToID("_Color");
-        static MaterialPropertyBlock propertyBlock;
+        private static MaterialPropertyBlock _propertyBlock;
 
         public void Configure(HexTile tile, HexLayout layout)
         {
             bool isBoost = tile.Type == TileType.Boost;
 
-            if (directionPivot != null)
+            if (directionPivot is not null)
             {
                 bool directional = isBoost && tile.Boost.Mode == BoostMode.Fixed;
                 directionPivot.gameObject.SetActive(directional);
@@ -45,17 +46,17 @@ namespace UnholyTrinity.Hex
                 onStrength.Invoke(tile.Boost.Strength);
         }
 
-        void Tint(Color color)
+        private void Tint(Color color)
         {
-            propertyBlock ??= new MaterialPropertyBlock();
+            _propertyBlock ??= new MaterialPropertyBlock();
             foreach (var tintRenderer in tintRenderers)
             {
-                if (tintRenderer == null)
+                if (tintRenderer is null)
                     continue;
-                tintRenderer.GetPropertyBlock(propertyBlock);
-                propertyBlock.SetColor(BaseColorId, color);
-                propertyBlock.SetColor(ColorId, color);
-                tintRenderer.SetPropertyBlock(propertyBlock);
+                tintRenderer.GetPropertyBlock(_propertyBlock);
+                _propertyBlock.SetColor(BaseColorId, color);
+                _propertyBlock.SetColor(ColorId, color);
+                tintRenderer.SetPropertyBlock(_propertyBlock);
             }
         }
     }

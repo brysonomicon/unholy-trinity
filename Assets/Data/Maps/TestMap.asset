@@ -1,0 +1,1706 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95aebdb6e75999a469dbea0f403c9843, type: 3}
+  m_Name: TestMap
+  m_EditorClassIdentifier: UnholyTrinity.HexMap::UnholyTrinity.Hex.HexMapDefinition
+  tiles:
+  - Coord:
+      <Q>k__BackingField: -4
+      <R>k__BackingField: 0
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -4
+      <R>k__BackingField: 1
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -4
+      <R>k__BackingField: 2
+    Type: 4
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 4
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -4
+      <R>k__BackingField: 3
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -4
+      <R>k__BackingField: 4
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -3
+      <R>k__BackingField: -1
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -3
+      <R>k__BackingField: 0
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -3
+      <R>k__BackingField: 1
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -3
+      <R>k__BackingField: 2
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -3
+      <R>k__BackingField: 3
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -3
+      <R>k__BackingField: 4
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -2
+      <R>k__BackingField: -2
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -2
+      <R>k__BackingField: -1
+    Type: 3
+    Boost:
+      Strength: 6
+      Mode: 1
+      Direction: 5
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -2
+      <R>k__BackingField: 0
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -2
+      <R>k__BackingField: 1
+    Type: 2
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 2
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -2
+      <R>k__BackingField: 2
+    Type: 2
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 2
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -2
+      <R>k__BackingField: 3
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -2
+      <R>k__BackingField: 4
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -1
+      <R>k__BackingField: -3
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -1
+      <R>k__BackingField: -2
+    Type: 3
+    Boost:
+      Strength: 6
+      Mode: 1
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -1
+      <R>k__BackingField: -1
+    Type: 3
+    Boost:
+      Strength: 6
+      Mode: 1
+      Direction: 4
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -1
+      <R>k__BackingField: 0
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -1
+      <R>k__BackingField: 1
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -1
+      <R>k__BackingField: 2
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -1
+      <R>k__BackingField: 3
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -1
+      <R>k__BackingField: 4
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 0
+      <R>k__BackingField: -4
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 0
+      <R>k__BackingField: -3
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 0
+      <R>k__BackingField: -2
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 0
+      <R>k__BackingField: -1
+    Type: 3
+    Boost:
+      Strength: 6
+      Mode: 1
+      Direction: 3
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 0
+      <R>k__BackingField: 0
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 0
+      <R>k__BackingField: 1
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 0
+      <R>k__BackingField: 2
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 0
+      <R>k__BackingField: 3
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 0
+      <R>k__BackingField: 4
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 1
+      <R>k__BackingField: -4
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 1
+      <R>k__BackingField: -3
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 1
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 1
+      <R>k__BackingField: -2
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 1
+      <R>k__BackingField: -1
+    Type: 3
+    Boost:
+      Strength: 6
+      Mode: 1
+      Direction: 2
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 1
+      <R>k__BackingField: 0
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 1
+      <R>k__BackingField: 1
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 1
+      <R>k__BackingField: 2
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 1
+      <R>k__BackingField: 3
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 2
+      <R>k__BackingField: -4
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 2
+      <R>k__BackingField: -3
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 1
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 2
+      <R>k__BackingField: -2
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 2
+      <R>k__BackingField: -1
+    Type: 3
+    Boost:
+      Strength: 6
+      Mode: 1
+      Direction: 1
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 2
+      <R>k__BackingField: 0
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 2
+      <R>k__BackingField: 1
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 2
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 2
+      <R>k__BackingField: 2
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 3
+      <R>k__BackingField: -4
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 3
+      <R>k__BackingField: -3
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 3
+      <R>k__BackingField: -2
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 3
+      <R>k__BackingField: -1
+    Type: 3
+    Boost:
+      Strength: 6
+      Mode: 1
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 3
+      <R>k__BackingField: 0
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 3
+      <R>k__BackingField: 1
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 4
+      <R>k__BackingField: -4
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 4
+      <R>k__BackingField: -3
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 4
+      <R>k__BackingField: -2
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 4
+      <R>k__BackingField: -1
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 4
+      <R>k__BackingField: 0
+    Type: 4
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: -4
+        <R>k__BackingField: 2
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -5
+      <R>k__BackingField: 5
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -4
+      <R>k__BackingField: 5
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -3
+      <R>k__BackingField: 5
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -2
+      <R>k__BackingField: 5
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -1
+      <R>k__BackingField: 5
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 0
+      <R>k__BackingField: 5
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 1
+      <R>k__BackingField: 4
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 2
+      <R>k__BackingField: 3
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 3
+      <R>k__BackingField: 2
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 4
+      <R>k__BackingField: 1
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 5
+      <R>k__BackingField: 0
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 5
+      <R>k__BackingField: -1
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 5
+      <R>k__BackingField: -2
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 5
+      <R>k__BackingField: -3
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 5
+      <R>k__BackingField: -4
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 5
+      <R>k__BackingField: -5
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 3
+      <R>k__BackingField: -5
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 1
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 2
+      <R>k__BackingField: -5
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 1
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: 0
+      <R>k__BackingField: -5
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 1
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -1
+      <R>k__BackingField: -4
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -2
+      <R>k__BackingField: -3
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -3
+      <R>k__BackingField: -2
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -4
+      <R>k__BackingField: -1
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -5
+      <R>k__BackingField: 0
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -5
+      <R>k__BackingField: 1
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -5
+      <R>k__BackingField: 2
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -5
+      <R>k__BackingField: 3
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+  - Coord:
+      <Q>k__BackingField: -5
+      <R>k__BackingField: 4
+    Type: 1
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      SpawnGroup: 0
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0

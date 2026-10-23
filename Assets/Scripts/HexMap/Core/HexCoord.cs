@@ -11,34 +11,39 @@ namespace UnholyTrinity.Hex
     [Serializable]
     public struct HexCoord : IEquatable<HexCoord>
     {
-        [SerializeField] int q;
-        [SerializeField] int r;
+        [field: SerializeField] public int Q { get; private set; }
+        [field: SerializeField] public int R { get; private set; }
 
         public HexCoord(int q, int r)
         {
-            this.q = q;
-            this.r = r;
+            Q = q;
+            R = r;
         }
 
-        public static readonly HexCoord Zero = new HexCoord(0, 0);
+        public static readonly HexCoord Zero = new (0, 0);
 
-        public int Q => q;
-        public int R => r;
-        public int S => -q - r;
+        public int S => -Q - R;
 
-        public HexCoord Neighbor(HexDirection direction) => this + direction.ToOffset();
+        public HexCoord Neighbor(HexDirection direction) =>
+            this + direction.ToOffset();
 
         public int DistanceTo(HexCoord other) => Distance(this, other);
 
-        /// <summary>Number of single-hex steps between two hexes, ignoring obstacles.</summary>
+        /// <summary>
+        /// Number of single-hex steps between two hexes, ignoring obstacles.
+        /// </summary>
         public static int Distance(HexCoord a, HexCoord b)
         {
-            // Each step changes two cube coordinates by 1, so the step count is half the summed difference.
+            // Each step changes two cube coordinates by 1,
+            // so the step count is half the summed difference.
             var d = a - b;
             return (Math.Abs(d.Q) + Math.Abs(d.R) + Math.Abs(d.S)) / 2;
         }
 
-        /// <summary>Rotates this coordinate around <paramref name="center"/> by 60 degree steps (positive is counter-clockwise).</summary>
+        /// <summary>
+        /// Rotates this coordinate around <paramref name="center"/>
+        /// by 60 degree steps (positive is counter-clockwise).
+        /// </summary>
         public HexCoord RotateAround(HexCoord center, int steps)
         {
             var v = this - center;
@@ -51,10 +56,14 @@ namespace UnholyTrinity.Hex
                 y = ny;
                 z = nz;
             }
+
             return center + new HexCoord(x, y);
         }
 
-        /// <summary>All hexes exactly <paramref name="radius"/> steps away from <paramref name="center"/>.</summary>
+        /// <summary>
+        /// All hexes exactly <paramref name="radius"/> steps
+        /// away from <paramref name="center"/>.
+        /// </summary>
         public static IEnumerable<HexCoord> Ring(HexCoord center, int radius)
         {
             if (radius <= 0)
@@ -64,7 +73,7 @@ namespace UnholyTrinity.Hex
             }
 
             // Start at the D4 corner of the ring, then walk `radius` steps along each of the six sides.
-            // Walking D0..D5 in order from that corner traces the ring counter-clockwise back to the start.
+            // Walking D0...D5 in order from that corner traces the ring counter-clockwise back to the start.
             var hex = center + HexDirection.D4.ToOffset() * radius;
             for (int side = 0; side < HexDirectionExtensions.Count; side++)
             {
@@ -102,13 +111,19 @@ namespace UnholyTrinity.Hex
             var result = new List<HexCoord>(n + 1);
             // The nudge keeps q + r + s = 0 so the points stay valid cube coordinates.
             const double eps = 1e-6;
-            double aq = q + eps, ar = r + eps, as_ = S - 2 * eps;
-            double bq = target.q + eps, br = target.r + eps, bs = target.S - 2 * eps;
+            double aq = Q + eps;
+            double ar = R + eps;
+            double aS = S - 2 * eps;
+            double bq = target.Q + eps,
+                br = target.R + eps,
+                bs = target.S - 2 * eps;
             for (int i = 0; i <= n; i++)
             {
                 double t = n == 0 ? 0.0 : (double)i / n;
-                result.Add(CubeRound(aq + (bq - aq) * t, ar + (br - ar) * t, as_ + (bs - as_) * t));
+                result.Add(CubeRound(aq + (bq - aq) * t, ar + (br - ar) * t,
+                    aS + (bs - aS) * t));
             }
+
             return result;
         }
 
@@ -120,8 +135,12 @@ namespace UnholyTrinity.Hex
         {
             // Rounding each coordinate separately can break q + r + s = 0. Throw away the one that
             // moved most while rounding (the least reliable) and rebuild it from the other two.
-            double rq = Math.Round(fq), rr = Math.Round(fr), rs = Math.Round(fs);
-            double dq = Math.Abs(rq - fq), dr = Math.Abs(rr - fr), ds = Math.Abs(rs - fs);
+            double rq = Math.Round(fq),
+                rr = Math.Round(fr),
+                rs = Math.Round(fs);
+            double dq = Math.Abs(rq - fq),
+                dr = Math.Abs(rr - fr),
+                ds = Math.Abs(rs - fs);
             if (dq > dr && dq > ds)
                 rq = -rr - rs;
             else if (dr > ds)
@@ -130,15 +149,26 @@ namespace UnholyTrinity.Hex
             return new HexCoord((int)rq, (int)rr);
         }
 
-        public static HexCoord operator +(HexCoord a, HexCoord b) => new HexCoord(a.q + b.q, a.r + b.r);
-        public static HexCoord operator -(HexCoord a, HexCoord b) => new HexCoord(a.q - b.q, a.r - b.r);
-        public static HexCoord operator *(HexCoord a, int k) => new HexCoord(a.q * k, a.r * k);
-        public static bool operator ==(HexCoord a, HexCoord b) => a.q == b.q && a.r == b.r;
+        public static HexCoord operator +(HexCoord a, HexCoord b) =>
+            new HexCoord(a.Q + b.Q, a.R + b.R);
+
+        public static HexCoord operator -(HexCoord a, HexCoord b) =>
+            new HexCoord(a.Q - b.Q, a.R - b.R);
+
+        public static HexCoord operator *(HexCoord a, int k) =>
+            new HexCoord(a.Q * k, a.R * k);
+
+        public static bool operator ==(HexCoord a, HexCoord b) =>
+            a.Q == b.Q && a.R == b.R;
+
         public static bool operator !=(HexCoord a, HexCoord b) => !(a == b);
 
         public bool Equals(HexCoord other) => this == other;
-        public override bool Equals(object obj) => obj is HexCoord other && this == other;
-        public override int GetHashCode() => (q * 397) ^ r;
-        public override string ToString() => $"({q}, {r})";
+
+        public override bool Equals(object obj) =>
+            obj is HexCoord other && this == other;
+
+        public override int GetHashCode() => (Q * 397) ^ R;
+        public override string ToString() => $"({Q}, {R})";
     }
 }

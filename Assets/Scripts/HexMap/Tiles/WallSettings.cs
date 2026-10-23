@@ -25,7 +25,7 @@ namespace UnholyTrinity.Hex
     /// so walls saved before variants existed load unchanged.
     /// </summary>
     [Serializable]
-    public struct WallSettings
+    public struct WallSettings : IEquatable<WallSettings>
     {
         public WallKind Kind;
         /// <summary>Only used when <see cref="Kind"/> is <see cref="WallKind.Spiked"/>.</summary>
@@ -51,6 +51,21 @@ namespace UnholyTrinity.Hex
             if (Kind != WallKind.Spiked)
                 return 0;
             return DamageMode == SpikeDamageMode.ScaledBySpeed ? Damage * impactSpeed : Damage;
+        }
+
+        public bool Equals(WallSettings other)
+        {
+            return Kind == other.Kind && Damage == other.Damage && DamageMode == other.DamageMode;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is WallSettings other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine((int)Kind, Damage, (int)DamageMode);
         }
     }
 }

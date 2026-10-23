@@ -7,13 +7,14 @@ namespace UnholyTrinity.Hex.Editing
     /// <summary>Edit-mode preview of a MapManager's definition, drawn with Handles so no GameObjects are spawned.</summary>
     static class HexMapGizmos
     {
-        static readonly Vector3[] Corners = new Vector3[7];
-        static HexTileStyle defaultStyle;
+        private static readonly Vector3[] Corners = new Vector3[7];
 
-        static HexTileStyle DefaultStyle => defaultStyle != null ? defaultStyle : defaultStyle = HexTileStyle.CreateDefault();
+        private static HexTileStyle _defaultStyle;
+
+        private static HexTileStyle DefaultStyle => _defaultStyle != null ? _defaultStyle : _defaultStyle = HexTileStyle.CreateDefault();
 
         [DrawGizmo(GizmoType.NonSelected | GizmoType.Selected | GizmoType.Pickable)]
-        static void Draw(MapManager manager, GizmoType gizmoType)
+        private static void Draw(MapManager manager, GizmoType gizmoType)
         {
             // In play mode the spawned meshes already show the map.
             if (Application.isPlaying || manager.Definition == null)
@@ -74,7 +75,7 @@ namespace UnholyTrinity.Hex.Editing
             }
         }
 
-        public static void FillHex(HexLayout layout, Vector3 center, float scale, Color color, float alpha)
+        private static void FillHex(HexLayout layout, Vector3 center, float scale, Color color, float alpha)
         {
             for (int i = 0; i < 6; i++)
                 Corners[i] = center + layout.CornerOffset(i) * scale;
@@ -110,7 +111,7 @@ namespace UnholyTrinity.Hex.Editing
             Handles.DrawAAPolyLine(4f, tip - dir * (layout.Size * 0.3f) + side, tip, tip - dir * (layout.Size * 0.3f) - side);
         }
 
-        static void DrawPortalLink(HexLayout layout, HexCoord from, HexCoord to, Color color)
+        private static void DrawPortalLink(HexLayout layout, HexCoord from, HexCoord to, Color color)
         {
             var a = layout.HexToWorld(from) + Vector3.up * 0.05f;
             var b = layout.HexToWorld(to) + Vector3.up * 0.05f;

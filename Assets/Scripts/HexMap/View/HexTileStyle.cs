@@ -30,7 +30,7 @@ namespace UnholyTrinity.Hex
 
         [Tooltip("Prefabs are authored pointy-top for a hex of size 1 with the base at y = 0. MapManager scales them by " +
                  "hex size and turns them 30 degrees for flat-top. Add an ITileVisual (e.g. TileVisual) to react to tile data.")]
-        public List<TileVisualEntry> Prefabs = new List<TileVisualEntry>();
+        public List<TileVisualEntry> Prefabs = new();
 
         [Header("Procedural fallback")]
         [Tooltip("Shared material for every tile; colours are applied per tile with _BaseColor. Leave empty to use URP Lit.")]
@@ -52,17 +52,17 @@ namespace UnholyTrinity.Hex
         public static readonly Color WongBluishGreen = new Color32(0x00, 0x9E, 0x73, 0xFF);
         public static readonly Color WongYellow = new Color32(0xF0, 0xE4, 0x42, 0xFF);
         public static readonly Color WongBlue = new Color32(0x00, 0x72, 0xB2, 0xFF);
-        public static readonly Color WongVermillion = new Color32(0xD5, 0x5E, 0x00, 0xFF);
+        public static readonly Color WongVermilion = new Color32(0xD5, 0x5E, 0x00, 0xFF);
         public static readonly Color WongReddishPurple = new Color32(0xCC, 0x79, 0xA7, 0xFF);
 
         public Color BouncyWallColor = WongSkyBlue;
-        public Color SpikedWallColor = WongVermillion;
+        public Color SpikedWallColor = WongVermilion;
         public Color PickupColor = WongYellow;
         public Color BoostColor = WongBluishGreen;
         public Color FrictionColor = WongOrange;
         public Color PortalColor = WongReddishPurple;
         public Color HealColor = WongBlue;
-        public Color HarmColor = WongVermillion;
+        public Color HarmColor = WongVermilion;
         public Color KillColor = new Color(0.08f, 0.08f, 0.1f);
         public Color ArrowColor = Color.white;
 
@@ -75,24 +75,27 @@ namespace UnholyTrinity.Hex
 
         public Color ColorFor(HexTile tile)
         {
-            switch (tile.Type)
+            return tile.Type switch
             {
-                case TileType.Wall:
-                    switch (tile.WallSettings.Kind)
-                    {
-                        case WallKind.Bouncy: return BouncyWallColor;
-                        case WallKind.Spiked: return SpikedWallColor;
-                        default: return WallColor;
-                    }
-                case TileType.PickupPoint: return PickupColor;
-                case TileType.Boost: return tile.Boost.Strength >= 0 ? BoostColor : FrictionColor;
-                case TileType.Portal: return PortalColor;
-                case TileType.Health:
-                    if (tile.Health.Lethal)
-                        return KillColor;
-                    return tile.Health.Amount >= 0 ? HealColor : HarmColor;
-                default: return FloorColor;
-            }
+                TileType.Wall => tile.WallSettings.Kind switch
+                {
+                    WallKind.Bouncy => BouncyWallColor,
+                    WallKind.Spiked => SpikedWallColor,
+                    _ => WallColor
+                },
+                TileType.PickupPoint => PickupColor,
+                TileType.Boost => tile.Boost.Strength >= 0
+                    ? BoostColor
+                    : FrictionColor,
+                TileType.Portal => PortalColor,
+                TileType.Floor => FloorColor,
+                TileType.Health => tile.Health.Lethal
+                    ? KillColor
+                    : tile.Health.Amount >= 0
+                        ? HealColor
+                        : HarmColor,
+                _ => throw new ArgumentOutOfRangeException()
+            };
         }
 
         public float HeightFor(HexTile tile)
