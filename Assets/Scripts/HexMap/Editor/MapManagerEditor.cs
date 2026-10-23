@@ -315,6 +315,7 @@ namespace UnholyTrinity.Hex.Editing
                 TileType.Wall => HexTile.Wall(coord, _wall.Kind == WallKind.Spiked ? _wall : new WallSettings(_wall.Kind)),
                 TileType.PickupPoint => HexTile.PickupPoint(coord, _pickupGroup),
                 TileType.Boost => HexTile.BoostTile(coord, _boost),
+                TileType.Health => HexTile.HealthTile(coord, _healthHarm.Lethal ? HealthTileSettings.Kill(_healthHarm.Trigger) : _healthHarm),
                 _ => HexTile.Floor(coord),
             };
 
