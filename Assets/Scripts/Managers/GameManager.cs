@@ -50,6 +50,9 @@ public class GameManager : ScriptableObject
             _ => throw new ArgumentOutOfRangeException()
         };
 
+    // false until the spawner has registered every player
+    public bool AllPlayersRegistered => _players.Count == maxPlayers;
+
     public List<Vector3> CurrentPlayerPositions => new (_players.Select(x => x.transform.position).ToList());
 
     // Unity Lifecycle

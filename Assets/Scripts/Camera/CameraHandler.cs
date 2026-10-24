@@ -78,6 +78,11 @@ public class CameraHandler : MonoBehaviour
     void Start()
     {
         cam ??= GetComponent<Camera>();
+        if (!gm.AllPlayersRegistered)
+        {
+            return;
+        }
+
         ComputePose(out var p, out var r, out var f);
         transform.SetPositionAndRotation(p, r);
         cam.fieldOfView = f;
@@ -101,6 +106,12 @@ public class CameraHandler : MonoBehaviour
 
     private void LateUpdate()
     {
+        // nothing to frame until the players exist
+        if (!gm.AllPlayersRegistered)
+        {
+            return;
+        }
+
         phaseTime += Time.deltaTime;
         if (allowSwoop && autoSwoopIn && !Swooped && turns.IsPlayerTurn
             && phaseTime >= autoSwoopDelay)
