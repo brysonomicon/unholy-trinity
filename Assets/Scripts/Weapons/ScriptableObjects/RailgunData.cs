@@ -5,9 +5,18 @@ namespace UnholyTrinity.Weapons
     [CreateAssetMenu(fileName = "RailgunData", menuName = "Unholy Trinity/RailgunData")]
     public class RailgunData : WeaponData
     {
-        public override void Fire()
+        [SerializeField][Min(0)] private int damage = 80;
+
+        public override int GetDamage(AimTile aimTile)
         {
-            // TODO: roll hit chance per aimed tile depending on falloff, full damage on hit
+            bool shotHit = Random.value <= aimTile.Falloff;
+
+            if (shotHit)
+            {
+                return damage;
+            }
+
+            return 0;
         }
     }
 }

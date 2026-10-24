@@ -61,37 +61,60 @@ public class UIManager : MonoBehaviour
                 () => current.RotatePlayer(false),
                 Color.black);
 
+        Weapon weapon = current.CurrentWeapon;
         ActionCard weaponCard = Instantiate(cardPrefab, cardSection.transform)
-            .GetComponent<ActionCard>();
+            .GetComponent<ActionCard>()
+            .Setup($"Fire {weapon.Data.DisplayName}",
+                weapon.Data.TickCost,
+                () => PlanAndRefresh(() => current.QueueShot(weapon)),
+                Color.black,
+                $"{current.GetUnplannedAmmo(weapon)}/{weapon.Data.MaxAmmo}");
+        SetClickable(weaponCard, current.CanQueueShot(weapon));
 
-        SetupWeaponCard(current.CurrentWeapon);
+        ActionCard holdFireCard = Instantiate(cardPrefab, cardSection.transform)
+            .GetComponent<ActionCard>()
+            .Setup("Hold Fire", 1,
+                () => PlanAndRefresh(current.HoldFire),
+                Color.black);
+        SetClickable(holdFireCard, current.HasFreeShotSlot);
 
-
-
+        Instantiate(cardPrefab, cardSection.transform)
+            .GetComponent<ActionCard>()
+            .Setup("Clear Plan", 0,
+                () => PlanAndRefresh(current.ClearPlan),
+                Color.black);
 
         return;
 
-        void SetupWeaponCard(Weapon weapon, Action beforeSetup = null)
+        // does a planning action and then rebuilds every card so they reflect new plan
+        void PlanAndRefresh(Action planAction)
         {
-            beforeSetup?.Invoke();
-            string weaponCardTitle =
-                $"Fire {weapon.Data.DisplayName}";
-            int weaponCardTickCost = weapon.Data.TickCost;
-            Debug.Log($"Setting ammo to {weapon.Ammo}");
-            weaponCard.Setup(weaponCardTitle, weaponCardTickCost,
-                () => SetupWeaponCard(weapon, () => current.Fire(weapon)),
-                Color.black,
-                $"{weapon.Ammo}/{weapon.Data.MaxAmmo}");
-
-            if (weapon.CanFire)
-            {
-                weaponCard.EnableClickable();
-            }
-            else
-            {
-                weaponCard.DisableClickable();
-            }
+            planAction();
+            ClearCardSection();
+            GenerateDefaultCards(current);
         }
+
+        // void SetupWeaponCard(Weapon weapon, Action beforeSetup = null)
+        // {
+        //     beforeSetup?.Invoke();
+        //     string weaponCardTitle =
+        //         $"Fire {weapon.Data.DisplayName}";
+        //     int weaponCardTickCost = weapon.Data.TickCost;
+        //     Debug.Log($"Setting ammo to {weapon.Ammo}");
+        //     weaponCard.Setup(weaponCardTitle, weaponCardTickCost,
+        //         () => SetupWeaponCard(weapon, () => current.QueueShot(weapon)),
+        //         Color.black,
+        //         $"{current.GetUnplannedAmmo(weapon)}/{weapon.Data.MaxAmmo}");
+
+        //     if (current.CanQueueShot(weapon))
+        //     {
+        //         weaponCard.EnableClickable();
+        //     }
+        //     else
+        //     {
+        //         weaponCard.DisableClickable();
+        //     }
+        // }
     }
 
     private void ClearCardSection()
@@ -100,6 +123,18 @@ public class UIManager : MonoBehaviour
         foreach (var child in cardSection.GetComponentsInChildren<ActionCard>())
         {
             Destroy(child.gameObject);
+        }
+    }
+
+    private static void SetClickable(ActionCard card, bool clickable)
+    {
+        if (clickable)
+        {
+            card.EnableClickable();
+        }
+        else
+        {
+            card.DisableClickable();
         }
     }
 }

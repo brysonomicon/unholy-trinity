@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 1825585244586012281}
   - component: {fileID: 5226551869569889421}
   - component: {fileID: 9068410019634648079}
+  - component: {fileID: 2588836406730225762}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -128,13 +129,33 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnholyTrinity.Players.Player
   gm: {fileID: 11400000, guid: df4deffeedcb94d4bb67ddca6e302f96, type: 2}
-  mapManager: {fileID: 0}
   <Coord>k__BackingField:
     <Q>k__BackingField: 0
     <R>k__BackingField: 0
   heightOffset: 0.6
+  startingWeapon: {fileID: 11400000, guid: 6d3c5020ba2fab449a084dc37927c5db, type: 2}
+  aimPreview: {fileID: 2588836406730225762}
   <CurrentWeapon>k__BackingField:
-    <Data>k__BackingField: {fileID: 11400000, guid: 6d3c5020ba2fab449a084dc37927c5db, type: 2}
+    <Data>k__BackingField: {fileID: 0}
     <Ammo>k__BackingField: 0
-    cooldown: 0
   <CurrentAimDirection>k__BackingField: 0
+  startingHealth: 100
+  <CurrentHealth>k__BackingField: 0
+--- !u!114 &2588836406730225762
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1522190664592441805}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 987b1a09b13352a4db7c3c4323e5b2c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UnholyTrinity.Players.AimPreview
+  highlightMaterial: {fileID: 2100000, guid: 2b766dd1c688ae74da03fbcf1cab63a5, type: 2}
+  highlightHeight: 0.15
+  highlightScale: 0.95
+  tintAlpha: 0.35
+  weakFalloffColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  strongFalloffColor: {r: 1, g: 0, b: 0, a: 1}

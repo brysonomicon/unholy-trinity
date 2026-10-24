@@ -48,7 +48,7 @@ namespace UnholyTrinity.Weapons
             return aimTiles;
         }
 
-        public abstract void Fire();
+        public abstract int GetDamage(AimTile aimTile);
 
         // weapons reach anything in line of sight unless they override this
         protected virtual bool IsInRange(HexCoord origin, HexCoord target)
