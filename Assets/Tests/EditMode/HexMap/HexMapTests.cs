@@ -1,5 +1,6 @@
 using System.Linq;
 using NUnit.Framework;
+using UnholyTrinity.Pickups;
 using UnityEngine;
 
 namespace UnholyTrinity.Hex.Tests
@@ -82,12 +83,13 @@ namespace UnholyTrinity.Hex.Tests
         public void Definition_RoundTripsThroughHexMap()
         {
             var definition = ScriptableObject.CreateInstance<HexMapDefinition>();
+            var heal = ScriptableObject.CreateInstance<HealPickup>();
             try
             {
                 var map = new HexMap();
                 map.SetTile(HexTile.Floor(new HexCoord(0, 0)));
                 map.SetTile(HexTile.Wall(new HexCoord(1, 0)));
-                map.SetTile(HexTile.PickupPoint(new HexCoord(2, 0), 3));
+                map.SetTile(HexTile.PickupPoint(new HexCoord(2, 0), heal));
                 map.SetTile(HexTile.BouncyWall(new HexCoord(3, 0)));
                 map.SetTile(HexTile.SpikedWall(new HexCoord(4, 0), 2, SpikeDamageMode.ScaledBySpeed));
                 map.SetTile(HexTile.BoostTile(new HexCoord(0, 1), BoostSettings.Fixed(-2, HexDirection.D4)));
@@ -116,6 +118,7 @@ namespace UnholyTrinity.Hex.Tests
             finally
             {
                 Object.DestroyImmediate(definition);
+                Object.DestroyImmediate(heal);
             }
         }
     }

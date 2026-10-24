@@ -2,7 +2,8 @@
     "name": "UnholyTrinity.HexMap",
     "rootNamespace": "UnholyTrinity.Hex",
     "references": [
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "UnholyTrinity.Pickups"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using UnholyTrinity.Pickups;
 using UnityEditor;
 using UnityEngine;
 
@@ -20,7 +21,7 @@ namespace UnholyTrinity.Hex.Editing
         private static BoostSettings _boost = BoostSettings.Along(1);
         private static WallSettings _wall = WallSettings.Normal;
         private static HealthTileSettings _healthHarm = HealthTileSettings.Harm(1);
-        private static int _pickupGroup;
+        private static PickupDefinition _pickup;
         private static int _portalRotation;
         private static int _fillRadius = 4;
         private static bool _fillWithWallBorder = true;
@@ -38,7 +39,7 @@ namespace UnholyTrinity.Hex.Editing
             public BoostSettings Boost;
             public WallSettings Wall;
             public HealthTileSettings Health;
-            public int PickupGroup;
+            public PickupDefinition Pickup;
             public int PortalRotation;
             public int FillRadius;
             public bool FillWithWallBorder;
@@ -67,7 +68,7 @@ namespace UnholyTrinity.Hex.Editing
             _boost = state.Boost;
             _wall = state.Wall;
             _healthHarm = state.Health;
-            _pickupGroup = state.PickupGroup;
+            _pickup = state.Pickup;
             _portalRotation = state.PortalRotation;
             _fillRadius = state.FillRadius;
             _fillWithWallBorder = state.FillWithWallBorder;
@@ -82,7 +83,7 @@ namespace UnholyTrinity.Hex.Editing
                 Boost = _boost,
                 Wall = _wall,
                 Health = _healthHarm,
-                PickupGroup = _pickupGroup,
+                Pickup = _pickup,
                 PortalRotation = _portalRotation,
                 FillRadius = _fillRadius,
                 FillWithWallBorder = _fillWithWallBorder,
@@ -162,9 +163,9 @@ namespace UnholyTrinity.Hex.Editing
                                 _boost.Direction, manager.Orientation);
                         break;
                     case TileType.PickupPoint:
-                        _pickupGroup =
-                            EditorGUILayout.IntField("Spawn Group",
-                                _pickupGroup);
+                        _pickup = (PickupDefinition)EditorGUILayout.ObjectField(
+                            new GUIContent("Pickup", "Sets the effect, trigger and respawn time for painted points."),
+                            _pickup, typeof(PickupDefinition), false);
                         break;
                     case TileType.Health:
                         _healthHarm.Lethal = EditorGUILayout.Toggle(new GUIContent("Lethal", "Kills outright and ends the slide, e.g. lava or a void."), _healthHarm.Lethal);
@@ -313,7 +314,7 @@ namespace UnholyTrinity.Hex.Editing
             var tile = _paintType switch
             {
                 TileType.Wall => HexTile.Wall(coord, _wall.Kind == WallKind.Spiked ? _wall : new WallSettings(_wall.Kind)),
-                TileType.PickupPoint => HexTile.PickupPoint(coord, _pickupGroup),
+                TileType.PickupPoint => HexTile.PickupPoint(coord, _pickup),
                 TileType.Boost => HexTile.BoostTile(coord, _boost),
                 TileType.Health => HexTile.HealthTile(coord, _healthHarm.Lethal ? HealthTileSettings.Kill(_healthHarm.Trigger) : _healthHarm),
                 _ => HexTile.Floor(coord),

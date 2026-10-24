@@ -1,22 +1,24 @@
 using System;
+using UnholyTrinity.Pickups;
 
 namespace UnholyTrinity.Hex
 {
-    /// <summary>Placeholder data for a <see cref="TileType.PickupPoint"/>; the pickup system will decide what spawns.</summary>
+    /// <summary>Data for a <see cref="TileType.PickupPoint"/>: the pickup it spawns, which also sets the effect, trigger and respawn time.</summary>
     [Serializable]
     public struct PickupPointData : IEquatable<PickupPointData>
     {
-        /// <summary>Lets the pickup system treat groups of points differently (e.g. weapon vs. health spawns).</summary>
-        public int SpawnGroup;
+        public PickupDefinition Pickup;
 
-        public PickupPointData(int spawnGroup)
+        public PickupPointData(PickupDefinition pickup)
         {
-            SpawnGroup = spawnGroup;
+            Pickup = pickup;
         }
+
+        public bool HasPickup => Pickup != null;
 
         public bool Equals(PickupPointData other)
         {
-            return SpawnGroup == other.SpawnGroup;
+            return Pickup == other.Pickup;
         }
 
         public override bool Equals(object obj)
@@ -26,7 +28,7 @@ namespace UnholyTrinity.Hex
 
         public override int GetHashCode()
         {
-            return SpawnGroup;
+            return HasPickup ? Pickup.GetHashCode() : 0;
         }
     }
 }
