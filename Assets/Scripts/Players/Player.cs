@@ -1,12 +1,14 @@
 using System.Linq;
 using System.Collections.Generic;
 using UnholyTrinity.Hex;
+using UnholyTrinity.Pickups;
 using UnholyTrinity.Weapons;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace UnholyTrinity.Players
 {
-    public class Player : MonoBehaviour
+    public class Player : MonoBehaviour, IHealable
     {
         [SerializeField] private GameManager gm;
 
@@ -40,7 +42,8 @@ namespace UnholyTrinity.Players
         public AimDirection CurrentAimDirection { get; private set; }
 
         [Header("Health")]
-        [SerializeField, Min(1)] private int startingHealth = 100;
+        [SerializeField, Min(1), FormerlySerializedAs("startingHealth")]
+        private int maxHealth = 100;
 
         [field: SerializeField]
         public int CurrentHealth { get; private set; }
@@ -58,7 +61,7 @@ namespace UnholyTrinity.Players
 
         private void Awake()
         {
-            CurrentHealth = startingHealth;
+            CurrentHealth = maxHealth;
             CurrentWeapon = new Weapon(startingWeapon);
             GameManager.NewTurnEvent += OnNewTurn;
         }
@@ -248,6 +251,17 @@ namespace UnholyTrinity.Players
              {
                 Debug.Log($"{name} died. RIP");
              }
+        }
+
+        public bool TryHeal(int amount)
+        {
+            if (IsDead || amount <= 0 || CurrentHealth >= maxHealth)
+            {
+                return false;
+            }
+
+            CurrentHealth = Mathf.Min(CurrentHealth + amount, maxHealth);
+            return true;
         }
 
         // Event Handlers
