@@ -135,6 +135,12 @@ public class GameManager : ScriptableObject
         {
             player.ResolvePlannedShot(tickIndex);
         }
+
+        // aim phase
+        foreach (Player player in _players)
+        {
+            player.ResolvePlannedAim(tickIndex);
+        }
     }
 
     // Combat

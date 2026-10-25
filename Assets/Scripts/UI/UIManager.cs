@@ -46,20 +46,27 @@ public class UIManager : MonoBehaviour
         Instantiate(cardPrefab, cardSection.transform)
             .GetComponent<ActionCard>()
             .Setup("Move", 1, current.MovePlayer, Color.black);
-
-        //TODO: Pass in rotation after clicking on card somehow.
-        Instantiate(cardPrefab, cardSection.transform)
+        
+        ActionCard rotateCWCard = Instantiate(cardPrefab, cardSection.transform)
             .GetComponent<ActionCard>()
-            .Setup("Rotate CW",
-                1,
-                () => current.RotatePlayer(true),
+            .Setup("Rotate CW", 1,
+                () => PlanAndRefresh(() => current.QueueRotation(true)),
                 Color.black);
-        Instantiate(cardPrefab, cardSection.transform)
+        SetClickable(rotateCWCard, current.HasFreeAimSlot);
+        
+        ActionCard rotateCCWCard = Instantiate(cardPrefab, cardSection.transform)
             .GetComponent<ActionCard>()
-            .Setup("Rotate CCW",
-                1,
-                () => current.RotatePlayer(false),
+            .Setup("Rotate CCW", 1,
+                () => PlanAndRefresh(() => current.QueueRotation(false)),
                 Color.black);
+        SetClickable(rotateCCWCard, current.HasFreeAimSlot);
+        
+        ActionCard holdAimCard = Instantiate(cardPrefab, cardSection.transform)
+            .GetComponent<ActionCard>()
+            .Setup("Hold Aim", 1,
+                () => PlanAndRefresh(current.HoldAim),
+                Color.black);
+        SetClickable(holdAimCard, current.HasFreeAimSlot);
 
         Weapon weapon = current.CurrentWeapon;
         ActionCard weaponCard = Instantiate(cardPrefab, cardSection.transform)

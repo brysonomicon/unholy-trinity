@@ -20,6 +20,7 @@ namespace UnholyTrinity.Players
         [Header("Combat")]
         [SerializeField] private WeaponData startingWeapon;
         [SerializeField] private AimPreview aimPreview;
+        [SerializeField][Min(1)] int aimStepsPerTick = 1;
 
         // ticks counted for the whole game, so a cooldown can block ticks
         // subsequent turns
@@ -32,6 +33,7 @@ namespace UnholyTrinity.Players
         // copy of the nexFireTick that increments as shots are planned so
         // planning follows the same cooldown rules without changing the real cooldown
         private int plannedNextFireTick;
+        private readonly List<AimDirection> plannedAims = new();
 
         [field: SerializeField] 
         public Weapon CurrentWeapon { get; private set; }
@@ -51,8 +53,13 @@ namespace UnholyTrinity.Players
         // ticks, so the turns first tick is CurrentTick + 1
         private int NextPlannedTick => gm.CurrentTick + 1 + plannedShots.Count;
 
-        // true while the shoot lane still has a free tick this turn
+        // true while the corresponding lane has a free tick this turn
         public bool HasFreeShotSlot => plannedShots.Count < TurnManager.Instance.TicksPerTurn;
+        public bool HasFreeAimSlot => plannedAims.Count < TurnManager.Instance.TicksPerTurn;
+
+        private AimDirection PlannedAimDirection => plannedAims.Count > 0
+                                ? plannedAims[^1]
+                                : CurrentAimDirection;
 
         // Unity Lifecycle
 
@@ -126,22 +133,22 @@ namespace UnholyTrinity.Players
 
         // Aim
 
-        public void RotatePlayer(bool clockwise)
-        {
-            // [CB] TODO: Actually rotate the player.
-            Debug.Log($"{name} was facing {CurrentAimDirection}");
-            CurrentAimDirection = clockwise
-                ? CurrentAimDirection.Next()
-                : CurrentAimDirection.Previous();
-            Debug.Log($"{name} is now facing {CurrentAimDirection}");
+        // public void RotatePlayer(bool clockwise)
+        // {
+        //     // [CB] TODO: Actually rotate the player.
+        //     Debug.Log($"{name} was facing {CurrentAimDirection}");
+        //     CurrentAimDirection = clockwise
+        //         ? CurrentAimDirection.Next()
+        //         : CurrentAimDirection.Previous();
+        //     Debug.Log($"{name} is now facing {CurrentAimDirection}");
 
-            RefreshAimPreview();
-        }
+        //     RefreshAimPreview();
+        // }
 
         private void RefreshAimPreview()
         {
             List<AimTile> aimTiles = CurrentWeapon.Data.GetAimTiles(
-                mapManager.Map, Coord, CurrentAimDirection);
+                mapManager.Map, Coord, PlannedAimDirection);
             aimPreview.Show(aimTiles, mapManager.Layout);
         }
 
@@ -183,6 +190,43 @@ namespace UnholyTrinity.Players
             plannedShots.Add(null);
         }
 
+        public void QueueRotation(bool clockwise)
+        {
+            if (!HasFreeAimSlot)
+            {
+                return;
+            }
+
+            AimDirection rotatedAim = PlannedAimDirection;
+
+            for (int i = 0; i < aimStepsPerTick; i++)
+            {
+                if (clockwise)
+                {
+                    rotatedAim = rotatedAim.Previous();
+                }
+                else
+                {
+                    rotatedAim = rotatedAim.Next();
+                }
+            }
+
+            Debug.Log($"{name} queued aim {rotatedAim} on tick {gm.CurrentTick + 1 + plannedAims.Count}");
+            plannedAims.Add(rotatedAim);
+            RefreshAimPreview();
+        }
+
+        public void HoldAim()
+        {
+            if (!HasFreeAimSlot)
+            {
+                return;
+            }
+
+            Debug.Log($"{name} holds aim on tick {gm.CurrentTick + 1 + plannedAims.Count}");
+            plannedAims.Add(PlannedAimDirection);
+        }
+
         public int GetUnplannedAmmo(Weapon weapon)
         {
             return weapon.Ammo - plannedShots.Count(plannedWeapon => plannedWeapon == weapon);
@@ -193,6 +237,8 @@ namespace UnholyTrinity.Players
         {
             plannedShots.Clear();
             plannedNextFireTick = nextFireTick;
+            plannedAims.Clear();
+            RefreshAimPreview();
         }
 
         // Resolution
@@ -208,6 +254,15 @@ namespace UnholyTrinity.Players
                 plannedShots[tickIndex] != null)
             {
                 Fire(plannedShots[tickIndex]);
+            }
+        }
+
+        public void ResolvePlannedAim(int tickIndex)
+        {
+            if (tickIndex < plannedAims.Count)
+            {
+                CurrentAimDirection = plannedAims[tickIndex];
+                Debug.Log($"{name} is now aiming {CurrentAimDirection}");
             }
         }
 
