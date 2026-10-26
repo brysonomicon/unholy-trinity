@@ -44,15 +44,20 @@ public class UIManager : MonoBehaviour
             .AddOption($"{current.GetUnplannedAmmo(weapon)}/{weapon.Data.MaxAmmo}",
                 () => PlanAndRefresh(() => current.PlanShot(weapon)),
                 current.CanPlanShot(weapon),
-                weapon.Data.Icon)
+                weapon.Data.Icon,
+                current.IsPlanningShot(weapon))
             .AddRow()
-            .AddOption("Hold", () => PlanAndRefresh(current.PlanHoldFire));
+            .AddOption("Hold", () => PlanAndRefresh(current.PlanHoldFire),
+                selected: current.IsHoldingFire);
 
         CreateLaneCard("Aim")
-            .AddOption("CCW", () => PlanAndRefresh(() => current.PlanRotation(false)))
-            .AddOption("CW", () => PlanAndRefresh(() => current.PlanRotation(true)))
+            .AddOption("CCW", () => PlanAndRefresh(() => current.PlanRotation(false)),
+                selected: current.IsPlanningRotation(false))
+            .AddOption("CW", () => PlanAndRefresh(() => current.PlanRotation(true)),
+                selected: current.IsPlanningRotation(true))
             .AddRow()
-            .AddOption("Hold", () => PlanAndRefresh(current.PlanHoldAim));
+            .AddOption("Hold", () => PlanAndRefresh(current.PlanHoldAim),
+                selected: current.IsHoldingAim);
 
         // placeholder until movement is in
         CreateLaneCard("Move")

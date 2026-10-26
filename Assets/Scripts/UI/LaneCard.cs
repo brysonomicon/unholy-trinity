@@ -34,15 +34,16 @@ public class LaneCard : MonoBehaviour
         return this;
     }
 
-    public LaneCard AddOption(string label, UnityAction onClick, bool clickable = true, Sprite icon = null)
-    {
+    public LaneCard AddOption(
+        string label, UnityAction onClick, bool clickable = true, Sprite icon = null, bool selected = false
+    ){
         if (currentRow == null)
         {
             AddRow();
         }
 
         LaneOption option = Instantiate(optionPrefab, currentRow);
-        option.Setup(label, onClick, clickable, icon);
+        option.Setup(label, onClick, clickable, icon, selected);
         return this;
     }
 

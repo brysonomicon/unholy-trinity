@@ -56,6 +56,9 @@ namespace UnholyTrinity.Players
         private AimDirection PreviousPlannedAim => plannedActions.Count > 1
             ? plannedActions[^2].PlannedAim
             : CurrentAimDirection;
+        
+        public bool IsHoldingFire => PlanningAction.PlannedShot == null;
+        public bool IsHoldingAim => PlanningAction.PlannedAim == PreviousPlannedAim;
 
         // Unity Lifecycle
 
@@ -184,26 +187,22 @@ namespace UnholyTrinity.Players
 
         public void PlanRotation(bool clockwise)
         {
-            AimDirection rotatedAim = PreviousPlannedAim;
-
-            for (int i = 0; i < aimStepsPerTick; i++)
-            {
-                if (clockwise)
-                {
-                    rotatedAim = rotatedAim.Previous();
-                }
-                else
-                {
-                    rotatedAim = rotatedAim.Next();
-                }
-            }
-
-            SetPlannedAim(rotatedAim);
+            SetPlannedAim(GetRotatedAim(clockwise));
         }
 
         public void PlanHoldAim()
         {
             SetPlannedAim(PreviousPlannedAim);
+        }
+
+        public bool IsPlanningShot(Weapon weapon)
+        {
+            return PlanningAction.PlannedShot == weapon;
+        }
+
+        public bool IsPlanningRotation(bool clockwise)
+        {
+            return PlanningAction.PlannedAim == GetRotatedAim(clockwise);
         }
 
         public void PlanNextTick()
@@ -236,6 +235,25 @@ namespace UnholyTrinity.Players
             PlanningAction.PlannedAim = aim;
             PlanningAction.Aim = () => SetAim(aim);
             RefreshAimPreview();
+        }
+
+        private AimDirection GetRotatedAim(bool clockwise)
+        {
+            AimDirection rotatedAim = PreviousPlannedAim;
+
+            for (int i = 0; i < aimStepsPerTick; i++)
+            {
+                if (clockwise)
+                {
+                    rotatedAim = rotatedAim.Previous();
+                }
+                else
+                {
+                    rotatedAim = rotatedAim.Next();
+                }
+            }
+
+            return rotatedAim;
         }
 
         private int GetPlannedNextFireTick()
