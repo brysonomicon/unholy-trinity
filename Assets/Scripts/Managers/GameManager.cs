@@ -133,13 +133,19 @@ public class GameManager : ScriptableObject
         // shoot phase
         foreach (Player player in _players)
         {
-            player.ResolvePlannedShot(tickIndex);
+            player.GetPlannedAction(tickIndex)?.Shoot?.Invoke();
         }
 
         // aim phase
         foreach (Player player in _players)
         {
-            player.ResolvePlannedAim(tickIndex);
+            player.GetPlannedAction(tickIndex)?.Aim?.Invoke();
+        }
+
+        // move phase
+        foreach (Player player in _players)
+        {
+            player.GetPlannedAction(tickIndex)?.Move?.Invoke();
         }
     }
 

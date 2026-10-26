@@ -744,6 +744,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1366642040912669421, guid: ca55dba338a5b3742a3390472db29bbc, type: 3}
+      propertyPath: m_Spacing
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 1366642040912669421, guid: ca55dba338a5b3742a3390472db29bbc, type: 3}
+      propertyPath: m_Padding.m_Left
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 1366642040912669421, guid: ca55dba338a5b3742a3390472db29bbc, type: 3}
+      propertyPath: m_ChildControlWidth
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1366642040912669421, guid: ca55dba338a5b3742a3390472db29bbc, type: 3}
+      propertyPath: m_ChildForceExpandWidth
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3339523680938126663, guid: ca55dba338a5b3742a3390472db29bbc, type: 3}
       propertyPath: m_Name
       value: GameUI

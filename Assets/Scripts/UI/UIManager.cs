@@ -42,48 +42,52 @@ public class UIManager : MonoBehaviour
             .GetComponent<ActionCard>()
             .Setup("End Turn", 0,
                 () => TurnManager.Instance.EndTurn());
-        
+
+        ActionCard nextTickCard = Instantiate(cardPrefab, cardSection.transform)
+            .GetComponent<ActionCard>()
+            .Setup("Next Tick", 0,
+                () => PlanAndRefresh(current.PlanNextTick),
+                Color.black,
+                $"Tick {current.PlanningTickOfTurn}/{TurnManager.Instance.TicksPerTurn}");
+        SetClickable(nextTickCard, current.CanPlanNextTick);
+
         Instantiate(cardPrefab, cardSection.transform)
             .GetComponent<ActionCard>()
             .Setup("Move", 1, current.MovePlayer, Color.black);
-        
-        ActionCard rotateCWCard = Instantiate(cardPrefab, cardSection.transform)
+
+        Instantiate(cardPrefab, cardSection.transform)
             .GetComponent<ActionCard>()
             .Setup("Rotate CW", 1,
-                () => PlanAndRefresh(() => current.QueueRotation(true)),
+                () => PlanAndRefresh(() => current.PlanRotation(true)),
                 Color.black);
-        SetClickable(rotateCWCard, current.HasFreeAimSlot);
-        
-        ActionCard rotateCCWCard = Instantiate(cardPrefab, cardSection.transform)
+
+        Instantiate(cardPrefab, cardSection.transform)
             .GetComponent<ActionCard>()
             .Setup("Rotate CCW", 1,
-                () => PlanAndRefresh(() => current.QueueRotation(false)),
+                () => PlanAndRefresh(() => current.PlanRotation(false)),
                 Color.black);
-        SetClickable(rotateCCWCard, current.HasFreeAimSlot);
-        
-        ActionCard holdAimCard = Instantiate(cardPrefab, cardSection.transform)
+
+        Instantiate(cardPrefab, cardSection.transform)
             .GetComponent<ActionCard>()
             .Setup("Hold Aim", 1,
-                () => PlanAndRefresh(current.HoldAim),
+                () => PlanAndRefresh(current.PlanHoldAim),
                 Color.black);
-        SetClickable(holdAimCard, current.HasFreeAimSlot);
 
         Weapon weapon = current.CurrentWeapon;
         ActionCard weaponCard = Instantiate(cardPrefab, cardSection.transform)
             .GetComponent<ActionCard>()
             .Setup($"Fire {weapon.Data.DisplayName}",
                 weapon.Data.TickCost,
-                () => PlanAndRefresh(() => current.QueueShot(weapon)),
+                () => PlanAndRefresh(() => current.PlanShot(weapon)),
                 Color.black,
                 $"{current.GetUnplannedAmmo(weapon)}/{weapon.Data.MaxAmmo}");
-        SetClickable(weaponCard, current.CanQueueShot(weapon));
+        SetClickable(weaponCard, current.CanPlanShot(weapon));
 
-        ActionCard holdFireCard = Instantiate(cardPrefab, cardSection.transform)
+        Instantiate(cardPrefab, cardSection.transform)
             .GetComponent<ActionCard>()
             .Setup("Hold Fire", 1,
-                () => PlanAndRefresh(current.HoldFire),
+                () => PlanAndRefresh(current.PlanHoldFire),
                 Color.black);
-        SetClickable(holdFireCard, current.HasFreeShotSlot);
 
         Instantiate(cardPrefab, cardSection.transform)
             .GetComponent<ActionCard>()
