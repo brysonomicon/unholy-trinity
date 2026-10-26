@@ -77,7 +77,7 @@ public class UIManager : MonoBehaviour
         CreateLaneCard($"Tick {current.PlanningTickOfTurn}/{TurnManager.Instance.TicksPerTurn}")
             .AddOption("Next Tick", () => PlanAndRefresh(current.PlanNextTick), current.CanPlanNextTick)
             .AddRow()
-            .AddOption("Clear Plan", () => PlanAndRefresh(current.ClearPlan))
+            .AddOption("Clear Tick", () => PlanAndRefresh(current.ClearTick))
             .AddRow()
             .AddOption("End Turn", () => TurnManager.Instance.EndTurn());
 

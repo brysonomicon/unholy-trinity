@@ -79,6 +79,8 @@ namespace UnholyTrinity.Players
         public bool IsHoldingAim => PlanningAction.PlannedAim == PreviousPlannedAim;
         public bool IsHoldingMove => PlanningAction.PlannedMove == null;
 
+        private bool HasTickChanges => !IsHoldingFire || !IsHoldingAim || !IsHoldingMove;
+
         #endregion
 
         #region Unity Lifecycle
@@ -293,8 +295,20 @@ namespace UnholyTrinity.Players
             return weapon.Ammo - plannedActions.Count(action => action.PlannedShot == weapon);
         }
 
-        // empties every lane. used at turn start and to undo planned actions
-        public void ClearPlan()
+        // clears the tick being planned currently. if already clear, clears previous tick
+        public void ClearTick()
+        {
+            if (!HasTickChanges && plannedActions.Count > 1)
+            {
+                plannedActions.RemoveAt(plannedActions.Count - 1);
+            }
+
+            plannedActions[^1] = new UnholyAction(PreviousPlannedAim);
+            RefreshAimPreview();
+        }
+
+        // clears the entire plan, used for turn start
+        private void ClearPlan()
         {
             plannedActions.Clear();
             plannedActions.Add(new UnholyAction(CurrentAimDirection));
