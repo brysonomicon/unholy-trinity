@@ -7,7 +7,7 @@ using UnityEngine.UI;
 public class UIManager : MonoBehaviour
 {
     [SerializeField] private GameObject cardSection;
-    [SerializeField] private GameObject cardPrefab;
+    [SerializeField] private LaneCard laneCardPrefab;
 
     private void Awake()
     {
@@ -38,62 +38,27 @@ public class UIManager : MonoBehaviour
 
     private void GenerateDefaultCards(Player current)
     {
-        Instantiate(cardPrefab, cardSection.transform)
-            .GetComponent<ActionCard>()
-            .Setup("End Turn", 0,
-                () => TurnManager.Instance.EndTurn());
-
-        ActionCard nextTickCard = Instantiate(cardPrefab, cardSection.transform)
-            .GetComponent<ActionCard>()
-            .Setup("Next Tick", 0,
-                () => PlanAndRefresh(current.PlanNextTick),
-                Color.black,
-                $"Tick {current.PlanningTickOfTurn}/{TurnManager.Instance.TicksPerTurn}");
-        SetClickable(nextTickCard, current.CanPlanNextTick);
-
-        Instantiate(cardPrefab, cardSection.transform)
-            .GetComponent<ActionCard>()
-            .Setup("Move", 1, current.MovePlayer, Color.black);
-
-        Instantiate(cardPrefab, cardSection.transform)
-            .GetComponent<ActionCard>()
-            .Setup("Rotate CW", 1,
-                () => PlanAndRefresh(() => current.PlanRotation(true)),
-                Color.black);
-
-        Instantiate(cardPrefab, cardSection.transform)
-            .GetComponent<ActionCard>()
-            .Setup("Rotate CCW", 1,
-                () => PlanAndRefresh(() => current.PlanRotation(false)),
-                Color.black);
-
-        Instantiate(cardPrefab, cardSection.transform)
-            .GetComponent<ActionCard>()
-            .Setup("Hold Aim", 1,
-                () => PlanAndRefresh(current.PlanHoldAim),
-                Color.black);
-
         Weapon weapon = current.CurrentWeapon;
-        ActionCard weaponCard = Instantiate(cardPrefab, cardSection.transform)
-            .GetComponent<ActionCard>()
-            .Setup($"Fire {weapon.Data.DisplayName}",
-                weapon.Data.TickCost,
+
+        CreateLaneCard("Shoot")
+            .AddOption($"{weapon.Data.DisplayName} {current.GetUnplannedAmmo(weapon)}/{weapon.Data.MaxAmmo}",
                 () => PlanAndRefresh(() => current.PlanShot(weapon)),
-                Color.black,
-                $"{current.GetUnplannedAmmo(weapon)}/{weapon.Data.MaxAmmo}");
-        SetClickable(weaponCard, current.CanPlanShot(weapon));
+                current.CanPlanShot(weapon))
+            .AddOption("Hold", () => PlanAndRefresh(current.PlanHoldFire));
 
-        Instantiate(cardPrefab, cardSection.transform)
-            .GetComponent<ActionCard>()
-            .Setup("Hold Fire", 1,
-                () => PlanAndRefresh(current.PlanHoldFire),
-                Color.black);
+        CreateLaneCard("Aim")
+            .AddOption("CCW", () => PlanAndRefresh(() => current.PlanRotation(false)))
+            .AddOption("CW", () => PlanAndRefresh(() => current.PlanRotation(true)))
+            .AddOption("Hold", () => PlanAndRefresh(current.PlanHoldAim));
 
-        Instantiate(cardPrefab, cardSection.transform)
-            .GetComponent<ActionCard>()
-            .Setup("Clear Plan", 0,
-                () => PlanAndRefresh(current.ClearPlan),
-                Color.black);
+        // placeholder until movement is in
+        CreateLaneCard("Move")
+            .AddOption("Move", current.MovePlayer);
+
+        CreateLaneCard($"Tick {current.PlanningTickOfTurn}/{TurnManager.Instance.TicksPerTurn}")
+            .AddOption("Next Tick", () => PlanAndRefresh(current.PlanNextTick), current.CanPlanNextTick)
+            .AddOption("Clear Plan", () => PlanAndRefresh(current.ClearPlan))
+            .AddOption("End Turn", () => TurnManager.Instance.EndTurn());
 
         return;
 
@@ -104,48 +69,19 @@ public class UIManager : MonoBehaviour
             ClearCardSection();
             GenerateDefaultCards(current);
         }
+    }
 
-        // void SetupWeaponCard(Weapon weapon, Action beforeSetup = null)
-        // {
-        //     beforeSetup?.Invoke();
-        //     string weaponCardTitle =
-        //         $"Fire {weapon.Data.DisplayName}";
-        //     int weaponCardTickCost = weapon.Data.TickCost;
-        //     Debug.Log($"Setting ammo to {weapon.Ammo}");
-        //     weaponCard.Setup(weaponCardTitle, weaponCardTickCost,
-        //         () => SetupWeaponCard(weapon, () => current.QueueShot(weapon)),
-        //         Color.black,
-        //         $"{current.GetUnplannedAmmo(weapon)}/{weapon.Data.MaxAmmo}");
-
-        //     if (current.CanQueueShot(weapon))
-        //     {
-        //         weaponCard.EnableClickable();
-        //     }
-        //     else
-        //     {
-        //         weaponCard.DisableClickable();
-        //     }
-        // }
+    private LaneCard CreateLaneCard(string title)
+    {
+        return Instantiate(laneCardPrefab, cardSection.transform).Setup(title);
     }
 
     private void ClearCardSection()
     {
         //? [CB] I wonder if it'd be worth caching and enabling/disabling cards
-        foreach (var child in cardSection.GetComponentsInChildren<ActionCard>())
+        foreach (Transform child in cardSection.transform)
         {
             Destroy(child.gameObject);
-        }
-    }
-
-    private static void SetClickable(ActionCard card, bool clickable)
-    {
-        if (clickable)
-        {
-            card.EnableClickable();
-        }
-        else
-        {
-            card.DisableClickable();
         }
     }
 }
