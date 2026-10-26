@@ -41,14 +41,17 @@ public class UIManager : MonoBehaviour
         Weapon weapon = current.CurrentWeapon;
 
         CreateLaneCard("Shoot")
-            .AddOption($"{weapon.Data.DisplayName} {current.GetUnplannedAmmo(weapon)}/{weapon.Data.MaxAmmo}",
+            .AddOption($"{current.GetUnplannedAmmo(weapon)}/{weapon.Data.MaxAmmo}",
                 () => PlanAndRefresh(() => current.PlanShot(weapon)),
-                current.CanPlanShot(weapon))
+                current.CanPlanShot(weapon),
+                weapon.Data.Icon)
+            .AddRow()
             .AddOption("Hold", () => PlanAndRefresh(current.PlanHoldFire));
 
         CreateLaneCard("Aim")
             .AddOption("CCW", () => PlanAndRefresh(() => current.PlanRotation(false)))
             .AddOption("CW", () => PlanAndRefresh(() => current.PlanRotation(true)))
+            .AddRow()
             .AddOption("Hold", () => PlanAndRefresh(current.PlanHoldAim));
 
         // placeholder until movement is in
@@ -57,7 +60,9 @@ public class UIManager : MonoBehaviour
 
         CreateLaneCard($"Tick {current.PlanningTickOfTurn}/{TurnManager.Instance.TicksPerTurn}")
             .AddOption("Next Tick", () => PlanAndRefresh(current.PlanNextTick), current.CanPlanNextTick)
+            .AddRow()
             .AddOption("Clear Plan", () => PlanAndRefresh(current.ClearPlan))
+            .AddRow()
             .AddOption("End Turn", () => TurnManager.Instance.EndTurn());
 
         return;

@@ -6,8 +6,11 @@ using UnityEngine.UI;
 public class LaneCard : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI titleText;
-    [SerializeField] private Transform optionRow;
-    [SerializeField] private Button optionPrefab;
+    [SerializeField] private Transform optionRows;
+    [SerializeField] private float optionSpacing = 10f;
+    [SerializeField] private LaneOption optionPrefab;
+
+    private Transform currentRow;
 
     public LaneCard Setup(string title)
     {
@@ -15,12 +18,32 @@ public class LaneCard : MonoBehaviour
         return this;
     }
 
-    public LaneCard AddOption(string label, UnityAction onClick, bool clickable = true)
+    public LaneCard AddRow()
     {
-        Button option = Instantiate(optionPrefab, optionRow);
-        option.GetComponentInChildren<TextMeshProUGUI>().text = label;
-        option.onClick.AddListener(onClick);
-        option.interactable = clickable;
+        GameObject row = new GameObject("Row", typeof(RectTransform), typeof(HorizontalLayoutGroup));
+        row.transform.SetParent(optionRows, false);
+
+        HorizontalLayoutGroup rowLayout = row.GetComponent<HorizontalLayoutGroup>();
+        rowLayout.spacing = optionSpacing;
+        rowLayout.childControlWidth = true;
+        rowLayout.childControlHeight = true;
+        rowLayout.childForceExpandWidth = true;
+        rowLayout.childForceExpandHeight = true;
+
+        currentRow = row.transform;
         return this;
     }
+
+    public LaneCard AddOption(string label, UnityAction onClick, bool clickable = true, Sprite icon = null)
+    {
+        if (currentRow == null)
+        {
+            AddRow();
+        }
+
+        LaneOption option = Instantiate(optionPrefab, currentRow);
+        option.Setup(label, onClick, clickable, icon);
+        return this;
+    }
+
 }
