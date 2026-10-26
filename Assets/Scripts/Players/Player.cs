@@ -8,6 +8,8 @@ namespace UnholyTrinity.Players
 {
     public class Player : MonoBehaviour
     {
+        #region Fields
+
         [SerializeField] private GameManager gm;
 
         // unserialized, passed to player by spawner instead
@@ -59,8 +61,11 @@ namespace UnholyTrinity.Players
         
         public bool IsHoldingFire => PlanningAction.PlannedShot == null;
         public bool IsHoldingAim => PlanningAction.PlannedAim == PreviousPlannedAim;
+        public bool IsHoldingMove => PlanningAction.PlannedMove == null;
 
-        // Unity Lifecycle
+        #endregion
+
+        #region Unity Lifecycle
 
         private void Awake()
         {
@@ -100,7 +105,9 @@ namespace UnholyTrinity.Players
             }
         }
 
-        // Setup
+        #endregion
+
+        #region Setup
 
         // called by the spawner 
         public void Initialize(MapManager mapManager, HexCoord spawnCoord)
@@ -124,35 +131,47 @@ namespace UnholyTrinity.Players
             }
         }
 
-        // Movement
+        #endregion
 
-        public void MovePlayer()
+        #region Movement
+
+        private HexCoord GetStepDestination(HexCoord from, HexDirection direction)
         {
-            Debug.Log($"{name} is moving");
+            HexCoord next = from.Neighbor(direction);
+            return mapManager.Map.IsWalkable(next)
+                ? next
+                : from;
         }
 
-        // Aim
+        private HexCoord GetPlannedCoord()
+        {
+            HexCoord plannedCoord = Coord;
 
-        // public void RotatePlayer(bool clockwise)
-        // {
-        //     // [CB] TODO: Actually rotate the player.
-        //     Debug.Log($"{name} was facing {CurrentAimDirection}");
-        //     CurrentAimDirection = clockwise
-        //         ? CurrentAimDirection.Next()
-        //         : CurrentAimDirection.Previous();
-        //     Debug.Log($"{name} is now facing {CurrentAimDirection}");
+            foreach (UnholyAction action in plannedActions)
+            {
+                if (action.PlannedMove != null)
+                {
+                    plannedCoord = GetStepDestination(plannedCoord, action.PlannedMove.Value);
+                }
+            }
 
-        //     RefreshAimPreview();
-        // }
+            return plannedCoord;
+        }
+
+        #endregion
+
+        #region Aim
 
         private void RefreshAimPreview()
         {
             List<AimTile> aimTiles = CurrentWeapon.Data.GetAimTiles(
-                mapManager.Map, Coord, PlanningAction.PlannedAim);
+                mapManager.Map, GetPlannedCoord(), PlanningAction.PlannedAim);
             aimPreview.Show(aimTiles, mapManager.Layout);
         }
 
-        // Planning
+        #endregion
+
+        #region Planning
 
         // actions gets queued into lanes during the players turn and only take
         // effect during resolution. nothing in planning changes ammo, aim, or position
@@ -203,6 +222,27 @@ namespace UnholyTrinity.Players
         public bool IsPlanningRotation(bool clockwise)
         {
             return PlanningAction.PlannedAim == GetRotatedAim(clockwise);
+        }
+
+        public void PlanMove(HexDirection direction)
+        {
+            Debug.Log($"{name} plans move {direction} on tick {PlanningTick}");
+            PlanningAction.PlannedMove = direction;
+            PlanningAction.Move = () => Step(direction);
+            RefreshAimPreview();
+        }
+
+        public void PlanHoldMove()
+        {
+            Debug.Log($"{name} hold position on tick {PlanningTick}");
+            PlanningAction.PlannedMove = null;
+            PlanningAction.Move = null;
+            RefreshAimPreview();
+        }
+
+        public bool IsPlanningMove(HexDirection direction)
+        {
+            return PlanningAction.PlannedMove == direction;
         }
 
         public void PlanNextTick()
@@ -274,7 +314,9 @@ namespace UnholyTrinity.Players
             return plannedNextFireTick;
         }
 
-        // Resolution
+        #endregion
+
+        #region Resolution
 
         // game manager runs each tick's callback phase by phase. Fire() checks
         // cooldown and ammo again the real tick so planning doesn't break rules
@@ -314,7 +356,24 @@ namespace UnholyTrinity.Players
             Debug.Log($"{name} is now aiming {CurrentAimDirection}");
         }
 
-        // Health
+        private void Step(HexDirection direction)
+        {
+            HexCoord destination = GetStepDestination(Coord, direction);
+
+            if (destination == Coord)
+            {
+                Debug.Log($"{name} is blocked moving {direction}");
+                return;
+            }
+
+            Coord = destination;
+            SnapToCoord();
+            Debug.Log($"{name} moved to {Coord}");
+        }
+
+        #endregion
+
+        #region Health
 
         public void TakeDamage(int damageAmount)
         {
@@ -332,7 +391,9 @@ namespace UnholyTrinity.Players
              }
         }
 
-        // Event Handlers
+        #endregion
+
+        #region Event Handlers
 
         private void OnNewTurn(Player obj)
         {
@@ -348,5 +409,7 @@ namespace UnholyTrinity.Players
                 aimPreview.Hide();
             }
         }
+
+        #endregion
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using UnholyTrinity.Players;
+using UnholyTrinity.Hex;
 using UnholyTrinity.Weapons;
 using UnityEngine;
 using UnityEngine.UI;
@@ -59,9 +60,17 @@ public class UIManager : MonoBehaviour
             .AddOption("Hold", () => PlanAndRefresh(current.PlanHoldAim),
                 selected: current.IsHoldingAim);
 
-        // placeholder until movement is in
-        CreateLaneCard("Move")
-            .AddOption("Move", current.MovePlayer);
+        LaneCard moveCard = CreateLaneCard("Move");
+        AddMoveOption(moveCard, "NW", HexDirection.D2);
+        AddMoveOption(moveCard, "NE", HexDirection.D1);
+        moveCard.AddRow();
+        AddMoveOption(moveCard, "W", HexDirection.D3);
+        moveCard.AddOption("Hold", () => PlanAndRefresh(current.PlanHoldMove),
+            selected: current.IsHoldingMove);
+        AddMoveOption(moveCard, "E", HexDirection.D0);
+        moveCard.AddRow();
+        AddMoveOption(moveCard, "SW", HexDirection.D4);
+        AddMoveOption(moveCard, "SE", HexDirection.D5);
 
         CreateLaneCard($"Tick {current.PlanningTickOfTurn}/{TurnManager.Instance.TicksPerTurn}")
             .AddOption("Next Tick", () => PlanAndRefresh(current.PlanNextTick), current.CanPlanNextTick)
@@ -78,6 +87,12 @@ public class UIManager : MonoBehaviour
             planAction();
             ClearCardSection();
             GenerateDefaultCards(current);
+        }
+
+        void AddMoveOption(LaneCard card, string label, HexDirection direction)
+        {
+            card.AddOption(label, () => PlanAndRefresh(() => current.PlanMove(direction)),
+                selected: current.IsPlanningMove(direction));
         }
     }
 

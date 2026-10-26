@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: LightningGun
   m_EditorClassIdentifier: Assembly-CSharp::LightningGunData
   <DisplayName>k__BackingField: Lightning Gun
+  <Icon>k__BackingField: {fileID: 9125224090677111143, guid: d812f058110a57543bc77d821e1c37e0, type: 3}
   <MaxAmmo>k__BackingField: 10
   <PickupAmmo>k__BackingField: 5
   <TickCost>k__BackingField: 1
