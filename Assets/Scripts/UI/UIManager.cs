@@ -53,8 +53,10 @@ public class UIManager : MonoBehaviour
 
         CreateLaneCard("Aim")
             .AddOption("CCW", () => PlanAndRefresh(() => current.PlanRotation(false)),
+                current.CanPlanRotation(false),
                 selected: current.IsPlanningRotation(false))
             .AddOption("CW", () => PlanAndRefresh(() => current.PlanRotation(true)),
+                current.CanPlanRotation(true),
                 selected: current.IsPlanningRotation(true))
             .AddRow()
             .AddOption("Hold", () => PlanAndRefresh(current.PlanHoldAim),

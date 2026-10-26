@@ -135,7 +135,7 @@ MonoBehaviour:
   heightOffset: 0.6
   startingWeapon: {fileID: 11400000, guid: f97c8bffbf965d3448f34065ed101336, type: 2}
   aimPreview: {fileID: 2588836406730225762}
-  aimStepsPerTick: 1
+  aimStepsPerTick: 2
   <CurrentWeapon>k__BackingField:
     <Data>k__BackingField: {fileID: 0}
     <Ammo>k__BackingField: 0

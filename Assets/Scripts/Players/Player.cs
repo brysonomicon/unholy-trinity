@@ -22,6 +22,7 @@ namespace UnholyTrinity.Players
         [Header("Combat")]
         [SerializeField] private WeaponData startingWeapon;
         [SerializeField] private AimPreview aimPreview;
+        // how many 30 degree steps a player can aim in one tick
         [SerializeField][Min(1)] private int aimStepsPerTick = 1;
 
         // ticks counted for the whole game, so a cooldown can block ticks
@@ -58,6 +59,21 @@ namespace UnholyTrinity.Players
         private AimDirection PreviousPlannedAim => plannedActions.Count > 1
             ? plannedActions[^2].PlannedAim
             : CurrentAimDirection;
+        
+        private static readonly int AimDirectionCount = System.Enum.GetValues(typeof(AimDirection)).Length;
+
+        private int PlannedAimSteps
+        {
+            get
+            {
+                int steps = 
+                    ((int)PlanningAction.PlannedAim - (int)PreviousPlannedAim + AimDirectionCount) % AimDirectionCount;
+                
+                return steps > AimDirectionCount / 2
+                    ? steps - AimDirectionCount
+                    : steps;
+            }
+        }
         
         public bool IsHoldingFire => PlanningAction.PlannedShot == null;
         public bool IsHoldingAim => PlanningAction.PlannedAim == PreviousPlannedAim;
@@ -204,9 +220,23 @@ namespace UnholyTrinity.Players
             PlanningAction.Shoot = null;
         }
 
+        public bool CanPlanRotation(bool clockwise)
+        {
+            int stepsAfterRotation = PlannedAimSteps + (clockwise ? -1 : 1);
+            return Mathf.Abs(stepsAfterRotation) <= aimStepsPerTick;
+        }
+
         public void PlanRotation(bool clockwise)
         {
-            SetPlannedAim(GetRotatedAim(clockwise));
+            if (!CanPlanRotation(clockwise))
+            {
+                return;
+            }
+
+            AimDirection plannedAim = PlanningAction.PlannedAim;
+            SetPlannedAim(clockwise
+                ? plannedAim.Previous()
+                : plannedAim.Next());
         }
 
         public void PlanHoldAim()
@@ -221,7 +251,9 @@ namespace UnholyTrinity.Players
 
         public bool IsPlanningRotation(bool clockwise)
         {
-            return PlanningAction.PlannedAim == GetRotatedAim(clockwise);
+            return clockwise
+                ? PlannedAimSteps < 0
+                : PlannedAimSteps > 0;
         }
 
         public void PlanMove(HexDirection direction)
@@ -275,25 +307,6 @@ namespace UnholyTrinity.Players
             PlanningAction.PlannedAim = aim;
             PlanningAction.Aim = () => SetAim(aim);
             RefreshAimPreview();
-        }
-
-        private AimDirection GetRotatedAim(bool clockwise)
-        {
-            AimDirection rotatedAim = PreviousPlannedAim;
-
-            for (int i = 0; i < aimStepsPerTick; i++)
-            {
-                if (clockwise)
-                {
-                    rotatedAim = rotatedAim.Previous();
-                }
-                else
-                {
-                    rotatedAim = rotatedAim.Next();
-                }
-            }
-
-            return rotatedAim;
         }
 
         private int GetPlannedNextFireTick()
