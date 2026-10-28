@@ -11,7 +11,7 @@ public class SimpleHUD : MonoBehaviour
     [SerializeField] private TMP_Text phaseText;
     [SerializeField] private Button endTurnButton;
 
-    [Header("Optional swoop toggle")] public CameraHandler cameraHandler;
+    [Header("Optional swoop toggle")] public CameraManager cameraHandler;
     public Button swoopButton;
 
     // private void OnEnable() => TurnManager.NewPhaseEvent += Refresh;
@@ -27,11 +27,13 @@ public class SimpleHUD : MonoBehaviour
     {
         if (swoopButton)
         {
-            bool isEnabled = cameraHandler && cameraHandler.allowSwoop;
-            swoopButton.gameObject.SetActive(isEnabled);
-            if (isEnabled)
+            if (cameraHandler)
             {
-                swoopButton.onClick.AddListener(cameraHandler.ToggleSwoop);
+                swoopButton.onClick.AddListener(cameraHandler.ToggleCloseView);
+            }
+            else
+            {
+                swoopButton.gameObject.SetActive(false); // no camera manager assigned
             }
         }
 

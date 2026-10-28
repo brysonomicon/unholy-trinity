@@ -11,6 +11,8 @@ namespace UnholyTrinity.Players
         [Header("Map")] [SerializeField] private MapManager mapManager;
         [field: SerializeField] public HexCoord Coord { get; private set; }
         [SerializeField] private float heightOffset = 0.5f;
+        
+        [field: SerializeField] public PlayerCameraRig CameraRig { get; private set; }
 
         [Header("Combat")]
         [field: SerializeField]
