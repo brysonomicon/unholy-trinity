@@ -8,6 +8,6 @@ namespace UnholyTrinity.Pickups
         [field: SerializeField][Min(1)] public int Amount { get; internal set; } = 1;
 
         public override bool TryApply(IPickupCollector collector) =>
-            collector is IHealable healable && healable.TryHeal(Amount);
+            collector is IHealable healable && Amount > 0 && healable.TryHeal(Amount);
     }
 }

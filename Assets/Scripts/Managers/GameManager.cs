@@ -28,6 +28,9 @@ public class GameManager : ScriptableObject
         
     private readonly List<Player> _players = new();
 
+    // scene object, so it registers itself instead of being serialized on this asset
+    [CanBeNull] private PickupManager _pickupManager;
+
     public int Round { get; private set; }
     // counts every tick of the game and only resets with ResetGame.
     // cooldowns are stored as the tick they expire on
@@ -113,6 +116,19 @@ public class GameManager : ScriptableObject
         }
     }
 
+    public void RegisterPickupManager(PickupManager pickupManager)
+    {
+        _pickupManager = pickupManager;
+    }
+
+    public void UnregisterPickupManager(PickupManager pickupManager)
+    {
+        if (_pickupManager == pickupManager)
+        {
+            _pickupManager = null;
+        }
+    }
+
     #endregion
 
     #region Resolution
@@ -154,9 +170,27 @@ public class GameManager : ScriptableObject
         }
 
         // move phase
+        // respawns tick first so a pickup that comes back this tick can be collected
+        // this tick, even by a player who doesn't move. so RespawnTicks = 1 means a pickup
+        // collected on tick N is available again on tick N + 1
+        bool hasPickups = _pickupManager != null;
+        if (hasPickups)
+        {
+            _pickupManager.AdvanceTicks(1);
+        }
+
         foreach (Player player in _players)
         {
+            player.BeginMovePhase();
             player.GetPlannedAction(tickIndex)?.Move?.Invoke();
+        }
+
+        if (hasPickups)
+        {
+            foreach (Player player in _players)
+            {
+                _pickupManager.CollectAlong(player.TickMovePath, player.Coord, player);
+            }
         }
     }
 

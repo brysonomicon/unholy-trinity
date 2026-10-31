@@ -34,6 +34,9 @@ namespace UnholyTrinity.Players
         // this turn's plan, one UnholyAction per tick
         private readonly List<UnholyAction> plannedActions = new();
 
+        // hexes entered during the current tick's move phase, in order
+        private readonly List<HexCoord> tickMovePath = new();
+
         [field: SerializeField] 
         public Weapon CurrentWeapon { get; private set; }
 
@@ -48,6 +51,8 @@ namespace UnholyTrinity.Players
         public int CurrentHealth { get; private set; }
 
         public bool IsDead => CurrentHealth <= 0;
+
+        public IReadOnlyList<HexCoord> TickMovePath => tickMovePath;
 
         public int PlanningTickOfTurn => plannedActions.Count;
 
@@ -386,6 +391,12 @@ namespace UnholyTrinity.Players
             Debug.Log($"{name} is now aiming {CurrentAimDirection}");
         }
 
+        // called by the game manager before this tick's move so the path only holds this tick's hexes
+        public void BeginMovePhase()
+        {
+            tickMovePath.Clear();
+        }
+
         private void Step(HexDirection direction)
         {
             HexCoord destination = GetStepDestination(Coord, direction);
@@ -397,6 +408,7 @@ namespace UnholyTrinity.Players
             }
 
             Coord = destination;
+            tickMovePath.Add(Coord);
             SnapToCoord();
             Debug.Log($"{name} moved to {Coord}");
         }
@@ -425,10 +437,12 @@ namespace UnholyTrinity.Players
         {
             if (IsDead || amount <= 0 || CurrentHealth >= maxHealth)
             {
+                Debug.Log($"{name} cannot be healed (dead: {IsDead}, amount: {amount}, current: {CurrentHealth}/{maxHealth})");
                 return false;
             }
 
             CurrentHealth = Mathf.Min(CurrentHealth + amount, maxHealth);
+            Debug.Log($"{name} healed {amount} health, now at {CurrentHealth}/{maxHealth}");
             return true;
         }
 

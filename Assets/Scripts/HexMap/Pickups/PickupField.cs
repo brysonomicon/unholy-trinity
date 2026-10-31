@@ -41,11 +41,15 @@ namespace UnholyTrinity.Hex
         }
 
         /// <summary>Collects OnEnter pickups along the slide's path, then the OnStop pickup where it ends.</summary>
-        public void CollectAlong(SlideResult slide, IPickupCollector collector)
+        public void CollectAlong(SlideResult slide, IPickupCollector collector) =>
+            CollectAlong(slide.Path, slide.End, collector);
+
+        /// <summary>Collects OnEnter pickups on each hex of <paramref name="path"/>, then the OnStop pickup at <paramref name="end"/>.</summary>
+        public void CollectAlong(IEnumerable<HexCoord> path, HexCoord end, IPickupCollector collector)
         {
-            foreach (var coord in slide.Path)
+            foreach (var coord in path)
                 TryCollect(coord, PickupTrigger.OnEnter, collector);
-            TryCollect(slide.End, PickupTrigger.OnStop, collector);
+            TryCollect(end, PickupTrigger.OnStop, collector);
         }
 
         public void AdvanceTicks(int ticks)

@@ -5,11 +5,12 @@ using UnityEngine;
 
 /// <summary>
 /// Scene entry point for pickups: builds a <see cref="PickupField"/> from the map and shows each pickup's
-/// visual while it is available. Turn resolution drives it through <see cref="CollectAlong"/> and
-/// <see cref="AdvanceTicks"/>.
+/// visual while it is available. Registers with the <see cref="GameManager"/>, whose move phase drives it
+/// through <see cref="CollectAlong"/> and <see cref="AdvanceTicks"/>.
 /// </summary>
 public class PickupManager : MonoBehaviour
 {
+    [SerializeField] private GameManager gameManager;
     [SerializeField] private MapManager mapManager;
     [SerializeField] private float visualHeightOffset = 0.5f;
 
@@ -25,10 +26,17 @@ public class PickupManager : MonoBehaviour
         mapManager.LayoutChanged += PositionVisuals;
 
         SpawnVisuals();
+        gameManager.RegisterPickupManager(this);
     }
 
     private void OnDestroy()
     {
+        if (gameManager != null)
+        {
+            gameManager.UnregisterPickupManager(this);
+        }
+
+
         if (Field != null)
         {
             Field.Collected -= OnCollected;
@@ -41,12 +49,13 @@ public class PickupManager : MonoBehaviour
         }
     }
 
-    // [BH] Integration point: the resolution loop should call this once per tick
-    // (or with the tick count spent) once ticks are implemented.
     public void AdvanceTicks(int ticks) => Field.AdvanceTicks(ticks);
 
     public void CollectAlong(SlideResult slide, IPickupCollector collector) =>
         Field.CollectAlong(slide, collector);
+
+    public void CollectAlong(IEnumerable<HexCoord> path, HexCoord end, IPickupCollector collector) =>
+        Field.CollectAlong(path, end, collector);
 
     private void SpawnVisuals()
     {
@@ -57,6 +66,7 @@ public class PickupManager : MonoBehaviour
             {
                 continue;
             }
+            Debug.Log($"Spawning visual for {spawn.Definition.name} at {coord}");
 
             var visual = Instantiate(prefab, transform);
             visual.name = $"{spawn.Definition.name} {coord}";
