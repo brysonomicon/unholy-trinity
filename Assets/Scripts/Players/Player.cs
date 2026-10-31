@@ -10,6 +10,8 @@ namespace UnholyTrinity.Players
 {
     public class Player : MonoBehaviour, IHealable
     {
+        #region Fields
+
         [SerializeField] private GameManager gm;
 
         // unserialized, passed to player by spawner instead
@@ -22,18 +24,15 @@ namespace UnholyTrinity.Players
         [Header("Combat")]
         [SerializeField] private WeaponData startingWeapon;
         [SerializeField] private AimPreview aimPreview;
+        // how many 30 degree steps a player can aim in one tick
+        [SerializeField][Min(1)] private int aimStepsPerTick = 1;
 
         // ticks counted for the whole game, so a cooldown can block ticks
-        // subsequent turns
+        // in subsequent turns
         private int nextFireTick;
 
-        // the "shoot lane". one slot per tick of the turn. 0 index resolves
-        // on the first tick of a turn, null slot holds fire for that tick
-        private readonly List<Weapon> plannedShots = new();
-
-        // copy of the nexFireTick that increments as shots are planned so
-        // planning follows the same cooldown rules without changing the real cooldown
-        private int plannedNextFireTick;
+        // this turn's plan, one UnholyAction per tick
+        private readonly List<UnholyAction> plannedActions = new();
 
         [field: SerializeField] 
         public Weapon CurrentWeapon { get; private set; }
@@ -50,14 +49,44 @@ namespace UnholyTrinity.Players
 
         public bool IsDead => CurrentHealth <= 0;
 
-        // the game tick the next queued slot will resolve on. planning happens between
-        // ticks, so the turns first tick is CurrentTick + 1
-        private int NextPlannedTick => gm.CurrentTick + 1 + plannedShots.Count;
+        public int PlanningTickOfTurn => plannedActions.Count;
 
-        // true while the shoot lane still has a free tick this turn
-        public bool HasFreeShotSlot => plannedShots.Count < TurnManager.Instance.TicksPerTurn;
+        public bool CanPlanNextTick => plannedActions.Count < TurnManager.Instance.TicksPerTurn;
 
-        // Unity Lifecycle
+        private UnholyAction PlanningAction => plannedActions[^1];
+
+        // the game tick the action being planned will resolve on
+        private int PlanningTick => gm.CurrentTick + plannedActions.Count;
+
+        // aim from the end of the previous tick, which this tick starts from
+        private AimDirection PreviousPlannedAim => plannedActions.Count > 1
+            ? plannedActions[^2].PlannedAim
+            : CurrentAimDirection;
+        
+        private static readonly int AimDirectionCount = System.Enum.GetValues(typeof(AimDirection)).Length;
+
+        private int PlannedAimSteps
+        {
+            get
+            {
+                int steps = 
+                    ((int)PlanningAction.PlannedAim - (int)PreviousPlannedAim + AimDirectionCount) % AimDirectionCount;
+                
+                return steps > AimDirectionCount / 2
+                    ? steps - AimDirectionCount
+                    : steps;
+            }
+        }
+        
+        public bool IsHoldingFire => PlanningAction.PlannedShot == null;
+        public bool IsHoldingAim => PlanningAction.PlannedAim == PreviousPlannedAim;
+        public bool IsHoldingMove => PlanningAction.PlannedMove == null;
+
+        private bool HasTickChanges => !IsHoldingFire || !IsHoldingAim || !IsHoldingMove;
+
+        #endregion
+
+        #region Unity Lifecycle
 
         private void Awake()
         {
@@ -97,7 +126,9 @@ namespace UnholyTrinity.Players
             }
         }
 
-        // Setup
+        #endregion
+
+        #region Setup
 
         // called by the spawner 
         public void Initialize(MapManager mapManager, HexCoord spawnCoord)
@@ -106,6 +137,7 @@ namespace UnholyTrinity.Players
             Coord = spawnCoord;
             mapManager.LayoutChanged += SnapToCoord;
             SnapToCoord();
+            ClearPlan();
         }
 
         private void SnapToCoord()
@@ -120,98 +152,211 @@ namespace UnholyTrinity.Players
             }
         }
 
-        // Movement
+        #endregion
 
-        public void MovePlayer()
+        #region Movement
+
+        private HexCoord GetStepDestination(HexCoord from, HexDirection direction)
         {
-            Debug.Log($"{name} is moving");
+            HexCoord next = from.Neighbor(direction);
+            return mapManager.Map.IsWalkable(next)
+                ? next
+                : from;
         }
 
-        // Aim
-
-        public void RotatePlayer(bool clockwise)
+        private HexCoord GetPlannedCoord()
         {
-            // [CB] TODO: Actually rotate the player.
-            Debug.Log($"{name} was facing {CurrentAimDirection}");
-            CurrentAimDirection = clockwise
-                ? CurrentAimDirection.Next()
-                : CurrentAimDirection.Previous();
-            Debug.Log($"{name} is now facing {CurrentAimDirection}");
+            HexCoord plannedCoord = Coord;
 
-            RefreshAimPreview();
+            foreach (UnholyAction action in plannedActions)
+            {
+                if (action.PlannedMove != null)
+                {
+                    plannedCoord = GetStepDestination(plannedCoord, action.PlannedMove.Value);
+                }
+            }
+
+            return plannedCoord;
         }
+
+        #endregion
+
+        #region Aim
 
         private void RefreshAimPreview()
         {
             List<AimTile> aimTiles = CurrentWeapon.Data.GetAimTiles(
-                mapManager.Map, Coord, CurrentAimDirection);
+                mapManager.Map, GetPlannedCoord(), PlanningAction.PlannedAim);
             aimPreview.Show(aimTiles, mapManager.Layout);
         }
 
-        // Planning
+        #endregion
+
+        #region Planning
 
         // actions gets queued into lanes during the players turn and only take
         // effect during resolution. nothing in planning changes ammo, aim, or position
 
         // a shot can be queued if the lane has a free tick, there is ammo left
         // and the planned cooldown has expired by that tick
-        public bool CanQueueShot(Weapon weapon)
+        public bool CanPlanShot(Weapon weapon)
         {
-            return HasFreeShotSlot &&
-                    GetUnplannedAmmo(weapon) > 0 &&
-                    NextPlannedTick >= plannedNextFireTick;
+            return GetUnplannedAmmo(weapon) > 0 &&
+                    PlanningTick >= GetPlannedNextFireTick();
         }
 
-        public void QueueShot(Weapon weapon)
+        public void PlanShot(Weapon weapon)
         {
-            if (!CanQueueShot(weapon))
+            if (!CanPlanShot(weapon))
             {
                 return;
             }
 
-            Debug.Log($"{name} queued {weapon.Data.DisplayName} on tick {NextPlannedTick}");
-            plannedNextFireTick = NextPlannedTick + 1 + weapon.Data.Cooldown;
-            plannedShots.Add(weapon);
+            Debug.Log($"{name} plans {weapon.Data.DisplayName} on tick {PlanningTick}");
+            PlanningAction.PlannedShot = weapon;
+            PlanningAction.Shoot = () => Fire(weapon);
         }
 
         // fills the next tick of the shoot lane without firing
-        public void HoldFire()
+        public void PlanHoldFire()
         {
-            if (!HasFreeShotSlot)
+            Debug.Log($"{name} holds fire on tick {PlanningTick}");
+            PlanningAction.PlannedShot = null;
+            PlanningAction.Shoot = null;
+        }
+
+        public bool CanPlanRotation(bool clockwise)
+        {
+            int stepsAfterRotation = PlannedAimSteps + (clockwise ? -1 : 1);
+            return Mathf.Abs(stepsAfterRotation) <= aimStepsPerTick;
+        }
+
+        public void PlanRotation(bool clockwise)
+        {
+            if (!CanPlanRotation(clockwise))
             {
                 return;
             }
 
-            Debug.Log($"{name} holds fire on tick {NextPlannedTick}");
-            plannedShots.Add(null);
+            AimDirection plannedAim = PlanningAction.PlannedAim;
+            SetPlannedAim(clockwise
+                ? plannedAim.Previous()
+                : plannedAim.Next());
+        }
+
+        public void PlanHoldAim()
+        {
+            SetPlannedAim(PreviousPlannedAim);
+        }
+
+        public bool IsPlanningShot(Weapon weapon)
+        {
+            return PlanningAction.PlannedShot == weapon;
+        }
+
+        public bool IsPlanningRotation(bool clockwise)
+        {
+            return clockwise
+                ? PlannedAimSteps < 0
+                : PlannedAimSteps > 0;
+        }
+
+        public void PlanMove(HexDirection direction)
+        {
+            Debug.Log($"{name} plans move {direction} on tick {PlanningTick}");
+            PlanningAction.PlannedMove = direction;
+            PlanningAction.Move = () => Step(direction);
+            RefreshAimPreview();
+        }
+
+        public void PlanHoldMove()
+        {
+            Debug.Log($"{name} hold position on tick {PlanningTick}");
+            PlanningAction.PlannedMove = null;
+            PlanningAction.Move = null;
+            RefreshAimPreview();
+        }
+
+        public bool IsPlanningMove(HexDirection direction)
+        {
+            return PlanningAction.PlannedMove == direction;
+        }
+
+        public void PlanNextTick()
+        {
+            if (!CanPlanNextTick)
+            {
+                return;
+            }
+
+            plannedActions.Add(new UnholyAction(PlanningAction.PlannedAim));
+            Debug.Log($"{name} is planning tick {PlanningTick}");
         }
 
         public int GetUnplannedAmmo(Weapon weapon)
         {
-            return weapon.Ammo - plannedShots.Count(plannedWeapon => plannedWeapon == weapon);
+            return weapon.Ammo - plannedActions.Count(action => action.PlannedShot == weapon);
         }
 
-        // empties every lane. used at turn start and to undo planned actions
-        public void ClearPlan()
+        // clears the tick being planned currently. if already clear, clears previous tick
+        public void ClearTick()
         {
-            plannedShots.Clear();
-            plannedNextFireTick = nextFireTick;
-        }
-
-        // Resolution
-
-        // planned actions get carried out one tick at a time. Fire() checks
-        // cooldown and ammo against the real tick so planning shouldn't break
-        // the rules
-
-        // called by the game manager in the shoot phase of each tick
-        public void ResolvePlannedShot(int tickIndex)
-        {
-            if (tickIndex < plannedShots.Count &&
-                plannedShots[tickIndex] != null)
+            if (!HasTickChanges && plannedActions.Count > 1)
             {
-                Fire(plannedShots[tickIndex]);
+                plannedActions.RemoveAt(plannedActions.Count - 1);
             }
+
+            plannedActions[^1] = new UnholyAction(PreviousPlannedAim);
+            RefreshAimPreview();
+        }
+
+        // clears the entire plan, used for turn start
+        private void ClearPlan()
+        {
+            plannedActions.Clear();
+            plannedActions.Add(new UnholyAction(CurrentAimDirection));
+            RefreshAimPreview();
+        }
+
+        private void SetPlannedAim(AimDirection aim)
+        {
+            Debug.Log($"{name} plans aim {aim} on tick {PlanningTick}");
+            PlanningAction.PlannedAim = aim;
+            PlanningAction.Aim = () => SetAim(aim);
+            RefreshAimPreview();
+        }
+
+        private int GetPlannedNextFireTick()
+        {
+            int plannedNextFireTick = nextFireTick;
+
+            for (int i = 0; i < plannedActions.Count - 1; i++)
+            {
+                Weapon plannedShot = plannedActions[i].PlannedShot;
+
+                if (plannedShot != null)
+                {
+                    int shotTick = gm.CurrentTick + 1 + i;
+                    plannedNextFireTick = shotTick + 1 + plannedShot.Data.Cooldown;
+                }
+            }
+
+            return plannedNextFireTick;
+        }
+
+        #endregion
+
+        #region Resolution
+
+        // game manager runs each tick's callback phase by phase. Fire() checks
+        // cooldown and ammo again the real tick so planning doesn't break rules
+
+        // the plan for a tick of this turn, or null if the player didn't plan that far
+        public UnholyAction GetPlannedAction(int tickIndex)
+        {
+            return tickIndex < plannedActions.Count
+                ? plannedActions[tickIndex]
+                : null;
         }
 
         private void Fire(Weapon weapon)
@@ -235,7 +380,30 @@ namespace UnholyTrinity.Players
             return weapon.HasAmmo && gm.CurrentTick >= nextFireTick;
         }
 
-        // Health
+        private void SetAim(AimDirection aim)
+        {
+            CurrentAimDirection = aim;
+            Debug.Log($"{name} is now aiming {CurrentAimDirection}");
+        }
+
+        private void Step(HexDirection direction)
+        {
+            HexCoord destination = GetStepDestination(Coord, direction);
+
+            if (destination == Coord)
+            {
+                Debug.Log($"{name} is blocked moving {direction}");
+                return;
+            }
+
+            Coord = destination;
+            SnapToCoord();
+            Debug.Log($"{name} moved to {Coord}");
+        }
+
+        #endregion
+
+        #region Health
 
         public void TakeDamage(int damageAmount)
         {
@@ -264,7 +432,9 @@ namespace UnholyTrinity.Players
             return true;
         }
 
-        // Event Handlers
+        #endregion
+
+        #region Event Handlers
 
         private void OnNewTurn(Player obj)
         {
@@ -273,7 +443,6 @@ namespace UnholyTrinity.Players
             {
                 // Do stuff to enable actions
                 ClearPlan();
-                RefreshAimPreview();
             }
             else
             {
@@ -281,5 +450,7 @@ namespace UnholyTrinity.Players
                 aimPreview.Hide();
             }
         }
+
+        #endregion
     }
 }

@@ -11,6 +11,8 @@ using UnityEngine;
     menuName = "Managers/GameManager")]
 public class GameManager : ScriptableObject
 {
+    #region Fields
+
     public static GameManager Instance {get; private set;}
     public static event Action<int> NewRoundEvent;
     public static event Action<Player> NewTurnEvent;
@@ -55,7 +57,9 @@ public class GameManager : ScriptableObject
 
     public List<Vector3> CurrentPlayerPositions => new (_players.Select(x => x.transform.position).ToList());
 
-    // Unity Lifecycle
+    #endregion
+
+    #region Unity Lifecycle
 
     private void OnEnable()
     {
@@ -77,7 +81,9 @@ public class GameManager : ScriptableObject
         TurnManager.NewPhaseEvent -= OnPhaseChanged;
     }
 
-    // Setup
+    #endregion
+
+    #region Setup
 
     public void ResetGame()
     {
@@ -107,7 +113,9 @@ public class GameManager : ScriptableObject
         }
     }
 
-    // Resolution
+    #endregion
+
+    #region Resolution
 
     private async void ResolutionRoutine()
     {
@@ -136,11 +144,25 @@ public class GameManager : ScriptableObject
         // shoot phase
         foreach (Player player in _players)
         {
-            player.ResolvePlannedShot(tickIndex);
+            player.GetPlannedAction(tickIndex)?.Shoot?.Invoke();
+        }
+
+        // aim phase
+        foreach (Player player in _players)
+        {
+            player.GetPlannedAction(tickIndex)?.Aim?.Invoke();
+        }
+
+        // move phase
+        foreach (Player player in _players)
+        {
+            player.GetPlannedAction(tickIndex)?.Move?.Invoke();
         }
     }
 
-    // Combat
+    #endregion
+
+    #region Combat
 
     public void ResolveShot(Player shooter, WeaponData weaponData, List<AimTile> aimTiles)
     {
@@ -173,7 +195,9 @@ public class GameManager : ScriptableObject
         return _players.First(player => player != shooter);
     }
 
-    // Event Handlers
+    #endregion
+
+    #region Event Handlers
 
     private void OnPhaseChanged(TurnPhase newPhase)
     {
@@ -191,4 +215,6 @@ public class GameManager : ScriptableObject
             NewTurnEvent?.Invoke(newPhase == TurnPhase.PlayerOne ? _players.First() : _players.Last());
         }
     }
+
+    #endregion
 }
