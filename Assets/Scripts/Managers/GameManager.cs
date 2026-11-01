@@ -118,10 +118,13 @@ public class GameManager : ScriptableObject
     {
         for (int i = 0; i < turnManager.TicksPerTurn; i ++)
         {
+            await Task.Delay((int)(tickDuration * 1000));
             CurrentTick++;
             ResolveTick(i);
-            await Task.Delay((int)(tickDuration * 1000));
         }
+        
+        await Task.Delay((int)(tickDuration * 1000));
+
         //! [CB] Fun fact, there's a race condition if you don't wait long enough
         Round++;
         Debug.Log($"New round: {Round}");

@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 5226551869569889421}
   - component: {fileID: 9068410019634648079}
   - component: {fileID: 2588836406730225762}
+  - component: {fileID: 460754082198462321}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -136,6 +137,7 @@ MonoBehaviour:
   heightOffset: 0.6
   startingWeapon: {fileID: 11400000, guid: f97c8bffbf965d3448f34065ed101336, type: 2}
   aimPreview: {fileID: 2588836406730225762}
+  planGhosts: {fileID: 460754082198462321}
   aimStepsPerTick: 2
   <CurrentWeapon>k__BackingField:
     <Data>k__BackingField: {fileID: 0}
@@ -161,6 +163,19 @@ MonoBehaviour:
   tintAlpha: 0.35
   weakFalloffColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   strongFalloffColor: {r: 1, g: 0, b: 0, a: 1}
+--- !u!114 &460754082198462321
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1522190664592441805}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89a09e6fe21f9614bb8bb0567842f893, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UnholyTrinity.Players.PlanGhosts
+  ghostPrefab: {fileID: 399705995008798299, guid: 376ff8b2f204bc74fbca65cf75d23ce6, type: 3}
 --- !u!1 &7320590844018821224
 GameObject:
   m_ObjectHideFlags: 0

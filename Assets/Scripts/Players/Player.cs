@@ -22,6 +22,7 @@ namespace UnholyTrinity.Players
         [Header("Combat")]
         [SerializeField] private WeaponData startingWeapon;
         [SerializeField] private AimPreview aimPreview;
+        [SerializeField] private PlanGhosts planGhosts;
         // how many 30 degree steps a player can aim in one tick
         [SerializeField][Min(1)] private int aimStepsPerTick = 1;
 
@@ -56,9 +57,7 @@ namespace UnholyTrinity.Players
         private int PlanningTick => gm.CurrentTick + plannedActions.Count;
 
         // aim from the end of the previous tick, which this tick starts from
-        private AimDirection PreviousPlannedAim => plannedActions.Count > 1
-            ? plannedActions[^2].PlannedAim
-            : CurrentAimDirection;
+        private AimDirection PreviousPlannedAim => GetPlannedAim(plannedActions.Count - 1);
         
         private static readonly int AimDirectionCount = System.Enum.GetValues(typeof(AimDirection)).Length;
 
@@ -90,11 +89,13 @@ namespace UnholyTrinity.Players
             CurrentHealth = startingHealth;
             CurrentWeapon = new Weapon(startingWeapon);
             GameManager.NewTurnEvent += OnNewTurn;
+            TurnManager.NewPhaseEvent += OnNewPhase;
         }
 
         private void OnDestroy()
         {
             GameManager.NewTurnEvent -= OnNewTurn;
+            TurnManager.NewPhaseEvent -= OnNewPhase;
 
             if (mapManager != null)
             {
@@ -139,10 +140,8 @@ namespace UnholyTrinity.Players
 
         private void SnapToCoord()
         {
-            transform.SetPositionAndRotation(
-                mapManager.Layout.HexToWorld(Coord) + Vector3.up * heightOffset,
-                GetAimRotation(CurrentAimDirection)
-            );
+            Pose pose = GetPose(Coord, CurrentAimDirection);
+            transform.SetPositionAndRotation(pose.position, pose.rotation);
 
             if (mapManager.Map != null &&
                 !mapManager.Map.IsWalkable(Coord))
@@ -163,31 +162,37 @@ namespace UnholyTrinity.Players
                 : from;
         }
 
-        private HexCoord GetPlannedCoord()
+        // where the player stands after the first tickCount planned ticks, 0 = real coord
+        private HexCoord GetPlannedCoord(int tickCount)
         {
             HexCoord plannedCoord = Coord;
 
-            foreach (UnholyAction action in plannedActions)
+            for (int i = 0; i < tickCount; i++)
             {
-                if (action.PlannedMove != null)
+                HexDirection? plannedMove = plannedActions[i].PlannedMove;
+
+                if (plannedMove != null)
                 {
-                    plannedCoord = GetStepDestination(plannedCoord, action.PlannedMove.Value);
+                    plannedCoord = GetStepDestination(plannedCoord, plannedMove.Value);
                 }
             }
 
             return plannedCoord;
         }
 
+
         #endregion
 
         #region Aim
 
-        private void RefreshAimPreview()
+        // aim after the first tickCount planned ticks, 0 = real aim
+        private AimDirection GetPlannedAim(int tickCount)
         {
-            List<AimTile> aimTiles = CurrentWeapon.Data.GetAimTiles(
-                mapManager.Map, GetPlannedCoord(), PlanningAction.PlannedAim);
-            aimPreview.Show(aimTiles, mapManager.Layout);
+            return tickCount > 0
+                ? plannedActions[tickCount - 1].PlannedAim
+                : CurrentAimDirection;
         }
+
 
         private Quaternion GetAimRotation(AimDirection aim)
         {
@@ -195,6 +200,46 @@ namespace UnholyTrinity.Players
                                 mapManager.Layout.HexToWorld(HexCoord.Zero);
             
             return Quaternion.LookRotation(aimVector);
+        }
+
+        #endregion
+
+        #region Plan Projection
+
+        private void ProjectPlan()
+        {
+            int tickCount = plannedActions.Count;
+
+            List<Pose> ghostPoses = new();
+
+            for (int i = 0; i < tickCount; i++)
+            {
+                ghostPoses.Add(GetPose(GetPlannedCoord(i), GetPlannedAim(i)));
+            }
+            planGhosts.Show(ghostPoses);
+
+            Pose plannedPose = GetPose(GetPlannedCoord(tickCount), GetPlannedAim(tickCount));
+            transform.SetPositionAndRotation(plannedPose.position, plannedPose.rotation);
+
+            List<AimTile> aimTiles = CurrentWeapon.Data.GetAimTiles(
+                mapManager.Map, GetPlannedCoord(tickCount - 1), GetPlannedAim(tickCount - 1)
+            );
+            aimPreview.Show(aimTiles, mapManager.Layout);
+        }
+
+        private void StopProjecting()
+        {
+            planGhosts.Hide();
+            aimPreview.Hide();
+            SnapToCoord();
+        }
+
+        private Pose GetPose(HexCoord coord, AimDirection aim)
+        {
+            return new Pose(
+                mapManager.Layout.HexToWorld(coord) + Vector3.up * heightOffset,
+                GetAimRotation(aim)
+            );
         }
 
         #endregion
@@ -273,7 +318,7 @@ namespace UnholyTrinity.Players
             Debug.Log($"{name} plans move {direction} on tick {PlanningTick}");
             PlanningAction.PlannedMove = direction;
             PlanningAction.Move = () => Step(direction);
-            RefreshAimPreview();
+            ProjectPlan();
         }
 
         public void PlanHoldMove()
@@ -281,7 +326,7 @@ namespace UnholyTrinity.Players
             Debug.Log($"{name} hold position on tick {PlanningTick}");
             PlanningAction.PlannedMove = null;
             PlanningAction.Move = null;
-            RefreshAimPreview();
+            ProjectPlan();
         }
 
         public bool IsPlanningMove(HexDirection direction)
@@ -298,6 +343,7 @@ namespace UnholyTrinity.Players
 
             plannedActions.Add(new UnholyAction(PlanningAction.PlannedAim));
             Debug.Log($"{name} is planning tick {PlanningTick}");
+            ProjectPlan();
         }
 
         public int GetUnplannedAmmo(Weapon weapon)
@@ -314,7 +360,7 @@ namespace UnholyTrinity.Players
             }
 
             plannedActions[^1] = new UnholyAction(PreviousPlannedAim);
-            RefreshAimPreview();
+            ProjectPlan();
         }
 
         // clears the entire plan, used for turn start
@@ -322,7 +368,7 @@ namespace UnholyTrinity.Players
         {
             plannedActions.Clear();
             plannedActions.Add(new UnholyAction(CurrentAimDirection));
-            RefreshAimPreview();
+            ProjectPlan();
         }
 
         private void SetPlannedAim(AimDirection aim)
@@ -330,7 +376,7 @@ namespace UnholyTrinity.Players
             Debug.Log($"{name} plans aim {aim} on tick {PlanningTick}");
             PlanningAction.PlannedAim = aim;
             PlanningAction.Aim = () => SetAim(aim);
-            RefreshAimPreview();
+            ProjectPlan();
         }
 
         private int GetPlannedNextFireTick()
@@ -444,7 +490,17 @@ namespace UnholyTrinity.Players
             else
             {
                 // Do stuff to disable actions
-                aimPreview.Hide();
+                StopProjecting();
+            }
+        }
+
+        // player two gets no new turn event on turn end, so resolution
+        // hides the plan as well
+        private void OnNewPhase(TurnPhase newPhase)
+        {
+            if (newPhase == TurnPhase.Resolution)
+            {
+                StopProjecting();
             }
         }
 
