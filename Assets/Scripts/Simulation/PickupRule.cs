@@ -15,7 +15,7 @@ namespace UnholyTrinity.Simulation
                 return;
 
             foreach (var coord in state.Pickups.AdvanceTicks(1))
-                log.Add(TickEventType.PickupRespawned, TickEvent.NoUnit, coord, state.Pickups.Spawns[coord].Definition);
+                log.Add(new PickupRespawnedEvent(coord, state.Pickups.Spawns[coord].Definition));
         }
 
         public void OnEnter(SimState state, UnitState unit, UnitMove move, TickLog log) =>
@@ -27,7 +27,7 @@ namespace UnholyTrinity.Simulation
         static void TryCollect(SimState state, UnitState unit, PickupTrigger reached, TickLog log)
         {
             if (state.Pickups != null && state.Pickups.TryCollect(unit.Coord, reached, unit))
-                log.Add(TickEventType.PickupCollected, unit.Id, unit.Coord, state.Pickups.Spawns[unit.Coord].Definition);
+                log.Add(new PickupCollectedEvent(unit.Id, unit.Coord, state.Pickups.Spawns[unit.Coord].Definition));
         }
     }
 }

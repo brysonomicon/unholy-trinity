@@ -1,6 +1,4 @@
 using System.Collections.Generic;
-using UnholyTrinity.Hex;
-using UnholyTrinity.Pickups;
 
 namespace UnholyTrinity.Simulation
 {
@@ -14,10 +12,10 @@ namespace UnholyTrinity.Simulation
         /// <summary>The step new events are stamped with; advanced by the simulator, so rules never set it.</summary>
         public int Step { get; internal set; }
 
-        public void Add(TickEventType type, int unitId, HexCoord coord, PickupDefinition pickup = null) =>
-            Add(type, unitId, coord, coord, pickup);
-
-        public void Add(TickEventType type, int unitId, HexCoord coord, HexCoord from, PickupDefinition pickup = null) =>
-            events.Add(new TickEvent(type, Step, unitId, coord, from, pickup));
+        public void Add(TickEvent tickEvent)
+        {
+            tickEvent.Step = Step;
+            events.Add(tickEvent);
+        }
     }
 }

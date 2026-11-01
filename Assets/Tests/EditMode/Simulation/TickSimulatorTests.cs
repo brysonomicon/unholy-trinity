@@ -95,7 +95,7 @@ namespace UnholyTrinity.Simulation.Tests
 
             Assert.AreEqual(At(1), state.GetUnit(0).Coord);
             Assert.AreEqual(new HexVelocity(East, 1), state.GetUnit(0).Velocity);
-            Assert.AreEqual(TickEventType.Moved, log.Events.Single().Type);
+            Assert.IsInstanceOf<MovedEvent>(log.Events.Single());
         }
 
         [Test]
@@ -107,7 +107,7 @@ namespace UnholyTrinity.Simulation.Tests
 
             Assert.AreEqual(At(0), state.GetUnit(0).Coord);
             Assert.AreEqual(HexVelocity.Zero, state.GetUnit(0).Velocity);
-            Assert.AreEqual(TickEventType.Blocked, log.Events.Single().Type);
+            Assert.IsInstanceOf<BlockedEvent>(log.Events.Single());
         }
 
         [Test]
@@ -132,7 +132,7 @@ namespace UnholyTrinity.Simulation.Tests
             var log = TickSimulator.Simulate(state, new[] { Input(0) });
 
             Assert.AreEqual(8, state.GetUnit(0).Health);
-            Assert.IsTrue(log.Events.Any(e => e.Type == TickEventType.PickupCollected && e.Pickup == heal));
+            Assert.IsTrue(log.Events.OfType<PickupCollectedEvent>().Any(e => e.Pickup == heal));
         }
 
         [Test]
@@ -147,8 +147,8 @@ namespace UnholyTrinity.Simulation.Tests
 
             Assert.AreEqual(7, state.GetUnit(0).Health);
             CollectionAssert.AreEqual(
-                new[] { TickEventType.PickupRespawned, TickEventType.PickupCollected },
-                log.Events.Select(e => e.Type));
+                new[] { typeof(PickupRespawnedEvent), typeof(PickupCollectedEvent) },
+                log.Events.Select(e => e.GetType()));
         }
 
         [Test]
@@ -179,7 +179,7 @@ namespace UnholyTrinity.Simulation.Tests
             Assert.IsTrue(unit.IsDead);
             Assert.AreEqual(At(2), unit.Coord);
             Assert.AreEqual(HexVelocity.Zero, unit.Velocity);
-            Assert.AreEqual(TickEventType.Died, log.Events.Last().Type);
+            Assert.IsInstanceOf<DiedEvent>(log.Events.Last());
         }
 
         [Test]

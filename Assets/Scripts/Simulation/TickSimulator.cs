@@ -16,7 +16,8 @@ namespace UnholyTrinity.Simulation
         /// <summary>Caps the steps in one tick so rules that add steps (e.g. boost chains) can't loop forever.</summary>
         public const int MaxSteps = 32;
 
-        public static readonly IReadOnlyList<ITileRule> DefaultRules = new ITileRule[] { new PickupRule() };
+        public static readonly IReadOnlyList<ITileRule> DefaultRules = 
+            System.Array.AsReadOnly(new ITileRule[] { new HealthTileRule(), new PickupRule() });
 
         public static TickLog Simulate(SimState state, IReadOnlyList<UnitTickInput> inputs) =>
             Simulate(state, inputs, DefaultRules);
@@ -101,13 +102,13 @@ namespace UnholyTrinity.Simulation
             if (!state.Map.IsWalkable(next) || state.IsOccupied(next))
             {
                 move.Halt();
-                log.Add(TickEventType.Blocked, unit.Id, next, from);
+                log.Add(new BlockedEvent(unit.Id, from, next));
                 return;
             }
 
             unit.Coord = next;
             move.CompleteStep();
-            log.Add(TickEventType.Moved, unit.Id, next, from);
+            log.Add(new MovedEvent(unit.Id, from, next));
 
             foreach (var rule in rules)
             {
@@ -124,7 +125,7 @@ namespace UnholyTrinity.Simulation
                 return false;
 
             move.Halt();
-            log.Add(TickEventType.Died, unit.Id, unit.Coord);
+            log.Add(new DiedEvent(unit.Id, unit.Coord));
             return true;
         }
     }
