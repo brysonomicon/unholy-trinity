@@ -52,6 +52,19 @@ namespace UnholyTrinity.Players
 
         public int MaxHealth => maxHealth;
 
+        [Header("Armour")]
+
+        [SerializeField] 
+        private int maxArmour = 100;
+
+        [SerializeField]
+        private float armorDamageReduction = 0.5f;
+
+        [field: SerializeField]
+        public int CurrentArmour { get; private set; }
+
+        public int MaxArmour => maxArmour;        
+
         public bool IsDead => CurrentHealth <= 0;
 
         public int PlanningTickOfTurn => plannedActions.Count;
@@ -96,6 +109,7 @@ namespace UnholyTrinity.Players
         private void Awake()
         {
             CurrentHealth = maxHealth;
+            CurrentArmour = 0;
             CurrentWeapon = new Weapon(startingWeapon);
             GameManager.NewTurnEvent += OnNewTurn;
         }
@@ -411,6 +425,11 @@ namespace UnholyTrinity.Players
              {
                 return;
              }
+             if(CurrentArmour > 0)
+             {
+                Debug.Log($"{name} has {CurrentArmour} armour, reducing damage");
+                damageAmount = CalculateReducedDamage(damageAmount);
+             }
 
              CurrentHealth = Mathf.Max(CurrentHealth - damageAmount, 0);
              Debug.Log($"{name} took {damageAmount} damage (ouch), {CurrentHealth} health remaining");
@@ -419,6 +438,14 @@ namespace UnholyTrinity.Players
              {
                 Debug.Log($"{name} died. RIP");
              }
+        }
+
+        private int CalculateReducedDamage(int damageAmount)
+        {
+            int absorbed = Mathf.Min(Mathf.CeilToInt(damageAmount * armorDamageReduction), CurrentArmour);
+            CurrentArmour -= absorbed;
+            Debug.Log($"{name} absorbed {absorbed} damage with their armour");
+            return damageAmount - absorbed;
         }
 
         #endregion
