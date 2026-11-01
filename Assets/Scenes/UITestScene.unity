@@ -209,6 +209,52 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56173f6f9fe620c4fbe8aa4c17d0bf55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnholyTrinity.HexMap::UnholyTrinity.Hex.MapManager
+--- !u!1 &920963447
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 920963449}
+  - component: {fileID: 920963448}
+  m_Layer: 0
+  m_Name: TilePicker
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &920963448
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 920963447}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74e01cb9717c6d346a6db4b58838f629, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TilePicker
+  mapManager: {fileID: 495801503}
+  cam: {fileID: 2000977402}
+--- !u!4 &920963449
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 920963447}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.5779, y: 0, z: 0.03652}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1142547247
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -855,3 +901,4 @@ SceneRoots:
   - {fileID: 381778599}
   - {fileID: 7453945252367422755}
   - {fileID: 1440695144}
+  - {fileID: 920963449}

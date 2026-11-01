@@ -193,6 +193,18 @@ namespace UnholyTrinity.Players
                 : CurrentAimDirection;
         }
 
+        private List<AimTile> GetPlannedShotTiles()
+        {
+            int shotTickCount = plannedActions.Count - 1;
+            return CurrentWeapon.Data.GetAimTiles(
+                mapManager.Map, GetPlannedCoord(shotTickCount), GetPlannedAim(shotTickCount)
+            );
+        }
+
+        public bool IsInShotCone(HexCoord coord)
+        {
+            return GetPlannedShotTiles().Any(aimTile => aimTile.Coord == coord);
+        }
 
         private Quaternion GetAimRotation(AimDirection aim)
         {
@@ -224,7 +236,8 @@ namespace UnholyTrinity.Players
             List<AimTile> aimTiles = CurrentWeapon.Data.GetAimTiles(
                 mapManager.Map, GetPlannedCoord(tickCount - 1), GetPlannedAim(tickCount - 1)
             );
-            aimPreview.Show(aimTiles, mapManager.Layout);
+
+            aimPreview.Show(GetPlannedShotTiles(), mapManager.Layout);
         }
 
         private void StopProjecting()
