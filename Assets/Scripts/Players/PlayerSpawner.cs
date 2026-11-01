@@ -12,16 +12,30 @@ namespace UnholyTrinity.Players
         [SerializeField] private MapManager mapManager;
         [SerializeField] private Player playerPrefab;
         [SerializeField] private HexCoord[] spawnCoords;
+        // placeholder until player models: one per player in spawn order,
+        // repeating if there are more players than colours
+        [SerializeField] private Color[] playerColours =
+        {
+            Color.cyan,
+            Color.magenta,            
+            Color.yellow,
+        };
 
         private void Start()
         {
             gameManager.ResetGame(mapManager);
-            
+
             for (int i = 0; i < spawnCoords.Length; i++)
             {
                 Player spawnedPlayer = Instantiate(playerPrefab);
                 spawnedPlayer.name = $"Player {i + 1}";
                 spawnedPlayer.Initialize(mapManager, spawnCoords[i]);
+
+                if (playerColours.Length > 0)
+                {
+                    spawnedPlayer.SetColour(playerColours[i % playerColours.Length]);
+                }
+
                 gameManager.RegisterPlayer(spawnedPlayer);
             }
         }

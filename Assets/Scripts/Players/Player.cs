@@ -21,6 +21,13 @@ namespace UnholyTrinity.Players
         [field: SerializeField] public HexCoord Coord { get; private set; }
         [SerializeField] private float heightOffset = 0.5f;
 
+        [Header("Look")]
+        [SerializeField, Tooltip("Tinted with the player's colour. Defaults to the renderer on this object.")]
+        private Renderer bodyRenderer;
+
+        private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+        private static readonly int ColorId = Shader.PropertyToID("_Color");
+
         // momentum carried out of the last resolved tick
         public HexVelocity Velocity { get; private set; }
 
@@ -57,11 +64,12 @@ namespace UnholyTrinity.Players
         private int maxArmour = 100;
 
         [SerializeField]
-        // The percentage of damage that is absorbed by the armour (out of 100)
+        // The percentage of damage that is absorbed by the armour (out of ArmourProtection.FullPercent)
         private int armourDamageReduction = 50;
-        private int maxArmourDamageReduction = 100;
 
         private bool damageReductionRoundedUp = true;
+
+        private ArmourProtection ArmourProtection => new(armourDamageReduction, damageReductionRoundedUp);
 
         [field: SerializeField]
         public int CurrentArmour { get; private set; }
@@ -160,6 +168,22 @@ namespace UnholyTrinity.Players
             mapManager.LayoutChanged += SnapToCoord;
             SnapToCoord();
             ClearPlan();
+        }
+
+        // tints through a property block so players share one material instead of
+        // each getting a copy
+        public void SetColour(Color colour)
+        {
+            if (bodyRenderer == null)
+            {
+                bodyRenderer = GetComponent<Renderer>();
+            }
+
+            MaterialPropertyBlock propertyBlock = new();
+            bodyRenderer.GetPropertyBlock(propertyBlock);
+            propertyBlock.SetColor(BaseColorId, colour);
+            propertyBlock.SetColor(ColorId, colour);
+            bodyRenderer.SetPropertyBlock(propertyBlock);
         }
 
         private void SnapToCoord()
@@ -397,7 +421,7 @@ namespace UnholyTrinity.Players
         // snapshot for the simulator. id is how the game manager tells units apart
         public UnitState ToUnitState(int id)
         {
-            return new UnitState(id, Coord, Velocity, CurrentHealth, maxHealth);
+            return new UnitState(id, Coord, Velocity, CurrentHealth, maxHealth, CurrentArmour, ArmourProtection);
         }
 
         // writes the result of a simulated move phase back to the player
@@ -411,10 +435,11 @@ namespace UnholyTrinity.Players
                 SnapToCoord();
             }
 
-            if (unit.Health != CurrentHealth)
+            if (unit.Health != CurrentHealth || unit.Armour != CurrentArmour)
             {
                 CurrentHealth = unit.Health;
-                Debug.Log($"{name} now at {CurrentHealth}/{maxHealth} health");
+                CurrentArmour = unit.Armour;
+                Debug.Log($"{name} now at {CurrentHealth}/{maxHealth} health, {CurrentArmour} armour");
             }
         }
 
@@ -422,37 +447,27 @@ namespace UnholyTrinity.Players
 
         #region Health
 
-        public void TakeDamage(int damageAmount)
+        // shots still resolve outside the simulator, so they borrow its damage maths
+        // to keep armour working the same as it does for pools
+        public void TakeDamage(int damageAmount, bool ignoresArmour = false)
         {
              if (IsDead)
              {
                 return;
              }
-             if(CurrentArmour > 0)
-             {
-                Debug.Log($"{name} has {CurrentArmour} armour, reducing damage");
-                damageAmount = CalculateReducedDamage(damageAmount);
-             }
 
-             CurrentHealth = Mathf.Max(CurrentHealth - damageAmount, 0);
-             Debug.Log($"{name} took {damageAmount} damage (ouch), {CurrentHealth} health remaining");
+             UnitState unit = ToUnitState(0);
+             int healthLost = unit.TakeDamage(damageAmount, ignoresArmour);
+             int absorbed = CurrentArmour - unit.Armour;
+
+             CurrentHealth = unit.Health;
+             CurrentArmour = unit.Armour;
+             Debug.Log($"{name} took {healthLost} damage (ouch), {absorbed} absorbed by armour, {CurrentHealth} health remaining");
 
              if (IsDead)
              {
                 Debug.Log($"{name} died. RIP");
              }
-        }
-
-        private int CalculateReducedDamage(int damageAmount)
-        {
-            // rounds up like quake 3, so even small hits use armour first
-            int absorbed = Mathf.Min(
-                (damageAmount * armourDamageReduction + maxArmourDamageReduction - 
-                    (damageReductionRoundedUp? 1 : 0)) / maxArmourDamageReduction,
-                CurrentArmour);
-            CurrentArmour -= absorbed;
-            Debug.Log($"{name} absorbed {absorbed} damage with their armour");
-            return damageAmount - absorbed;
         }
 
         #endregion
