@@ -240,6 +240,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TilePicker
   mapManager: {fileID: 495801503}
   cam: {fileID: 2000977402}
+  uiManager: {fileID: 7453945252367422757}
 --- !u!4 &920963449
 Transform:
   m_ObjectHideFlags: 0
@@ -891,6 +892,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 5410176447735931484, guid: ca55dba338a5b3742a3390472db29bbc, type: 3}
   m_PrefabInstance: {fileID: 7453945252367422755}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &7453945252367422757 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3578603734668839198, guid: ca55dba338a5b3742a3390472db29bbc, type: 3}
+  m_PrefabInstance: {fileID: 7453945252367422755}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80fb6f02b42da624499fc5ca3f46f2db, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
