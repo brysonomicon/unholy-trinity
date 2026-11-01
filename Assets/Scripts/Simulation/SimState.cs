@@ -17,21 +17,23 @@ namespace UnholyTrinity.Simulation
         /// <summary>Null when there are no pickups to simulate.</summary>
         public PickupField Pickups { get; }
         public IReadOnlyList<UnitState> Units => units;
+        public SimSettings Settings { get; }
 
-        public SimState(HexMap map, IEnumerable<UnitState> units, PickupField pickups = null)
+        public SimState(HexMap map, IEnumerable<UnitState> units, PickupField pickups = null, SimSettings settings = default)
         {
             Map = map ?? throw new ArgumentNullException(nameof(map));
             this.units = units.ToList();
             Pickups = pickups;
+            Settings = settings;
 
             if (this.units.Select(unit => unit.Id).Distinct().Count() != this.units.Count)
                 throw new ArgumentException("Unit ids must be unique.", nameof(units));
         }
 
-        public SimState Clone() => new SimState(Map, units.Select(unit => unit.Clone()), Pickups?.Clone());
+        public SimState Clone() => new SimState(Map, units.Select(unit => unit.Clone()), Pickups?.Clone(), Settings);
 
         /// <summary>A clone holding only <paramref name="unitId"/>, for previewing one plan without guessing at anyone else's.</summary>
-        public SimState CloneWithOnly(int unitId) => new SimState(Map, new[] { GetUnit(unitId).Clone() }, Pickups?.Clone());
+        public SimState CloneWithOnly(int unitId) => new SimState(Map, new[] { GetUnit(unitId).Clone() }, Pickups?.Clone(), Settings);
 
         public UnitState GetUnit(int id) =>
             units.Find(unit => unit.Id == id) ?? throw new ArgumentException($"No unit with id {id}.", nameof(id));

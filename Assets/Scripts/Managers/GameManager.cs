@@ -27,6 +27,9 @@ public class GameManager : ScriptableObject
 
     // second between ticks so resolution can be watched
     [SerializeField][Min(0.1f)] private float tickDuration = 1f;
+
+    [Tooltip("Environmental damage types that ignore armour and come straight off health.")]
+    [SerializeField] private EnvironmentalDamage environmentIgnoringArmour = EnvironmentalDamage.None;
         
     // index in this list is the player's unit id in simulations
     private readonly List<Player> _players = new();
@@ -230,7 +233,7 @@ public class GameManager : ScriptableObject
 
     private SimState CreateSimState(IEnumerable<UnitState> units, [CanBeNull] PickupField pickups)
     {
-        return new SimState(_mapManager.Map, units, pickups);
+        return new SimState(_mapManager.Map, units, pickups, new SimSettings(environmentIgnoringArmour));
     }
 
     #endregion
@@ -254,7 +257,7 @@ public class GameManager : ScriptableObject
             if (damageAmount > 0)
             {
                 Debug.Log($"{shooter.name} hit {opponent.name} with {weaponData.DisplayName} for {damageAmount} damage");
-                opponent.TakeDamage(damageAmount);
+                opponent.TakeDamage(damageAmount, weaponData.IgnoresArmour);
             }
             else 
             {

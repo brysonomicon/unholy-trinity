@@ -16,9 +16,12 @@ namespace UnholyTrinity.Simulation
         public HexVelocity Velocity { get; internal set; }
         public int Health { get; private set; }
         public int MaxHealth { get; }
+        public int Armour { get; private set; }
+        public ArmourProtection ArmourProtection { get; }
         public bool IsDead => Health <= 0;
 
-        public UnitState(int id, HexCoord coord, HexVelocity velocity, int health, int maxHealth)
+        public UnitState(int id, HexCoord coord, HexVelocity velocity, int health, int maxHealth,
+            int armour = 0, ArmourProtection armourProtection = default)
         {
             if (maxHealth < 1)
                 throw new ArgumentOutOfRangeException(nameof(maxHealth), maxHealth, "Max health must be at least 1.");
@@ -28,25 +31,47 @@ namespace UnholyTrinity.Simulation
             Velocity = velocity;
             MaxHealth = maxHealth;
             Health = Math.Clamp(health, 0, maxHealth);
+            Armour = Math.Max(armour, 0);
+            ArmourProtection = armourProtection;
         }
 
-        public UnitState Clone() => new UnitState(Id, Coord, Velocity, Health, MaxHealth);
+        public UnitState Clone() => new UnitState(Id, Coord, Velocity, Health, MaxHealth, Armour, ArmourProtection);
 
-        public bool TryHeal(int amount)
-        {
-            if (IsDead || amount <= 0 || Health >= MaxHealth)
-                return false;
+        public bool TryHeal(int amount) => Heal(amount) > 0;
 
-            Health = Math.Min(Health + amount, MaxHealth);
-            return true;
-        }
-
-        public void TakeDamage(int amount)
+        /// <summary>Restores up to <paramref name="amount"/> HP; returns the HP actually restored.</summary>
+        public int Heal(int amount)
         {
             if (IsDead || amount <= 0)
-                return;
+                return 0;
 
-            Health = Math.Max(Health - amount, 0);
+            int healed = Math.Min(amount, MaxHealth - Health);
+            Health += healed;
+            return healed;
         }
+
+        /// <summary>
+        /// Deals <paramref name="amount"/> damage, absorbed by armour first unless the source
+        /// <paramref name="ignoresArmour"/>. Returns the HP actually lost.
+        /// </summary>
+        public int TakeDamage(int amount, bool ignoresArmour = false)
+        {
+            if (IsDead || amount <= 0)
+                return 0;
+
+            if (!ignoresArmour)
+            {
+                int absorbed = ArmourProtection.Absorbed(amount, Armour);
+                Armour -= absorbed;
+                amount -= absorbed;
+            }
+
+            int lost = Math.Min(amount, Health);
+            Health -= lost;
+            return lost;
+        }
+
+        /// <summary>Kills outright, ignoring armour, e.g. lava or a fall into the void.</summary>
+        public void Kill() => Health = 0;
     }
 }
