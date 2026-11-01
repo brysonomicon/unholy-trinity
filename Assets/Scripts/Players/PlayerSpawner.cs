@@ -15,7 +15,7 @@ namespace UnholyTrinity.Players
 
         private void Start()
         {
-            gameManager.ResetGame();
+            gameManager.ResetGame(mapManager);
             
             for (int i = 0; i < spawnCoords.Length; i++)
             {

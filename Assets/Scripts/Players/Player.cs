@@ -1,14 +1,14 @@
 using System.Linq;
 using System.Collections.Generic;
 using UnholyTrinity.Hex;
-using UnholyTrinity.Pickups;
+using UnholyTrinity.Simulation;
 using UnholyTrinity.Weapons;
 using UnityEngine;
 using UnityEngine.Serialization;
 
 namespace UnholyTrinity.Players
 {
-    public class Player : MonoBehaviour, IHealable
+    public class Player : MonoBehaviour
     {
         #region Fields
 
@@ -20,6 +20,9 @@ namespace UnholyTrinity.Players
         [Header("Map")]
         [field: SerializeField] public HexCoord Coord { get; private set; }
         [SerializeField] private float heightOffset = 0.5f;
+
+        // momentum carried out of the last resolved tick
+        public HexVelocity Velocity { get; private set; }
 
         [Header("Combat")]
         [SerializeField] private WeaponData startingWeapon;
@@ -34,9 +37,6 @@ namespace UnholyTrinity.Players
         // this turn's plan, one UnholyAction per tick
         private readonly List<UnholyAction> plannedActions = new();
 
-        // hexes entered during the current tick's move phase, in order
-        private readonly List<HexCoord> tickMovePath = new();
-
         [field: SerializeField] 
         public Weapon CurrentWeapon { get; private set; }
 
@@ -50,9 +50,9 @@ namespace UnholyTrinity.Players
         [field: SerializeField]
         public int CurrentHealth { get; private set; }
 
-        public bool IsDead => CurrentHealth <= 0;
+        public int MaxHealth => maxHealth;
 
-        public IReadOnlyList<HexCoord> TickMovePath => tickMovePath;
+        public bool IsDead => CurrentHealth <= 0;
 
         public int PlanningTickOfTurn => plannedActions.Count;
 
@@ -161,27 +161,15 @@ namespace UnholyTrinity.Players
 
         #region Movement
 
-        private HexCoord GetStepDestination(HexCoord from, HexDirection direction)
-        {
-            HexCoord next = from.Neighbor(direction);
-            return mapManager.Map.IsWalkable(next)
-                ? next
-                : from;
-        }
-
+        // where the plan so far leaves the player, worked out by the same simulation resolution uses
         private HexCoord GetPlannedCoord()
         {
-            HexCoord plannedCoord = Coord;
+            List<MoveInput> plan = plannedActions.Select(action => action.MoveInput).ToList();
+            List<PreviewTick> preview = gm.PreviewPlan(this, plan);
 
-            foreach (UnholyAction action in plannedActions)
-            {
-                if (action.PlannedMove != null)
-                {
-                    plannedCoord = GetStepDestination(plannedCoord, action.PlannedMove.Value);
-                }
-            }
-
-            return plannedCoord;
+            return preview.Count > 0
+                ? preview[^1].Unit.Coord
+                : Coord;
         }
 
         #endregion
@@ -270,7 +258,6 @@ namespace UnholyTrinity.Players
         {
             Debug.Log($"{name} plans move {direction} on tick {PlanningTick}");
             PlanningAction.PlannedMove = direction;
-            PlanningAction.Move = () => Step(direction);
             RefreshAimPreview();
         }
 
@@ -278,7 +265,6 @@ namespace UnholyTrinity.Players
         {
             Debug.Log($"{name} hold position on tick {PlanningTick}");
             PlanningAction.PlannedMove = null;
-            PlanningAction.Move = null;
             RefreshAimPreview();
         }
 
@@ -391,26 +377,28 @@ namespace UnholyTrinity.Players
             Debug.Log($"{name} is now aiming {CurrentAimDirection}");
         }
 
-        // called by the game manager before this tick's move so the path only holds this tick's hexes
-        public void BeginMovePhase()
+        // snapshot for the simulator. id is how the game manager tells units apart
+        public UnitState ToUnitState(int id)
         {
-            tickMovePath.Clear();
+            return new UnitState(id, Coord, Velocity, CurrentHealth, maxHealth);
         }
 
-        private void Step(HexDirection direction)
+        // writes the result of a simulated move phase back to the player
+        public void ApplyUnitState(UnitState unit)
         {
-            HexCoord destination = GetStepDestination(Coord, direction);
+            Velocity = unit.Velocity;
 
-            if (destination == Coord)
+            if (unit.Coord != Coord)
             {
-                Debug.Log($"{name} is blocked moving {direction}");
-                return;
+                Coord = unit.Coord;
+                SnapToCoord();
             }
 
-            Coord = destination;
-            tickMovePath.Add(Coord);
-            SnapToCoord();
-            Debug.Log($"{name} moved to {Coord}");
+            if (unit.Health != CurrentHealth)
+            {
+                CurrentHealth = unit.Health;
+                Debug.Log($"{name} now at {CurrentHealth}/{maxHealth} health");
+            }
         }
 
         #endregion
@@ -431,19 +419,6 @@ namespace UnholyTrinity.Players
              {
                 Debug.Log($"{name} died. RIP");
              }
-        }
-
-        public bool TryHeal(int amount)
-        {
-            if (IsDead || amount <= 0 || CurrentHealth >= maxHealth)
-            {
-                Debug.Log($"{name} cannot be healed (dead: {IsDead}, amount: {amount}, current: {CurrentHealth}/{maxHealth})");
-                return false;
-            }
-
-            CurrentHealth = Mathf.Min(CurrentHealth + amount, maxHealth);
-            Debug.Log($"{name} healed {amount} health, now at {CurrentHealth}/{maxHealth}");
-            return true;
         }
 
         #endregion

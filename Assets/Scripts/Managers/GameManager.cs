@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using UnholyTrinity.Hex;
 using UnholyTrinity.Players;
+using UnholyTrinity.Simulation;
 using UnholyTrinity.Weapons;
 using UnityEngine;
 
@@ -26,9 +28,11 @@ public class GameManager : ScriptableObject
     // second between ticks so resolution can be watched
     [SerializeField][Min(0.1f)] private float tickDuration = 1f;
         
+    // index in this list is the player's unit id in simulations
     private readonly List<Player> _players = new();
 
-    // scene object, so it registers itself instead of being serialized on this asset
+    // scene objects, so they're handed over at runtime instead of being serialized on this asset
+    [CanBeNull] private MapManager _mapManager;
     [CanBeNull] private PickupManager _pickupManager;
 
     public int Round { get; private set; }
@@ -88,8 +92,9 @@ public class GameManager : ScriptableObject
 
     #region Setup
 
-    public void ResetGame()
+    public void ResetGame(MapManager mapManager)
     {
+        _mapManager = mapManager;
         Round = 1;
         CurrentTick = 0;
         _players.Clear();
@@ -169,29 +174,63 @@ public class GameManager : ScriptableObject
             player.GetPlannedAction(tickIndex)?.Aim?.Invoke();
         }
 
-        // move phase
-        // respawns tick first so a pickup that comes back this tick can be collected
-        // this tick, even by a player who doesn't move. so RespawnTicks = 1 means a pickup
-        // collected on tick N is available again on tick N + 1
-        bool hasPickups = _pickupManager != null;
-        if (hasPickups)
+        ResolveMovePhase(tickIndex);
+    }
+
+    // runs the simulator on the live pickups, so collections and respawns stick, then
+    // writes each player's result back. input order is movement priority
+    // TODO: alternate priority between players
+    private void ResolveMovePhase(int tickIndex)
+    {
+        SimState state = CreateSimState(_players.Select((player, id) => player.ToUnitState(id)), LivePickups);
+
+        List<UnitTickInput> inputs = _players
+            .Select((player, id) => new UnitTickInput(id, player.GetPlannedAction(tickIndex)?.MoveInput ?? MoveInput.None))
+            .ToList();
+
+        TickLog log = TickSimulator.Simulate(state, inputs);
+
+        for (int id = 0; id < _players.Count; id++)
         {
-            _pickupManager.AdvanceTicks(1);
+            _players[id].ApplyUnitState(state.GetUnit(id));
         }
 
-        foreach (Player player in _players)
+        if (_pickupManager != null)
         {
-            player.BeginMovePhase();
-            player.GetPlannedAction(tickIndex)?.Move?.Invoke();
+            _pickupManager.RefreshVisuals();
         }
 
-        if (hasPickups)
+        foreach (TickEvent tickEvent in log.Events)
         {
-            foreach (Player player in _players)
-            {
-                _pickupManager.CollectAlong(player.TickMovePath, player.Coord, player);
-            }
+            Debug.Log(tickEvent);
         }
+    }
+
+    #endregion
+
+    #region Simulation
+
+    private const int PreviewUnitId = 0;
+
+    [CanBeNull]
+    private PickupField LivePickups => _pickupManager != null ? _pickupManager.Field : null;
+
+    // simulates only this player's plan, from where they are now. the opponent's plan
+    // is hidden, so they're left out entirely. empty until the map is known
+    public List<PreviewTick> PreviewPlan(Player player, IReadOnlyList<MoveInput> plan)
+    {
+        if (_mapManager == null || _mapManager.Map == null)
+        {
+            return new List<PreviewTick>();
+        }
+
+        SimState state = CreateSimState(new[] { player.ToUnitState(PreviewUnitId) }, LivePickups);
+        return TickSimulator.PreviewPlan(state, PreviewUnitId, plan);
+    }
+
+    private SimState CreateSimState(IEnumerable<UnitState> units, [CanBeNull] PickupField pickups)
+    {
+        return new SimState(_mapManager.Map, units, pickups);
     }
 
     #endregion
