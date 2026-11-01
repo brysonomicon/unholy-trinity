@@ -53,12 +53,15 @@ namespace UnholyTrinity.Players
         public int MaxHealth => maxHealth;
 
         [Header("Armour")]
-
         [SerializeField] 
         private int maxArmour = 100;
 
         [SerializeField]
-        private float armorDamageReduction = 0.5f;
+        // The percentage of damage that is absorbed by the armour (out of 100)
+        private int armourDamageReduction = 50;
+        private int maxArmourDamageReduction = 100;
+
+        private bool damageReductionRoundedUp = true;
 
         [field: SerializeField]
         public int CurrentArmour { get; private set; }
@@ -442,7 +445,11 @@ namespace UnholyTrinity.Players
 
         private int CalculateReducedDamage(int damageAmount)
         {
-            int absorbed = Mathf.Min(Mathf.CeilToInt(damageAmount * armorDamageReduction), CurrentArmour);
+            // rounds up like quake 3, so even small hits use armour first
+            int absorbed = Mathf.Min(
+                (damageAmount * armourDamageReduction + maxArmourDamageReduction - 
+                    (damageReductionRoundedUp? 1 : 0)) / maxArmourDamageReduction,
+                CurrentArmour);
             CurrentArmour -= absorbed;
             Debug.Log($"{name} absorbed {absorbed} damage with their armour");
             return damageAmount - absorbed;
