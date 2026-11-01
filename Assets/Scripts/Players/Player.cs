@@ -139,8 +139,10 @@ namespace UnholyTrinity.Players
 
         private void SnapToCoord()
         {
-            transform.position = mapManager.Layout.HexToWorld(Coord) +
-                                 Vector3.up * heightOffset;
+            transform.SetPositionAndRotation(
+                mapManager.Layout.HexToWorld(Coord) + Vector3.up * heightOffset,
+                GetAimRotation(CurrentAimDirection)
+            );
 
             if (mapManager.Map != null &&
                 !mapManager.Map.IsWalkable(Coord))
@@ -185,6 +187,14 @@ namespace UnholyTrinity.Players
             List<AimTile> aimTiles = CurrentWeapon.Data.GetAimTiles(
                 mapManager.Map, GetPlannedCoord(), PlanningAction.PlannedAim);
             aimPreview.Show(aimTiles, mapManager.Layout);
+        }
+
+        private Quaternion GetAimRotation(AimDirection aim)
+        {
+            Vector3 aimVector = mapManager.Layout.HexToWorld(aim.ToOffset()) -
+                                mapManager.Layout.HexToWorld(HexCoord.Zero);
+            
+            return Quaternion.LookRotation(aimVector);
         }
 
         #endregion
@@ -380,6 +390,7 @@ namespace UnholyTrinity.Players
         private void SetAim(AimDirection aim)
         {
             CurrentAimDirection = aim;
+            SnapToCoord();
             Debug.Log($"{name} is now aiming {CurrentAimDirection}");
         }
 
