@@ -67,20 +67,26 @@ namespace UnholyTrinity.Hex.Tests
         public void Respawns_AfterExactlyRespawnTicks()
         {
             var field = new PickupField(CorridorWithPickup(3, At(1), heal));
-            int respawns = 0;
-            field.Respawned += (_, _) => respawns++;
             field.TryCollect(At(1), PickupTrigger.OnStop, new TestUnit());
 
-            field.AdvanceTicks(3);
+            CollectionAssert.IsEmpty(field.AdvanceTicks(3));
             Assert.IsFalse(field.IsAvailable(At(1)));
-            Assert.AreEqual(0, respawns);
 
-            field.AdvanceTicks(1);
+            CollectionAssert.AreEqual(new[] { At(1) }, field.AdvanceTicks(1));
             Assert.IsTrue(field.IsAvailable(At(1)));
-            Assert.AreEqual(1, respawns);
 
-            field.AdvanceTicks(5);
-            Assert.AreEqual(1, respawns, "An available pickup should not respawn again.");
+            CollectionAssert.IsEmpty(field.AdvanceTicks(5), "An available pickup should not respawn again.");
+        }
+
+        [Test]
+        public void Clone_IsIndependentOfOriginal()
+        {
+            var field = new PickupField(CorridorWithPickup(3, At(1), heal));
+            var clone = field.Clone();
+
+            Assert.IsTrue(clone.TryCollect(At(1), PickupTrigger.OnStop, new TestUnit()));
+            Assert.IsFalse(clone.IsAvailable(At(1)));
+            Assert.IsTrue(field.IsAvailable(At(1)));
         }
 
         [Test]

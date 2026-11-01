@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using UnityEngine;
 
 [assembly: InternalsVisibleTo("UnholyTrinity.HexMap.Tests")]
+[assembly: InternalsVisibleTo("UnholyTrinity.Simulation.Tests")]
 
 namespace UnholyTrinity.Pickups
 {
