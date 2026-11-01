@@ -214,11 +214,11 @@ namespace UnholyTrinity.Players
 
             for (int i = 0; i < tickCount; i++)
             {
-                ghostPoses.Add(GetPose(GetPlannedCoord(i), GetPlannedAim(i)));
+                ghostPoses.Add(GetPlannedPose(i));
             }
             planGhosts.Show(ghostPoses);
 
-            Pose plannedPose = GetPose(GetPlannedCoord(tickCount), GetPlannedAim(tickCount));
+            Pose plannedPose = GetPlannedPose(tickCount);
             transform.SetPositionAndRotation(plannedPose.position, plannedPose.rotation);
 
             List<AimTile> aimTiles = CurrentWeapon.Data.GetAimTiles(
@@ -234,12 +234,32 @@ namespace UnholyTrinity.Players
             SnapToCoord();
         }
 
+        private void RevealPlan()
+        {
+            aimPreview.Hide();
+            SnapToCoord();
+
+            List<Pose> ghostPoses = new();
+
+            for (int i = 1; i <= plannedActions.Count; i++)
+            {
+                ghostPoses.Add(GetPlannedPose(i));
+            }
+
+            planGhosts.Show(ghostPoses);
+        }
+
         private Pose GetPose(HexCoord coord, AimDirection aim)
         {
             return new Pose(
                 mapManager.Layout.HexToWorld(coord) + Vector3.up * heightOffset,
                 GetAimRotation(aim)
             );
+        }
+
+        private Pose GetPlannedPose(int tickCount)
+        {
+            return GetPose(GetPlannedCoord(tickCount), GetPlannedAim(tickCount));
         }
 
         #endregion
@@ -412,6 +432,12 @@ namespace UnholyTrinity.Players
                 : null;
         }
 
+        // called by game manager once this ticks move has resolved
+        public void PickUpGhost()
+        {
+            planGhosts.PickUpNext();
+        }
+
         private void Fire(Weapon weapon)
         {
             if (!CanFire(weapon))
@@ -500,7 +526,7 @@ namespace UnholyTrinity.Players
         {
             if (newPhase == TurnPhase.Resolution)
             {
-                StopProjecting();
+                RevealPlan();
             }
         }
 

@@ -30,5 +30,16 @@ namespace UnholyTrinity.Players
 
             ghosts.Clear();
         }
+
+        public void PickUpNext()
+        {
+            if (ghosts.Count == 0)
+            {
+                return;
+            }
+
+            Destroy(ghosts[0]);
+            ghosts.RemoveAt(0);
+        }
     }
 }

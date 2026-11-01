@@ -122,7 +122,7 @@ public class GameManager : ScriptableObject
             CurrentTick++;
             ResolveTick(i);
         }
-        
+
         await Task.Delay((int)(tickDuration * 1000));
 
         //! [CB] Fun fact, there's a race condition if you don't wait long enough
@@ -157,6 +157,12 @@ public class GameManager : ScriptableObject
         foreach (Player player in _players)
         {
             player.GetPlannedAction(tickIndex)?.Move?.Invoke();
+        }
+
+        // absorb ghosts after each turn
+        foreach (Player player in _players)
+        {
+            player.PickUpGhost();
         }
     }
 
