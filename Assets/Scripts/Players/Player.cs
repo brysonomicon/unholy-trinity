@@ -170,8 +170,7 @@ namespace UnholyTrinity.Players
             ClearPlan();
         }
 
-        // tints through a property block so players share one material instead of
-        // each getting a copy
+        // no longer just blue da-ba-dee, can be removed once we're using player models.
         public void SetColour(Color colour)
         {
             if (bodyRenderer == null)
