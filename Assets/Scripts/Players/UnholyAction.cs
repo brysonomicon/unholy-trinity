@@ -11,6 +11,7 @@ namespace UnholyTrinity.Players
     public class UnholyAction
     {
         public Weapon PlannedShot { get; set; }
+        public HexCoord? PlannedTarget { get; set; }
         public AimDirection PlannedAim { get; set; }
         public HexDirection? PlannedMove { get; set; }
 

@@ -23,6 +23,7 @@ namespace UnholyTrinity.Players
         [SerializeField] private WeaponData startingWeapon;
         [SerializeField] private AimPreview aimPreview;
         [SerializeField] private PlanGhosts planGhosts;
+        [SerializeField] private AimPreview selectionPreview;
         // how many 30 degree steps a player can aim in one tick
         [SerializeField][Min(1)] private int aimStepsPerTick = 1;
 
@@ -32,6 +33,9 @@ namespace UnholyTrinity.Players
 
         // this turn's plan, one UnholyAction per tick
         private readonly List<UnholyAction> plannedActions = new();
+
+        // the selected tile that rocket launcher fires at
+        public HexCoord? SelectedTile { get; private set; }
 
         [field: SerializeField] 
         public Weapon CurrentWeapon { get; private set; }
@@ -79,6 +83,7 @@ namespace UnholyTrinity.Players
         public bool IsHoldingMove => PlanningAction.PlannedMove == null;
 
         private bool HasTickChanges => !IsHoldingFire || !IsHoldingAim || !IsHoldingMove;
+        private bool HasTargetInShotCone => SelectedTile != null && IsInShotCone(SelectedTile.Value);
 
         #endregion
 
@@ -233,10 +238,6 @@ namespace UnholyTrinity.Players
             Pose plannedPose = GetPlannedPose(tickCount);
             transform.SetPositionAndRotation(plannedPose.position, plannedPose.rotation);
 
-            List<AimTile> aimTiles = CurrentWeapon.Data.GetAimTiles(
-                mapManager.Map, GetPlannedCoord(tickCount - 1), GetPlannedAim(tickCount - 1)
-            );
-
             aimPreview.Show(GetPlannedShotTiles(), mapManager.Layout);
         }
 
@@ -244,12 +245,14 @@ namespace UnholyTrinity.Players
         {
             planGhosts.Hide();
             aimPreview.Hide();
+            ClearSelectedTile();
             SnapToCoord();
         }
 
         private void RevealPlan()
         {
             aimPreview.Hide();
+            ClearSelectedTile();
             SnapToCoord();
 
             List<Pose> ghostPoses = new();
@@ -287,7 +290,8 @@ namespace UnholyTrinity.Players
         public bool CanPlanShot(Weapon weapon)
         {
             return GetUnplannedAmmo(weapon) > 0 &&
-                    PlanningTick >= GetPlannedNextFireTick();
+                    PlanningTick >= GetPlannedNextFireTick() &&
+                    (!weapon.Data.RequiresTarget || HasTargetInShotCone);
         }
 
         public void PlanShot(Weapon weapon)
@@ -297,9 +301,24 @@ namespace UnholyTrinity.Players
                 return;
             }
 
+            if (weapon.Data.RequiresTarget)
+            {
+                PlanShot(weapon, SelectedTile.Value);
+                return;
+            }
+
             Debug.Log($"{name} plans {weapon.Data.DisplayName} on tick {PlanningTick}");
             PlanningAction.PlannedShot = weapon;
+            PlanningAction.PlannedTarget = null;
             PlanningAction.Shoot = () => Fire(weapon);
+        }
+
+        private void PlanShot(Weapon weapon, HexCoord target)
+        {
+            Debug.Log($"{name} plans {weapon.Data.DisplayName} at {target} on tick {PlanningTick}");
+            PlanningAction.PlannedShot = weapon;
+            PlanningAction.PlannedTarget = target;
+            PlanningAction.Shoot = () => Fire(weapon, target);
         }
 
         // fills the next tick of the shoot lane without firing
@@ -307,7 +326,20 @@ namespace UnholyTrinity.Players
         {
             Debug.Log($"{name} holds fire on tick {PlanningTick}");
             PlanningAction.PlannedShot = null;
+            PlanningAction.PlannedTarget = null;
             PlanningAction.Shoot = null;
+        }
+
+        public void SelectTile(HexCoord coord)
+        {
+            SelectedTile = coord;
+            selectionPreview.Show(new List<AimTile> { new AimTile(coord, 1f) }, mapManager.Layout);
+        }
+
+        private void ClearSelectedTile()
+        {
+            SelectedTile = null;
+            selectionPreview.Hide();
         }
 
         public bool CanPlanRotation(bool clockwise)
@@ -451,6 +483,7 @@ namespace UnholyTrinity.Players
             planGhosts.PickUpNext();
         }
 
+        // for rail and LG
         private void Fire(Weapon weapon)
         {
             if (!CanFire(weapon))
@@ -463,6 +496,21 @@ namespace UnholyTrinity.Players
 
             List<AimTile> aimTiles = weapon.Data.GetAimTiles(mapManager.Map, Coord, CurrentAimDirection);
             gm.ResolveShot(this, weapon.Data, aimTiles);
+        }
+
+        // for rocket launcher
+        private void Fire(Weapon weapon, HexCoord target)
+        {
+            if (!CanFire(weapon))
+            {
+                return;
+            }
+
+            weapon.Fire();
+            nextFireTick = gm.CurrentTick + 1 + weapon.Data.Cooldown;
+
+            // TODO: launch an actual rocket
+            Debug.Log($"{name} launches {weapon.Data.DisplayName} at {target}");
         }
 
         // weapon cooldowns are global, no weapon can be fired until the cooldown of the last

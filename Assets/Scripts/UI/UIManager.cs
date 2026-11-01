@@ -97,6 +97,13 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    // lets tile clicks rebuild cards
+    public void RefreshCards()
+    {
+        ClearCardSection();
+        GenerateDefaultCards(GameManager.Instance.CurrentPlayer);
+    }
+
     private LaneCard CreateLaneCard(string title)
     {
         return Instantiate(laneCardPrefab, cardSection.transform).Setup(title);

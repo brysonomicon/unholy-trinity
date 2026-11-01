@@ -8,6 +8,7 @@ public class TilePicker : MonoBehaviour
 {
     [SerializeField] private MapManager mapManager;
     [SerializeField] private Camera cam;
+    [SerializeField] private UIManager uiManager;
 
     private void Update()
     {
@@ -30,6 +31,9 @@ public class TilePicker : MonoBehaviour
 
         Debug.Log($"{currentPlayer.name} clicked {clickedCoord}, " +
                   $"in shot cone: {currentPlayer.IsInShotCone(clickedCoord)}");
+        
+        currentPlayer.SelectTile(clickedCoord);
+        uiManager.RefreshCards();
     }
 
     private bool TryGetClickedCoord(Mouse mouse, out HexCoord clickedCoord)
