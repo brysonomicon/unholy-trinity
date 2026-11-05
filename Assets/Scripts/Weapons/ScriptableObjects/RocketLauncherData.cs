@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnholyTrinity.Hex;
 using UnityEngine;
 
@@ -22,7 +23,6 @@ namespace UnholyTrinity.Weapons
         }
 
         // tiles caught in the explosion
-        // TODO: make walls shield tiles behind them
         public List<AimTile> GetBlastTiles(HexMap map, HexCoord impact)
         {
             List<AimTile> blastTiles = new();
@@ -31,14 +31,34 @@ namespace UnholyTrinity.Weapons
             {
                 foreach (HexCoord coord in HexCoord.Ring(impact, distance))
                 {
-                    if (!map.BlocksLineOfFire(coord))
-                    {
+                    if (!map.BlocksLineOfFire(coord) &&
+                        ShotTracer.HasLineOfSight(map, impact, coord)
+                    ){
                         blastTiles.Add(new AimTile(coord, blastFalloff[distance]));
                     }
                 }
             }
 
             return blastTiles;
+        }
+
+        // the aim cones falloff is accuracy for rockets. a failed roll moves the
+        // target tile to a random neighbour that is also in the aim cone
+        public HexCoord GetLandingTile(List<AimTile> aimTiles, AimTile target)
+        {
+            if (Random.value <= target.Falloff)
+            {
+                return target.Coord;
+            }
+
+            List<HexCoord> scatterTiles = aimTiles
+                .Select(aimTile => aimTile.Coord)
+                .Where(coord => coord.DistanceTo(target.Coord) == 1)
+                .ToList();
+
+            return scatterTiles.Count > 0
+                ? scatterTiles[Random.Range(0, scatterTiles.Count)]
+                : target.Coord;
         }
     }
 }

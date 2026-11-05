@@ -502,6 +502,16 @@ namespace UnholyTrinity.Players
         // for rocket launcher
         private void Fire(Weapon weapon, HexCoord target)
         {
+            RocketLauncherData rocketData = (RocketLauncherData)weapon.Data;
+            List<AimTile> aimTiles = rocketData.GetAimTiles(mapManager.Map, Coord, CurrentAimDirection);
+            int targetIndex = aimTiles.FindIndex(aimTile => aimTile.Coord == target);
+            
+            if (targetIndex < 0)
+            {
+                Debug.Log($"{name} holds fire, {target} is no longer in the shot cone");
+                return;
+            }
+
             if (!CanFire(weapon))
             {
                 return;
@@ -509,6 +519,13 @@ namespace UnholyTrinity.Players
 
             weapon.Fire();
             nextFireTick = gm.CurrentTick + 1 + weapon.Data.Cooldown;
+
+            HexCoord landingTile = rocketData.GetLandingTile(aimTiles, aimTiles[targetIndex]);
+
+            if (landingTile != target)
+            {
+                Debug.Log($"{name}'s rocket scattered from {target} to {landingTile}");
+            }
 
             gm.LaunchRocket(this, (RocketLauncherData)weapon.Data, mapManager, target);
         }
