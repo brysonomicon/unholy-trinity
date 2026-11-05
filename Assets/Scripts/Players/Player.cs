@@ -301,6 +301,7 @@ namespace UnholyTrinity.Players
                 return;
             }
 
+            // ensures the correct Fire() method is used when rocketlauncher equipped
             if (weapon.Data.RequiresTarget)
             {
                 PlanShot(weapon, SelectedTile.Value);
@@ -509,8 +510,7 @@ namespace UnholyTrinity.Players
             weapon.Fire();
             nextFireTick = gm.CurrentTick + 1 + weapon.Data.Cooldown;
 
-            // TODO: launch an actual rocket
-            Debug.Log($"{name} launches {weapon.Data.DisplayName} at {target}");
+            gm.LaunchRocket(this, (RocketLauncherData)weapon.Data, mapManager, target);
         }
 
         // weapon cooldowns are global, no weapon can be fired until the cooldown of the last

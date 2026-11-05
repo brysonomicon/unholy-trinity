@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using UnholyTrinity.Players;
 using UnholyTrinity.Weapons;
+using UnholyTrinity.Hex;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "NewGameManager",
@@ -27,6 +28,7 @@ public class GameManager : ScriptableObject
     [SerializeField][Min(0.1f)] private float tickDuration = 1f;
         
     private readonly List<Player> _players = new();
+    private readonly List<Rocket> _rockets = new();
 
     public int Round { get; private set; }
     // counts every tick of the game and only resets with ResetGame.
@@ -87,6 +89,7 @@ public class GameManager : ScriptableObject
         Round = 1;
         CurrentTick = 0;
         _players.Clear();
+        _rockets.Clear();
         turnManager.ResetPhases();
     }
 
@@ -141,23 +144,34 @@ public class GameManager : ScriptableObject
         // shot -> aim -> move -> LG damage so that LG can be applied according to 
         // opponent move path relative to shooter aim cone
 
-        // shoot phase
+        #region shoot phase
+
         foreach (Player player in _players)
         {
             player.GetPlannedAction(tickIndex)?.Shoot?.Invoke();
         }
 
-        // aim phase
+        #endregion
+
+        #region aim phase
+
         foreach (Player player in _players)
         {
             player.GetPlannedAction(tickIndex)?.Aim?.Invoke();
         }
 
-        // move phase
+        #endregion
+
+        #region move phase
+
         foreach (Player player in _players)
         {
             player.GetPlannedAction(tickIndex)?.Move?.Invoke();
         }
+
+        AdvanceRockets();
+
+        #endregion
 
         // absorb ghosts after each turn
         foreach (Player player in _players)
@@ -170,30 +184,72 @@ public class GameManager : ScriptableObject
 
     #region Combat
 
+    // damages every player standing on a hit tile. cones never include the shooter's tile
+    // so players can't hit themselves with rail/LG but can hit themselves with rocket splash
     public void ResolveShot(Player shooter, WeaponData weaponData, List<AimTile> aimTiles)
     {
-        Player opponent = GetOpponent(shooter);
-
-        // shoot the opponent if they are in the aim cone of the shooter
         foreach (AimTile at in aimTiles)
         {
-            if (at.Coord != opponent.Coord)
+            foreach (Player player in _players)
             {
-                continue;
-            }
+                if (at.Coord != player.Coord)
+                {
+                    continue;
+                }
 
-            int damageAmount = weaponData.GetDamage(at);
+                int damageAmount = weaponData.GetDamage(at);
 
-            if (damageAmount > 0)
-            {
-                Debug.Log($"{shooter.name} hit {opponent.name} with {weaponData.DisplayName} for {damageAmount} damage");
-                opponent.TakeDamage(damageAmount);
-            }
-            else 
-            {
-                Debug.Log($"{shooter.name} missed");
+                if (damageAmount > 0)
+                {
+                    Debug.Log($"{shooter.name} hit {player.name} with {weaponData.DisplayName} for {damageAmount} damage");
+                    player.TakeDamage(damageAmount);
+                }
+                else
+                {
+                    Debug.Log($"{shooter.name} missed");
+                }
             }
         }
+    }
+
+    public void LaunchRocket(Player shooter, RocketLauncherData rocketData, MapManager mapManager, HexCoord target)
+    {
+        Rocket rocket = Instantiate(rocketData.RocketPrefab);
+        rocket.Launch(shooter, rocketData, mapManager, shooter.Coord, target);
+        _rockets.Add(rocket);
+        Debug.Log($"{shooter.name} launched a rocket at {target}");
+    }
+
+    private void AdvanceRockets()
+    {
+        foreach (Rocket rocket in _rockets.ToList())
+        {
+            rocket.StepForward();
+
+            if (rocket.HasArrived ||
+                IsDirectHit(rocket))
+            {
+                DetonateRocket(rocket);
+                // forgive me bruce
+                break;
+            }
+        }
+    }
+
+    private bool IsDirectHit(Rocket rocket)
+    {
+        return _players.Any(player => 
+            player != rocket.Owner &&
+            player.Coord == rocket.Coord
+        );
+    }
+
+    private void DetonateRocket(Rocket rocket)
+    {
+        Debug.Log($"{rocket.Owner.name}'s rocket exploded at {rocket.Coord}");
+        ResolveShot(rocket.Owner, rocket.Data, rocket.GetBlastTiles());
+        _rockets.Remove(rocket);
+        Destroy(rocket.gameObject);
     }
 
     private Player GetOpponent(Player shooter)
