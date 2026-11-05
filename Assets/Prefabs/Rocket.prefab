@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 7029020072249579583}
   - component: {fileID: 1336263976776983229}
   - component: {fileID: 5528225168912305416}
+  - component: {fileID: 3346145860758091903}
   m_Layer: 0
   m_Name: Rocket
   m_TagString: Untagged
@@ -104,3 +105,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnholyTrinity.Weapons.Rocket
   heightOffset: 0.5
+  blastPreview: {fileID: 3346145860758091903}
+--- !u!114 &3346145860758091903
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2774534108684104327}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 987b1a09b13352a4db7c3c4323e5b2c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UnholyTrinity.Players.AimPreview
+  highlightMaterial: {fileID: 2100000, guid: 2b766dd1c688ae74da03fbcf1cab63a5, type: 2}
+  highlightHeight: 0.13
+  highlightScale: 0.95
+  tintAlpha: 0.45
+  weakFalloffColor: {r: 0.015686274, g: 0.91397995, b: 1, a: 1}
+  strongFalloffColor: {r: 0.26301894, g: 0.003921577, b: 0.49019608, a: 1}

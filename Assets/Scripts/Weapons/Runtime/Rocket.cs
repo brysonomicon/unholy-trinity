@@ -8,6 +8,7 @@ namespace UnholyTrinity.Weapons
     public class Rocket : MonoBehaviour
     {
         [SerializeField] private float heightOffset = 0.5f;
+        [SerializeField] private AimPreview blastPreview;
 
         private MapManager mapManager;
         // includes the tile fired from and the impact tile
@@ -32,6 +33,7 @@ namespace UnholyTrinity.Weapons
             path = origin.LineTo(target);
             pathIndex = 0;
             SnapToCoord();
+            blastPreview.Show(data.GetBlastTiles(mapManager.Map, target), mapManager.Layout);
         }
 
         public void StepForward()

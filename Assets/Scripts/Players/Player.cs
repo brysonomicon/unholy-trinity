@@ -24,6 +24,7 @@ namespace UnholyTrinity.Players
         [SerializeField] private AimPreview aimPreview;
         [SerializeField] private PlanGhosts planGhosts;
         [SerializeField] private AimPreview selectionPreview;
+        [SerializeField] private AimPreview plannedBlastPreview;
         // how many 30 degree steps a player can aim in one tick
         [SerializeField][Min(1)] private int aimStepsPerTick = 1;
 
@@ -239,12 +240,14 @@ namespace UnholyTrinity.Players
             transform.SetPositionAndRotation(plannedPose.position, plannedPose.rotation);
 
             aimPreview.Show(GetPlannedShotTiles(), mapManager.Layout);
+            plannedBlastPreview.Show(GetPlannedBlastTiles(), mapManager.Layout);
         }
 
         private void StopProjecting()
         {
             planGhosts.Hide();
             aimPreview.Hide();
+            plannedBlastPreview.Hide();
             ClearSelectedTile();
             SnapToCoord();
         }
@@ -252,6 +255,7 @@ namespace UnholyTrinity.Players
         private void RevealPlan()
         {
             aimPreview.Hide();
+            plannedBlastPreview.Hide();
             ClearSelectedTile();
             SnapToCoord();
 
@@ -276,6 +280,24 @@ namespace UnholyTrinity.Players
         private Pose GetPlannedPose(int tickCount)
         {
             return GetPose(GetPlannedCoord(tickCount), GetPlannedAim(tickCount));
+        }
+
+        private List<AimTile> GetPlannedBlastTiles()
+        {
+            List<AimTile> blastTiles = new();
+
+            foreach (UnholyAction action in plannedActions)
+            {
+                if (action.PlannedTarget != null &&
+                    action.PlannedShot.Data is RocketLauncherData rocketData)
+                {
+                    blastTiles.AddRange(
+                        rocketData.GetBlastTiles(mapManager.Map, action.PlannedTarget.Value)
+                    );
+                }
+            }
+
+            return blastTiles;
         }
 
         #endregion
@@ -312,6 +334,7 @@ namespace UnholyTrinity.Players
             PlanningAction.PlannedShot = weapon;
             PlanningAction.PlannedTarget = null;
             PlanningAction.Shoot = () => Fire(weapon);
+            ProjectPlan();
         }
 
         private void PlanShot(Weapon weapon, HexCoord target)
@@ -320,6 +343,7 @@ namespace UnholyTrinity.Players
             PlanningAction.PlannedShot = weapon;
             PlanningAction.PlannedTarget = target;
             PlanningAction.Shoot = () => Fire(weapon, target);
+            ProjectPlan();
         }
 
         // fills the next tick of the shoot lane without firing
@@ -329,6 +353,7 @@ namespace UnholyTrinity.Players
             PlanningAction.PlannedShot = null;
             PlanningAction.PlannedTarget = null;
             PlanningAction.Shoot = null;
+            ProjectPlan();
         }
 
         public void SelectTile(HexCoord coord)
