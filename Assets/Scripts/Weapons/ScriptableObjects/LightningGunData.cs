@@ -9,6 +9,8 @@ namespace UnholyTrinity.Weapons
         [SerializeField][Min(1)] private int range = 4;
         [SerializeField][Min(0)] private int damage = 21;
 
+        public override bool IsContinuous => true;
+
         protected override bool IsInRange(HexCoord origin, HexCoord target)
         {
             return origin.DistanceTo(target) <= range;

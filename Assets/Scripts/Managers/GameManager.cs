@@ -29,6 +29,11 @@ public class GameManager : ScriptableObject
         
     private readonly List<Player> _players = new();
     private readonly List<Rocket> _rockets = new();
+    private readonly List<(
+        Player shooter, 
+        WeaponData Data, 
+        AimDirection firedAim,
+        List<AimTile> firedTiles)> _beams = new();
 
     public int Round { get; private set; }
     // counts every tick of the game and only resets with ResetGame.
@@ -90,6 +95,7 @@ public class GameManager : ScriptableObject
         CurrentTick = 0;
         _players.Clear();
         _rockets.Clear();
+        _beams.Clear();
         turnManager.ResetPhases();
     }
 
@@ -166,10 +172,14 @@ public class GameManager : ScriptableObject
 
         foreach (Player player in _players)
         {
+            player.BeginMovePhase();
             player.GetPlannedAction(tickIndex)?.Move?.Invoke();
         }
 
         AdvanceRockets();
+
+        // LG needs both players end position, so it resolves after everyone moves
+        ResolveBeams();
 
         #endregion
 
@@ -185,7 +195,7 @@ public class GameManager : ScriptableObject
     #region Combat
 
     // damages every player standing on a hit tile. cones never include the shooter's tile
-    // so players can't hit themselves with rail/LG but can hit themselves with rocket splash
+    // so players can't hit themselves with rail but can hit themselves with rocket splash
     public void ResolveShot(Player shooter, WeaponData weaponData, List<AimTile> aimTiles)
     {
         foreach (AimTile at in aimTiles)
@@ -260,6 +270,56 @@ public class GameManager : ScriptableObject
         ResolveShot(rocket.Owner, rocket.Data, rocket.GetBlastTiles());
         _rockets.Remove(rocket);
         Destroy(rocket.gameObject);
+    }
+
+    public void StartBeam(Player shooter, WeaponData weaponData, AimDirection firedAim, List<AimTile> firedTiles)
+    {
+        _beams.Add((shooter, weaponData, firedAim, firedTiles));
+    }
+
+    // LG deals damage based on "tracking" so it needs opponent path before it's calculated.
+    // shoot: the beam is created from the shooters current tile and aim
+    // aim: a rotation only affects later ticks, so the beam keeps firedAim for the whole tick
+    // move: both players move and the beam moves with the shooter
+    // damage is then based on the average of two samples:
+    // start: target's start tile in the cone as fired, just like the railgun
+    // end: target's end tile in firedAim's cone from the shooter's end tile
+    // this way moving in lockstep deals full damage as expected.
+    // TODO with momentum: the two samples work for one hex per tick, with more
+    // tiles crossed mid-tick would get skipped and players go different distances, so
+    // this will need to sample both paths by a fraction of the tick
+    private void ResolveBeams()
+    {
+        foreach ((Player shooter, WeaponData weaponData, AimDirection firedAim, List<AimTile> firedTiles) in _beams)
+        {
+            List<AimTile> endTiles = shooter.GetBeamTilesFromCurrentCoord(weaponData, firedAim);
+
+            foreach (Player target in _players.Where(player => player != shooter))
+            {
+                float startFalloff = GetFalloff(target.MoveStartCoord, firedTiles);
+                float endFalloff = GetFalloff(target.Coord, endTiles);
+                float averageFalloff = (startFalloff + endFalloff) / 2f;
+                int damageAmount = weaponData.GetDamage(new AimTile(target.Coord, averageFalloff));
+
+                if (damageAmount > 0)
+                {
+                    Debug.Log($"{shooter.name} hit {target.name} with {weaponData.DisplayName} for {damageAmount} damage");
+                    target.TakeDamage(damageAmount);
+                }
+                else
+                {
+                    Debug.Log($"{shooter.name} missed");
+                }
+            }
+        }
+
+        _beams.Clear();
+    }
+
+    // tiles outside the cone count as 0, FirstOrDefault gives a default AimTile with 0 falloff
+    private float GetFalloff(HexCoord coord, List<AimTile> aimTiles)
+    {
+        return aimTiles.FirstOrDefault(aimTile => aimTile.Coord == coord).Falloff;
     }
 
     private Player GetOpponent(Player shooter)

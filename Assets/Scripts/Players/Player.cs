@@ -35,6 +35,13 @@ namespace UnholyTrinity.Players
         // this turn's plan, one UnholyAction per tick
         private readonly List<UnholyAction> plannedActions = new();
 
+        // set up by BeginMovePhase each tick. beams read MoveStartCoord for their start sample,
+        // tickMovePath will be needed for pickups
+        // TODO momentum: if Step gets replaced, BeginMovePhase still has to run before the
+        // move and tickMovePath still needs every hex entered
+        private readonly List<HexCoord> tickMovePath = new();
+        public HexCoord MoveStartCoord { get; private set; }
+
         // the selected tile that rocket launcher fires at
         public HexCoord? SelectedTile { get; private set; }
 
@@ -521,7 +528,14 @@ namespace UnholyTrinity.Players
             nextFireTick = gm.CurrentTick + 1 + weapon.Data.Cooldown;
 
             List<AimTile> aimTiles = weapon.Data.GetAimTiles(mapManager.Map, Coord, CurrentAimDirection);
-            gm.ResolveShot(this, weapon.Data, aimTiles);
+            if (weapon.Data.IsContinuous)
+            {
+                gm.StartBeam(this, weapon.Data, CurrentAimDirection, aimTiles);
+            }
+            else
+            {
+                gm.ResolveShot(this, weapon.Data, aimTiles);
+            }
         }
 
         // for rocket launcher
@@ -569,6 +583,19 @@ namespace UnholyTrinity.Players
             Debug.Log($"{name} is now aiming {CurrentAimDirection}");
         }
 
+        public void BeginMovePhase()
+        {
+            MoveStartCoord = Coord;
+            tickMovePath.Clear();
+        }
+
+        // the fired aim's cone from where the player stands now, so a beam follows its shooter
+        // only meaningful after the move phase
+        public List<AimTile> GetBeamTilesFromCurrentCoord(WeaponData weaponData, AimDirection firedAim)
+        {
+            return weaponData.GetAimTiles(mapManager.Map, Coord, firedAim);
+        }
+
         private void Step(HexDirection direction)
         {
             HexCoord destination = GetStepDestination(Coord, direction);
@@ -580,6 +607,7 @@ namespace UnholyTrinity.Players
             }
 
             Coord = destination;
+            tickMovePath.Add(Coord);
             SnapToCoord();
             Debug.Log($"{name} moved to {Coord}");
         }

@@ -18,6 +18,8 @@ namespace UnholyTrinity.Weapons
         
         // rocket launcher needs to target a specific tile so it will override this
         public virtual bool RequiresTarget => false;
+        // LG overrides this so its damage resolves after the move phase
+        public virtual bool IsContinuous => false;
 
         [Header("Aim Cone")]
         [SerializeField] private float[] tierMaxAngles = { 1f, 20f, 30f };
