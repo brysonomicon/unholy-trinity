@@ -8,6 +8,8 @@ public class UIManager : MonoBehaviour
 {
     [SerializeField] private GameObject cardSection;
     [SerializeField] private LaneCard laneCardPrefab;
+    [SerializeField] private RectTransform weaponColumnPrefab;
+    [SerializeField] private WeaponButton weaponButtonPrefab;
 
     private void Awake()
     {
@@ -39,6 +41,17 @@ public class UIManager : MonoBehaviour
     private void GenerateDefaultCards(Player current)
     {
         Weapon weapon = current.CurrentWeapon;
+
+        RectTransform weaponColumn = Instantiate(weaponColumnPrefab, cardSection.transform);
+
+        foreach (Weapon heldWeapon in current.Weapons)
+        {
+            Instantiate(weaponButtonPrefab, weaponColumn).Setup(
+                () => PlanAndRefresh(() => current.SelectWeapon(heldWeapon)),
+                heldWeapon.Data.Icon,
+                heldWeapon == current.CurrentWeapon
+            );
+        }
 
         CreateLaneCard("Shoot")
             .AddOption($"{current.GetUnplannedAmmo(weapon)}/{weapon.Data.MaxAmmo}",

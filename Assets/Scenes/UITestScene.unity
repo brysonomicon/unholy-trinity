@@ -799,6 +799,14 @@ PrefabInstance:
       propertyPath: player
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 3578603734668839198, guid: ca55dba338a5b3742a3390472db29bbc, type: 3}
+      propertyPath: weaponButtonPrefab
+      value: 
+      objectReference: {fileID: 8899727588587640930, guid: c6d85ce4beaedd9438a6ffcafd408f37, type: 3}
+    - target: {fileID: 3578603734668839198, guid: ca55dba338a5b3742a3390472db29bbc, type: 3}
+      propertyPath: weaponColumnPrefab
+      value: 
+      objectReference: {fileID: 8582756373538437989, guid: 9294f312f0421e9438a6c2d10da32339, type: 3}
     - target: {fileID: 5410176447735931484, guid: ca55dba338a5b3742a3390472db29bbc, type: 3}
       propertyPath: m_Pivot.x
       value: 0

@@ -143,9 +143,11 @@ MonoBehaviour:
   selectionPreview: {fileID: 8124171226447212234}
   plannedBlastPreview: {fileID: 2598202006518828418}
   aimStepsPerTick: 2
-  <CurrentWeapon>k__BackingField:
-    <Data>k__BackingField: {fileID: 0}
-    <Ammo>k__BackingField: 0
+  weapons:
+  - <Data>k__BackingField: {fileID: 11400000, guid: f97c8bffbf965d3448f34065ed101336, type: 2}
+    <Ammo>k__BackingField: 5
+  - <Data>k__BackingField: {fileID: 11400000, guid: e725bc1c13b3e2b4c92a4eab21521cba, type: 2}
+    <Ammo>k__BackingField: 5
   <CurrentAimDirection>k__BackingField: 0
   startingHealth: 100
   <CurrentHealth>k__BackingField: 0

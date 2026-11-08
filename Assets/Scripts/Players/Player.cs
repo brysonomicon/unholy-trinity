@@ -45,7 +45,11 @@ namespace UnholyTrinity.Players
         // the selected tile that rocket launcher fires at
         public HexCoord? SelectedTile { get; private set; }
 
-        [field: SerializeField] 
+        // all the weapons the player holds
+        [SerializeField] private List<Weapon> weapons = new();
+        public IReadOnlyList<Weapon> Weapons => weapons;
+
+        // the equipped weapon used for planning
         public Weapon CurrentWeapon { get; private set; }
 
         [field: SerializeField]
@@ -101,6 +105,7 @@ namespace UnholyTrinity.Players
         {
             CurrentHealth = startingHealth;
             CurrentWeapon = new Weapon(startingWeapon);
+            weapons.Insert(0, CurrentWeapon);
             GameManager.NewTurnEvent += OnNewTurn;
             TurnManager.NewPhaseEvent += OnNewPhase;
         }
@@ -313,6 +318,23 @@ namespace UnholyTrinity.Players
 
         // actions gets queued into lanes during the players turn and only take
         // effect during resolution. nothing in planning changes ammo, aim, or position
+
+        // only changes which weapon the shoot card fires and which weapons aim cone is whoen
+        // selecting a weapon doesn't have an action cost. ammo/cooldown are checked when a shot
+        // is planned
+        public void SelectWeapon(Weapon weapon)
+        {
+            if (weapon == CurrentWeapon)
+            {
+                return;
+            }
+
+            Debug.Log($"{name} selects {weapon.Data.DisplayName}");
+            CurrentWeapon = weapon;
+            ClearSelectedTile();
+
+            PlanHoldFire();
+        }
 
         // a shot can be queued if the lane has a free tick, there is ammo left
         // and the planned cooldown has expired by that tick
