@@ -552,7 +552,7 @@ namespace UnholyTrinity.Players
                 Debug.Log($"{name}'s rocket scattered from {target} to {landingTile}");
             }
 
-            gm.LaunchRocket(this, (RocketLauncherData)weapon.Data, mapManager, target);
+            gm.LaunchRocket(this, (RocketLauncherData)weapon.Data, mapManager, landingTile);
         }
 
         // weapon cooldowns are global, no weapon can be fired until the cooldown of the last

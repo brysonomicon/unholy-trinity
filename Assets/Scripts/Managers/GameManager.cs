@@ -220,19 +220,29 @@ public class GameManager : ScriptableObject
         Debug.Log($"{shooter.name} launched a rocket at {target}");
     }
 
+    // moves all rockets on the map
     private void AdvanceRockets()
     {
         foreach (Rocket rocket in _rockets.ToList())
         {
-            rocket.StepForward();
+            AdvanceRocket(rocket);
+        }
+    }
 
-            if (rocket.HasArrived ||
-                IsDirectHit(rocket))
-            {
-                DetonateRocket(rocket);
-                // forgive me bruce
-                break;
-            }
+    // advances a single rocket forward by the speed defined in the weapon data
+    private void AdvanceRocket(Rocket rocket)
+    {
+        bool shouldDetonate = false;
+
+        for (int step = 0; step < rocket.Data.Speed && !shouldDetonate; step++)
+        {
+            rocket.StepForward();
+            shouldDetonate = rocket.HasArrived || IsDirectHit(rocket);
+        }
+
+        if (shouldDetonate)
+        {
+            DetonateRocket(rocket);
         }
     }
 
