@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ArmourPickup
   m_EditorClassIdentifier: UnholyTrinity.Pickups::UnholyTrinity.Pickups.ArmourPickup
   <DisplayName>k__BackingField: 
-  <RespawnTicks>k__BackingField: 1
-  <Trigger>k__BackingField: 1
-  <VisualPrefab>k__BackingField: {fileID: 0}
+  <RespawnTicks>k__BackingField: 2
+  <Trigger>k__BackingField: 0
+  <VisualPrefab>k__BackingField: {fileID: 7810473164152590907, guid: 0685ad63801860647ac1d5d8236c3352, type: 3}
   <Amount>k__BackingField: 1
