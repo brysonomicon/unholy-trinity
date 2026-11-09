@@ -19,6 +19,9 @@ namespace UnholyTrinity.Players
         [SerializeField, MinValue("baseMomentumMax")]
         private int aimMomentumMax;
 
+        [SerializeField][Min(1)]
+        private int momentumGainPerTick = 1;
+
         [field: SerializeField]
         [Tooltip("Used to display where the player will be during the turn.")]
         public HexCoord Coord { get; private set; }
@@ -106,7 +109,7 @@ namespace UnholyTrinity.Players
             //Don't change momentum if holding
             HexCoord plannedMomentum = direction.HasValue
                 ? UpdatePlannedMomentum(direction.Value)
-                : PreviousPlannedMomentum;
+                : HexCoord.Zero;
             
             PlanningAction.PlannedMomentum = plannedMomentum;
 
@@ -119,31 +122,27 @@ namespace UnholyTrinity.Players
 
         private HexCoord UpdatePlannedMomentum(HexDirection direction)
         {
-            // If we're aiming in the same direction
-            // reads this ticks planned aim because aim resolves before move
-            // stopped this from writing to momentum which is real state
-            if (direction == PlanningAction.PlannedAim.ToHexDirection())
+            int previousSpeed = HexCoord.Distance(HexCoord.Zero, PreviousPlannedMomentum);
+            bool isMoving = previousSpeed > 0;
+
+            // reads this ticks planned aim because aim resolves before move. only even aims line
+            // up exactly with a hex direction, so a diagonal aim never count as looking that way
+            bool isAimingAlongMove = (int)PlanningAction.PlannedAim == (int)direction * 2;
+            bool isSameDirection = isMoving && PreviousPlannedMomentum.ToDirection() == direction;
+            bool isReversing  = isMoving && PreviousPlannedMomentum.ToDirection().Opposite() == direction;
+
+            int speed = baseMomentumMax;
+
+            if (isMoving && isAimingAlongMove && !isReversing)
             {
-                Debug.Log("Aiming the same way I'm moving");
-                //If we're faster than base, then crank to max
-                //If we're not, go to base.
-                HexCoord dir = IsFasterThan(direction, baseMomentumMax)
-                    ? (PreviousPlannedMomentum * aimMomentumMax).AbsClamp(aimMomentumMax)
-                    : (PreviousPlannedMomentum * baseMomentumMax)
-                    .AbsClamp(baseMomentumMax);
-                Debug.LogWarning($"Going from {PreviousPlannedMomentum} to {dir}");
+                speed = Mathf.Min(previousSpeed + momentumGainPerTick, aimMomentumMax);
+            }
+            else if (isSameDirection)
+            {
+                speed = previousSpeed;
             }
 
-            //Check if we're slowing down
-            if (PreviousPlannedMomentum != HexCoord.Zero &&
-                direction == PreviousPlannedMomentum.ToDirection().Opposite())
-            {
-                return IsFasterThan(direction, baseMomentumMax)
-                    ? direction.ToOffset() * baseMomentumMax
-                    : HexCoord.Zero;
-            }
-
-            return direction.ToOffset() * baseMomentumMax;
+            return direction.ToOffset() * speed;
         }
 
         // momentum after the first tickCount planned ticks, 0 = real momentum

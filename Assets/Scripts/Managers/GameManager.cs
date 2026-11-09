@@ -173,7 +173,12 @@ public class GameManager : ScriptableObject
         foreach (Player player in _players)
         {
             player.BeginMovePhase();
-            player.GetPlannedAction(tickIndex)?.Move?.Invoke();
+
+            // let the game manager handle progressing the iterator of ResolveMove instead 
+            // PlanMove so planning doesn't change the real state
+            IEnumerator<(int, HexCoord)> move = player.GetPlannedAction(tickIndex)?.Move?.Invoke();
+            while (move != null && move.MoveNext())
+            {}
         }
 
         AdvanceRockets();

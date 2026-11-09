@@ -408,7 +408,10 @@ namespace UnholyTrinity.Players
                 : PlannedAimSteps > 0;
         }
 
-        public bool IsPlanningMove => PlanningAction.PlannedMove.Count > 0;
+        public bool IsPlanningMove(HexDirection? direction)
+        {
+            return PlanningAction.PlannedDirection == direction;
+        }
 
         public void PlanNextTick()
         {
