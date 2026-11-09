@@ -136,6 +136,15 @@ MonoBehaviour:
   <Coord>k__BackingField:
     <Q>k__BackingField: 0
     <R>k__BackingField: 0
+  lastCoord:
+    <Q>k__BackingField: 0
+    <R>k__BackingField: 0
+  momentum:
+    <Q>k__BackingField: 0
+    <R>k__BackingField: 0
+  lastMomentum:
+    <Q>k__BackingField: 0
+    <R>k__BackingField: 0
   heightOffset: 0.6
   startingWeapon: {fileID: 11400000, guid: 6d3c5020ba2fab449a084dc37927c5db, type: 2}
   aimPreview: {fileID: 2588836406730225762}
@@ -151,6 +160,8 @@ MonoBehaviour:
   <CurrentAimDirection>k__BackingField: 0
   startingHealth: 100
   <CurrentHealth>k__BackingField: 0
+  baseMomentumMax: 2
+  aimMomentumMax: 5
 --- !u!114 &2588836406730225762
 MonoBehaviour:
   m_ObjectHideFlags: 0
