@@ -31,33 +31,6 @@ namespace UnholyTrinity.Players
         [SerializeField] private HexCoord momentum = new(0, 0);
         [SerializeField] private HexCoord lastMomentum = new(0, 0);
 
-        private List<HexDirection> GetStepListFromMomentum()
-        {
-            var target = lastCoord + momentum;
-            Debug.Log(
-                $"{gameObject.name} wants to move from {Coord} to {target}");
-            List<HexDirection> directions = new List<HexDirection>();
-            if (target == Coord)
-            {
-                return directions;
-            }
-
-            List<HexCoord> stepList = Coord.LineTo(target);
-
-            for (int i = 0; i < stepList.Count - 1; i++)
-            {
-                HexDirection next = stepList[i].DirectionTo(stepList[i + 1]);
-                directions.Add(next);
-            }
-
-            return directions;
-        }
-
-        private HexCoord GetPlannedCoord(in List<HexDirection> steps) =>
-            steps.Count == 0
-                ? lastCoord
-                : GetStepListFromMomentum().Last().ToOffset();
-
         #region Planning
 
         public void PlanMove(HexDirection? direction)
@@ -71,12 +44,15 @@ namespace UnholyTrinity.Players
                 : lastMomentum;
 
             //Get a list of all steps
-            var steps = GetStepListFromMomentum();
+            PlanningAction.PlannedMove = GetStepListFromMomentum();
             // Updated expected location
-            Coord = GetPlannedCoord(steps);
-            //Update planned move
-            PlanningAction.PlannedMove = steps;
-            Debug.Log(string.Join(", ", steps));
+            var next = ResolveMove();
+            while (next.MoveNext())
+            {
+                Coord = next.Current.Item2;
+            }
+            
+            Debug.Log(string.Join(", ", PlanningAction.PlannedMove));
 
             RefreshAimPreview();
         }
@@ -133,6 +109,27 @@ namespace UnholyTrinity.Players
             };
         }
 
+        private List<HexDirection> GetStepListFromMomentum()
+        {
+            var target = lastCoord + momentum;
+            Debug.Log(
+                $"{gameObject.name} wants to move from {Coord} to {target}");
+            List<HexDirection> directions = new List<HexDirection>();
+            if (target == Coord)
+            {
+                return directions;
+            }
+
+            List<HexCoord> stepList = Coord.LineTo(target);
+
+            for (int i = 0; i < stepList.Count - 1; i++)
+            {
+                HexDirection next = stepList[i].DirectionTo(stepList[i + 1]);
+                directions.Add(next);
+            }
+
+            return directions;
+        }
         #endregion
 
         #region Resolution
@@ -151,31 +148,32 @@ namespace UnholyTrinity.Players
                 var direction = moveSteps[i];
                 //If, for some reason, we can't move any more,
                 //break out and exit the coroutine.
-                if (!TryStep(direction, ref current))
+                if (!TryStep(direction, out current))
                 {
                     break;
                 }
-
+                
+                Debug.Log($"Moving from {Coord} to {current}");
+                Coord = current;
+                SnapToCoord(Coord);
                 //Otherwise, tell the system how many more steps there are,
                 //and where we currently expect to be.
-                Coord = current;
                 yield return (moveSteps.Count - i, current);
             }
         }
 
-        private bool TryStep(HexDirection direction, ref HexCoord current)
+        private bool TryStep(HexDirection direction, out HexCoord next)
         {
-            HexCoord destination = GetStepDestination(current, direction);
+            next = GetStepDestination(Coord, direction);
 
-            if (destination == current)
+            if (next == Coord)
             {
-                Debug.Log($"{name} is blocked moving {direction}");
+                Debug.Log($"{name} is blocked from moving {direction}");
                 return false;
             }
-
-            current = destination;
-            SnapToCoord(current);
-            Debug.Log($"{name} moved to {current}");
+            
+            
+            Debug.Log($"{name} moved to {Coord}");
             return true;
         }
 
