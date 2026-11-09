@@ -129,9 +129,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnholyTrinity.Players.Player
   gm: {fileID: 11400000, guid: df4deffeedcb94d4bb67ddca6e302f96, type: 2}
-  <Coord>k__BackingField:
-    <Q>k__BackingField: 0
-    <R>k__BackingField: 0
   heightOffset: 0.6
   startingWeapon: {fileID: 11400000, guid: f97c8bffbf965d3448f34065ed101336, type: 2}
   aimPreview: {fileID: 2588836406730225762}
@@ -142,6 +139,20 @@ MonoBehaviour:
   <CurrentAimDirection>k__BackingField: 0
   startingHealth: 100
   <CurrentHealth>k__BackingField: 0
+  baseMomentumMax: 2
+  aimMomentumMax: 5
+  <Coord>k__BackingField:
+    <Q>k__BackingField: 0
+    <R>k__BackingField: 0
+  lastCoord:
+    <Q>k__BackingField: 0
+    <R>k__BackingField: 0
+  momentum:
+    <Q>k__BackingField: 0
+    <R>k__BackingField: 0
+  lastMomentum:
+    <Q>k__BackingField: 0
+    <R>k__BackingField: 0
 --- !u!114 &2588836406730225762
 MonoBehaviour:
   m_ObjectHideFlags: 0

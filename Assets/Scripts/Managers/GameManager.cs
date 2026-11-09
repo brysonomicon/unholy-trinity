@@ -166,13 +166,8 @@ public class GameManager : ScriptableObject
         Player opponent = GetOpponent(shooter);
 
         // shoot the opponent if they are in the aim cone of the shooter
-        foreach (AimTile at in aimTiles)
+        foreach (AimTile at in aimTiles.Where(tile => tile.Coord == opponent.Coord))
         {
-            if (at.Coord != opponent.Coord)
-            {
-                continue;
-            }
-
             int damageAmount = weaponData.GetDamage(at);
 
             if (damageAmount > 0)

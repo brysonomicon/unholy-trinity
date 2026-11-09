@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnholyTrinity.Hex;
 using UnholyTrinity.Weapons;
 
@@ -12,11 +13,11 @@ namespace UnholyTrinity.Players
     {
         public Weapon PlannedShot { get; set; }
         public AimDirection PlannedAim { get; set; }
-        public HexDirection? PlannedMove { get; set; }
+        public List<HexDirection> PlannedMove { get; set; } = new();
 
         public Action Shoot { get; set; }
         public Action Aim { get; set; }
-        public Action Move { get; set ;}
+        public Func<IEnumerator<(int, HexCoord)>> Move { get; set ;}
 
         public UnholyAction(AimDirection startingAim)
         {

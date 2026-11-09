@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace UnholyTrinity.Players
 {
-    public class Player : MonoBehaviour
+    public partial class Player : MonoBehaviour
     {
         #region Fields
 
@@ -16,14 +16,16 @@ namespace UnholyTrinity.Players
         private MapManager mapManager;
 
         [Header("Map")]
-        [field: SerializeField] public HexCoord Coord { get; private set; }
+
+
         [SerializeField] private float heightOffset = 0.5f;
 
-        [Header("Combat")]
-        [SerializeField] private WeaponData startingWeapon;
+        [Header("Combat")] [SerializeField] private WeaponData startingWeapon;
+
         [SerializeField] private AimPreview aimPreview;
+
         // how many 30 degree steps a player can aim in one tick
-        [SerializeField][Min(1)] private int aimStepsPerTick = 1;
+        [SerializeField] [Min(1)] private int aimStepsPerTick = 1;
 
         // ticks counted for the whole game, so a cooldown can block ticks
         // in subsequent turns
@@ -32,23 +34,23 @@ namespace UnholyTrinity.Players
         // this turn's plan, one UnholyAction per tick
         private readonly List<UnholyAction> plannedActions = new();
 
-        [field: SerializeField] 
+        [field: SerializeField]
         public Weapon CurrentWeapon { get; private set; }
 
         [field: SerializeField]
         public AimDirection CurrentAimDirection { get; private set; }
 
-        [Header("Health")]
-        [SerializeField, Min(1)] private int startingHealth = 100;
+        [Header("Health")] [SerializeField, Min(1)]
+        private int startingHealth = 100;
 
-        [field: SerializeField]
-        public int CurrentHealth { get; private set; }
+        [field: SerializeField] public int CurrentHealth { get; private set; }
 
         public bool IsDead => CurrentHealth <= 0;
 
         public int PlanningTickOfTurn => plannedActions.Count;
 
-        public bool CanPlanNextTick => plannedActions.Count < TurnManager.Instance.TicksPerTurn;
+        public bool CanPlanNextTick =>
+            plannedActions.Count < TurnManager.Instance.TicksPerTurn;
 
         private UnholyAction PlanningAction => plannedActions[^1];
 
@@ -59,27 +61,33 @@ namespace UnholyTrinity.Players
         private AimDirection PreviousPlannedAim => plannedActions.Count > 1
             ? plannedActions[^2].PlannedAim
             : CurrentAimDirection;
-        
-        private static readonly int AimDirectionCount = System.Enum.GetValues(typeof(AimDirection)).Length;
+
+        private static readonly int AimDirectionCount =
+            System.Enum.GetValues(typeof(AimDirection)).Length;
 
         private int PlannedAimSteps
         {
             get
             {
-                int steps = 
-                    ((int)PlanningAction.PlannedAim - (int)PreviousPlannedAim + AimDirectionCount) % AimDirectionCount;
-                
+                int steps =
+                    ((int)PlanningAction.PlannedAim - (int)PreviousPlannedAim +
+                     AimDirectionCount) % AimDirectionCount;
+
                 return steps > AimDirectionCount / 2
                     ? steps - AimDirectionCount
                     : steps;
             }
         }
-        
-        public bool IsHoldingFire => PlanningAction.PlannedShot == null;
-        public bool IsHoldingAim => PlanningAction.PlannedAim == PreviousPlannedAim;
-        public bool IsHoldingMove => PlanningAction.PlannedMove == null;
 
-        private bool HasTickChanges => !IsHoldingFire || !IsHoldingAim || !IsHoldingMove;
+        public bool IsHoldingFire => PlanningAction.PlannedShot == null;
+
+        public bool IsHoldingAim =>
+            PlanningAction.PlannedAim == PreviousPlannedAim;
+
+        public bool IsHoldingMove => PlanningAction.PlannedMove.Count == 0;
+
+        private bool HasTickChanges =>
+            !IsHoldingFire || !IsHoldingAim || !IsHoldingMove;
 
         #endregion
 
@@ -132,14 +140,18 @@ namespace UnholyTrinity.Players
         {
             this.mapManager = mapManager;
             Coord = spawnCoord;
+            lastCoord = spawnCoord;
+            momentum = HexCoord.Zero;
             mapManager.LayoutChanged += SnapToCoord;
-            SnapToCoord();
+            SnapToCoord(Coord);
             ClearPlan();
         }
 
-        private void SnapToCoord()
+        private void SnapToCoord() => SnapToCoord(Coord);
+
+        private void SnapToCoord(HexCoord coord)
         {
-            transform.position = mapManager.Layout.HexToWorld(Coord) +
+            transform.position = mapManager.Layout.HexToWorld(coord) +
                                  Vector3.up * heightOffset;
 
             if (mapManager.Map != null &&
@@ -151,39 +163,12 @@ namespace UnholyTrinity.Players
 
         #endregion
 
-        #region Movement
-
-        private HexCoord GetStepDestination(HexCoord from, HexDirection direction)
-        {
-            HexCoord next = from.Neighbor(direction);
-            return mapManager.Map.IsWalkable(next)
-                ? next
-                : from;
-        }
-
-        private HexCoord GetPlannedCoord()
-        {
-            HexCoord plannedCoord = Coord;
-
-            foreach (UnholyAction action in plannedActions)
-            {
-                if (action.PlannedMove != null)
-                {
-                    plannedCoord = GetStepDestination(plannedCoord, action.PlannedMove.Value);
-                }
-            }
-
-            return plannedCoord;
-        }
-
-        #endregion
-
         #region Aim
 
         private void RefreshAimPreview()
         {
             List<AimTile> aimTiles = CurrentWeapon.Data.GetAimTiles(
-                mapManager.Map, GetPlannedCoord(), PlanningAction.PlannedAim);
+                mapManager.Map, Coord, PlanningAction.PlannedAim);
             aimPreview.Show(aimTiles, mapManager.Layout);
         }
 
@@ -199,7 +184,7 @@ namespace UnholyTrinity.Players
         public bool CanPlanShot(Weapon weapon)
         {
             return GetUnplannedAmmo(weapon) > 0 &&
-                    PlanningTick >= GetPlannedNextFireTick();
+                   PlanningTick >= GetPlannedNextFireTick();
         }
 
         public void PlanShot(Weapon weapon)
@@ -209,7 +194,8 @@ namespace UnholyTrinity.Players
                 return;
             }
 
-            Debug.Log($"{name} plans {weapon.Data.DisplayName} on tick {PlanningTick}");
+            Debug.Log(
+                $"{name} plans {weapon.Data.DisplayName} on tick {PlanningTick}");
             PlanningAction.PlannedShot = weapon;
             PlanningAction.Shoot = () => Fire(weapon);
         }
@@ -258,26 +244,7 @@ namespace UnholyTrinity.Players
                 : PlannedAimSteps > 0;
         }
 
-        public void PlanMove(HexDirection direction)
-        {
-            Debug.Log($"{name} plans move {direction} on tick {PlanningTick}");
-            PlanningAction.PlannedMove = direction;
-            PlanningAction.Move = () => Step(direction);
-            RefreshAimPreview();
-        }
-
-        public void PlanHoldMove()
-        {
-            Debug.Log($"{name} hold position on tick {PlanningTick}");
-            PlanningAction.PlannedMove = null;
-            PlanningAction.Move = null;
-            RefreshAimPreview();
-        }
-
-        public bool IsPlanningMove(HexDirection direction)
-        {
-            return PlanningAction.PlannedMove == direction;
-        }
+        public bool IsPlanningMove => PlanningAction.PlannedMove.Count > 0;
 
         public void PlanNextTick()
         {
@@ -286,13 +253,14 @@ namespace UnholyTrinity.Players
                 return;
             }
 
-            plannedActions.Add(new UnholyAction(PlanningAction.PlannedAim));
+            plannedActions.Add(CreateNewDefaultAction(PlanningAction.PlannedAim));
             Debug.Log($"{name} is planning tick {PlanningTick}");
         }
 
         public int GetUnplannedAmmo(Weapon weapon)
         {
-            return weapon.Ammo - plannedActions.Count(action => action.PlannedShot == weapon);
+            return weapon.Ammo -
+                   plannedActions.Count(action => action.PlannedShot == weapon);
         }
 
         // clears the tick being planned currently. if already clear, clears previous tick
@@ -303,7 +271,7 @@ namespace UnholyTrinity.Players
                 plannedActions.RemoveAt(plannedActions.Count - 1);
             }
 
-            plannedActions[^1] = new UnholyAction(PreviousPlannedAim);
+            plannedActions[^1] = CreateNewDefaultAction(PreviousPlannedAim);
             RefreshAimPreview();
         }
 
@@ -311,7 +279,7 @@ namespace UnholyTrinity.Players
         private void ClearPlan()
         {
             plannedActions.Clear();
-            plannedActions.Add(new UnholyAction(CurrentAimDirection));
+            plannedActions.Add(CreateNewDefaultAction(CurrentAimDirection));
             RefreshAimPreview();
         }
 
@@ -334,7 +302,8 @@ namespace UnholyTrinity.Players
                 if (plannedShot != null)
                 {
                     int shotTick = gm.CurrentTick + 1 + i;
-                    plannedNextFireTick = shotTick + 1 + plannedShot.Data.Cooldown;
+                    plannedNextFireTick =
+                        shotTick + 1 + plannedShot.Data.Cooldown;
                 }
             }
 
@@ -366,7 +335,8 @@ namespace UnholyTrinity.Players
             weapon.Fire();
             nextFireTick = gm.CurrentTick + 1 + weapon.Data.Cooldown;
 
-            List<AimTile> aimTiles = weapon.Data.GetAimTiles(mapManager.Map, Coord, CurrentAimDirection);
+            List<AimTile> aimTiles = weapon.Data.GetAimTiles(mapManager.Map,
+                Coord, CurrentAimDirection);
             gm.ResolveShot(this, weapon.Data, aimTiles);
         }
 
@@ -383,39 +353,25 @@ namespace UnholyTrinity.Players
             Debug.Log($"{name} is now aiming {CurrentAimDirection}");
         }
 
-        private void Step(HexDirection direction)
-        {
-            HexCoord destination = GetStepDestination(Coord, direction);
-
-            if (destination == Coord)
-            {
-                Debug.Log($"{name} is blocked moving {direction}");
-                return;
-            }
-
-            Coord = destination;
-            SnapToCoord();
-            Debug.Log($"{name} moved to {Coord}");
-        }
-
         #endregion
 
         #region Health
 
         public void TakeDamage(int damageAmount)
         {
-             if (IsDead)
-             {
+            if (IsDead)
+            {
                 return;
-             }
+            }
 
-             CurrentHealth = Mathf.Max(CurrentHealth - damageAmount, 0);
-             Debug.Log($"{name} took {damageAmount} damage (ouch), {CurrentHealth} health remaining");
+            CurrentHealth = Mathf.Max(CurrentHealth - damageAmount, 0);
+            Debug.Log(
+                $"{name} took {damageAmount} damage (ouch), {CurrentHealth} health remaining");
 
-             if (IsDead)
-             {
+            if (IsDead)
+            {
                 Debug.Log($"{name} died. RIP");
-             }
+            }
         }
 
         #endregion
@@ -425,10 +381,12 @@ namespace UnholyTrinity.Players
         private void OnNewTurn(Player obj)
         {
             // [CB] This might be entirely handled by the UI manager. IDK.
-            if(obj == this)
+            if (obj == this)
             {
                 // Do stuff to enable actions
                 ClearPlan();
+                lastCoord = Coord;
+                lastMomentum = momentum;
             }
             else
             {
@@ -438,5 +396,11 @@ namespace UnholyTrinity.Players
         }
 
         #endregion
+
+        private UnholyAction CreateNewDefaultAction(AimDirection baseDirection) =>
+            new (baseDirection)
+            {
+                Move = ResolveMove
+            };
     }
 }

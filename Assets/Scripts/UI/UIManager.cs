@@ -66,8 +66,7 @@ public class UIManager : MonoBehaviour
         AddMoveOption(moveCard, "NE", HexDirection.D1);
         moveCard.AddRow();
         AddMoveOption(moveCard, "W", HexDirection.D3);
-        moveCard.AddOption("Hold", () => PlanAndRefresh(current.PlanHoldMove),
-            selected: current.IsHoldingMove);
+        AddMoveOption(moveCard, "Hold", null);
         AddMoveOption(moveCard, "E", HexDirection.D0);
         moveCard.AddRow();
         AddMoveOption(moveCard, "SW", HexDirection.D4);
@@ -90,10 +89,12 @@ public class UIManager : MonoBehaviour
             GenerateDefaultCards(current);
         }
 
-        void AddMoveOption(LaneCard card, string label, HexDirection direction)
+        void AddMoveOption(LaneCard card, string label, HexDirection? direction)
         {
-            card.AddOption(label, () => PlanAndRefresh(() => current.PlanMove(direction)),
-                selected: current.IsPlanningMove(direction));
+            card.AddOption(
+                label, 
+                () => PlanAndRefresh(() => current.PlanMove(direction)),
+                selected: current.IsPlanningMove);
         }
     }
 
