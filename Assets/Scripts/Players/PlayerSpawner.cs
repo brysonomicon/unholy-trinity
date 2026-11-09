@@ -23,7 +23,7 @@ namespace UnholyTrinity.Players
         private void Start()
         {
             GameManager manager = GameManager.Instance;
-            manager.ResetGame();
+            manager.ResetGame(mapManager);
             
             for (int i = 0; i < spawnCoords.Length; i++)
             {

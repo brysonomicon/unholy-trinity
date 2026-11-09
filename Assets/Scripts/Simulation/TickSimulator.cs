@@ -88,7 +88,7 @@ namespace UnholyTrinity.Simulation
 
             return ordered
                 .Where(entry => !entry.Unit.IsDead)
-                .Select(entry => (entry.Unit, MoveModel.Resolve(entry.Unit, entry.Move)))
+                .Select(entry => (entry.Unit, MoveModel.Resolve(entry.Unit, entry.Move, state.Settings)))
                 .ToList();
         }
 

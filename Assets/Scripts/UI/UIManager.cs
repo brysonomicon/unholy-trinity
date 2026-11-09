@@ -107,7 +107,7 @@ public class UIManager : MonoBehaviour
             card.AddOption(
                 label, 
                 () => PlanAndRefresh(() => current.PlanMove(direction)),
-                selected: current.IsPlanningMove);
+                selected: current.IsPlanningMove(direction));
         }
     }
 
