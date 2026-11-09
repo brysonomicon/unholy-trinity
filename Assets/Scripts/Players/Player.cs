@@ -687,7 +687,7 @@ namespace UnholyTrinity.Players
         // snapshot for the simulator. id is how the game manager tells units apart
         public UnitState ToUnitState(int id)
         {
-            return new UnitState(id, Coord, Velocity, CurrentHealth, maxHealth, CurrentArmour, ArmourProtection);
+            return new UnitState(id, Coord, Velocity, CurrentHealth, maxHealth, MaxArmour, CurrentArmour, ArmourProtection);
         }
 
         // writes the result of a simulated move phase back to the player

@@ -15,7 +15,7 @@ namespace UnholyTrinity.Simulation.Tests
         static HexCoord At(int q, int r = 0) => new HexCoord(q, r);
 
         static UnitState Unit(HexCoord coord, int health = 50, int armour = 0) =>
-            new UnitState(0, coord, HexVelocity.Zero, health, maxHealth: 100, armour, HalfArmour);
+            new UnitState(0, coord, HexVelocity.Zero, health, maxHealth: 100, maxArmour: 100, armour, HalfArmour);
 
         static UnitTickInput[] Move(HexDirection? direction = null) => new[] { new UnitTickInput(0, new MoveInput(direction)) };
 
