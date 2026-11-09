@@ -1,13 +1,15 @@
 using System;
 using UnholyTrinity.Players;
+using UnholyTrinity.Hex;
 using UnholyTrinity.Weapons;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
     [SerializeField] private GameObject cardSection;
-    [SerializeField] private GameObject cardPrefab;
+    [SerializeField] private LaneCard laneCardPrefab;
+    [SerializeField] private RectTransform weaponColumnPrefab;
+    [SerializeField] private WeaponButton weaponButtonPrefab;
 
     private void Awake()
     {
@@ -38,66 +40,93 @@ public class UIManager : MonoBehaviour
 
     private void GenerateDefaultCards(Player current)
     {
-        Instantiate(cardPrefab, cardSection.transform)
-            .GetComponent<ActionCard>()
-            .Setup("End Turn", 0,
-                () => TurnManager.Instance.EndTurn());
-        
-        Instantiate(cardPrefab, cardSection.transform)
-            .GetComponent<ActionCard>()
-            .Setup("Move", 1, current.MovePlayer, Color.black);
+        Weapon weapon = current.CurrentWeapon;
 
-        //TODO: Pass in rotation after clicking on card somehow.
-        Instantiate(cardPrefab, cardSection.transform)
-            .GetComponent<ActionCard>()
-            .Setup("Rotate CW",
-                1,
-                () => current.RotatePlayer(true),
-                Color.black);
-        Instantiate(cardPrefab, cardSection.transform)
-            .GetComponent<ActionCard>()
-            .Setup("Rotate CCW",
-                1,
-                () => current.RotatePlayer(false),
-                Color.black);
+        RectTransform weaponColumn = Instantiate(weaponColumnPrefab, cardSection.transform);
 
-        ActionCard weaponCard = Instantiate(cardPrefab, cardSection.transform)
-            .GetComponent<ActionCard>();
+        foreach (Weapon heldWeapon in current.Weapons)
+        {
+            Instantiate(weaponButtonPrefab, weaponColumn).Setup(
+                () => PlanAndRefresh(() => current.SelectWeapon(heldWeapon)),
+                heldWeapon.Data.Icon,
+                heldWeapon == current.CurrentWeapon
+            );
+        }
 
-        SetupWeaponCard(current.CurrentWeapon);
+        CreateLaneCard("Shoot")
+            .AddOption($"{current.GetUnplannedAmmo(weapon)}/{weapon.Data.MaxAmmo}",
+                () => PlanAndRefresh(() => current.PlanShot(weapon)),
+                current.CanPlanShot(weapon),
+                weapon.Data.Icon,
+                current.IsPlanningShot(weapon))
+            .AddRow()
+            .AddOption("Hold", () => PlanAndRefresh(current.PlanHoldFire),
+                selected: current.IsHoldingFire);
 
+        CreateLaneCard("Aim")
+            .AddOption("CCW", () => PlanAndRefresh(() => current.PlanRotation(false)),
+                current.CanPlanRotation(false),
+                selected: current.IsPlanningRotation(false))
+            .AddOption("CW", () => PlanAndRefresh(() => current.PlanRotation(true)),
+                current.CanPlanRotation(true),
+                selected: current.IsPlanningRotation(true))
+            .AddRow()
+            .AddOption("Hold", () => PlanAndRefresh(current.PlanHoldAim),
+                selected: current.IsHoldingAim);
 
+        LaneCard moveCard = CreateLaneCard("Move");
+        AddMoveOption(moveCard, "NW", HexDirection.D2);
+        AddMoveOption(moveCard, "NE", HexDirection.D1);
+        moveCard.AddRow();
+        AddMoveOption(moveCard, "W", HexDirection.D3);
+        AddMoveOption(moveCard, "Hold", null);
+        AddMoveOption(moveCard, "E", HexDirection.D0);
+        moveCard.AddRow();
+        AddMoveOption(moveCard, "SW", HexDirection.D4);
+        AddMoveOption(moveCard, "SE", HexDirection.D5);
 
+        CreateLaneCard($"Tick {current.PlanningTickOfTurn}/{TurnManager.Instance.TicksPerTurn}")
+            .AddOption("Next Tick", () => PlanAndRefresh(current.PlanNextTick), current.CanPlanNextTick)
+            .AddRow()
+            .AddOption("Clear Tick", () => PlanAndRefresh(current.ClearTick))
+            .AddRow()
+            .AddOption("End Turn", () => TurnManager.Instance.EndTurn());
 
         return;
 
-        void SetupWeaponCard(Weapon weapon, Action beforeSetup = null)
+        // does a planning action and then rebuilds every card so they reflect new plan
+        void PlanAndRefresh(Action planAction)
         {
-            beforeSetup?.Invoke();
-            string weaponCardTitle =
-                $"Fire {weapon.Data.DisplayName}";
-            int weaponCardTickCost = weapon.Data.TickCost;
-            Debug.Log($"Setting ammo to {weapon.Ammo}");
-            weaponCard.Setup(weaponCardTitle, weaponCardTickCost,
-                () => SetupWeaponCard(weapon, () => current.Fire(weapon)),
-                Color.black,
-                $"{weapon.Ammo}/{weapon.Data.MaxAmmo}");
-
-            if (weapon.CanFire)
-            {
-                weaponCard.EnableClickable();
-            }
-            else
-            {
-                weaponCard.DisableClickable();
-            }
+            planAction();
+            ClearCardSection();
+            GenerateDefaultCards(current);
         }
+
+        void AddMoveOption(LaneCard card, string label, HexDirection? direction)
+        {
+            card.AddOption(
+                label, 
+                () => PlanAndRefresh(() => current.PlanMove(direction)),
+                selected: current.IsPlanningMove(direction));
+        }
+    }
+
+    // lets tile clicks rebuild cards
+    public void RefreshCards()
+    {
+        ClearCardSection();
+        GenerateDefaultCards(GameManager.Instance.CurrentPlayer);
+    }
+
+    private LaneCard CreateLaneCard(string title)
+    {
+        return Instantiate(laneCardPrefab, cardSection.transform).Setup(title);
     }
 
     private void ClearCardSection()
     {
         //? [CB] I wonder if it'd be worth caching and enabling/disabling cards
-        foreach (var child in cardSection.GetComponentsInChildren<ActionCard>())
+        foreach (Transform child in cardSection.transform)
         {
             Destroy(child.gameObject);
         }
