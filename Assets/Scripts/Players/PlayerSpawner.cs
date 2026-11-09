@@ -8,7 +8,6 @@ namespace UnholyTrinity.Players
     [DefaultExecutionOrder(-50)]
     public class PlayerSpawner : MonoBehaviour
     {
-        [SerializeField] private GameManager gameManager;
         [SerializeField] private MapManager mapManager;
         [SerializeField] private Player playerPrefab;
         [SerializeField] private HexCoord[] spawnCoords;
@@ -23,8 +22,9 @@ namespace UnholyTrinity.Players
 
         private void Start()
         {
-            gameManager.ResetGame(mapManager);
-
+            GameManager manager = GameManager.Instance;
+            manager.ResetGame();
+            
             for (int i = 0; i < spawnCoords.Length; i++)
             {
                 Player spawnedPlayer = Instantiate(playerPrefab);
@@ -36,7 +36,7 @@ namespace UnholyTrinity.Players
                     spawnedPlayer.SetColour(playerColours[i % playerColours.Length]);
                 }
 
-                gameManager.RegisterPlayer(spawnedPlayer);
+                manager.RegisterPlayer(spawnedPlayer);
             }
         }
     }

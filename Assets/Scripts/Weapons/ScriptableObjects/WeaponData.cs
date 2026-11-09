@@ -17,6 +17,11 @@ namespace UnholyTrinity.Weapons
         [field: SerializeField][Min(0)] public int Cooldown { get; private set; }
         [field: SerializeField, Tooltip("Damage skips armour and comes straight off health.")]
         public bool IgnoresArmour { get; private set; }
+        
+        // rocket launcher needs to target a specific tile so it will override this
+        public virtual bool RequiresTarget => false;
+        // LG overrides this so its damage resolves after the move phase
+        public virtual bool IsContinuous => false;
 
         [Header("Aim Cone")]
         [SerializeField] private float[] tierMaxAngles = { 1f, 20f, 30f };

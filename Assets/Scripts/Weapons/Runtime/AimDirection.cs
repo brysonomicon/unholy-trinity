@@ -9,17 +9,18 @@ namespace UnholyTrinity.Weapons
 
     public static class AimDirectionExtensions
     {
-        public static HexCoord ToOffset(this AimDirection aim)
+        public static HexCoord ToOffset(this AimDirection aim) =>
+            aim.ToHexDirection().ToOffset();
+
+
+        public static HexDirection ToHexDirection(this AimDirection aim)
         {
             int index = (int)aim;
             HexDirection hexDirection = (HexDirection)(index / 2);
 
-            if (index % 2 == 0)
-            {
-                return hexDirection.ToOffset();
-            }
-
-            return hexDirection.ToOffset() + hexDirection.Rotate(1).ToOffset();
+            return index % 2 == 0
+                ? hexDirection
+                : hexDirection.Plus(hexDirection.Rotate(1));
         }
     }
 }

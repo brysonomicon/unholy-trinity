@@ -8,6 +8,8 @@ public class UIManager : MonoBehaviour
 {
     [SerializeField] private GameObject cardSection;
     [SerializeField] private LaneCard laneCardPrefab;
+    [SerializeField] private RectTransform weaponColumnPrefab;
+    [SerializeField] private WeaponButton weaponButtonPrefab;
 
     private void Awake()
     {
@@ -40,6 +42,17 @@ public class UIManager : MonoBehaviour
     {
         Weapon weapon = current.CurrentWeapon;
 
+        RectTransform weaponColumn = Instantiate(weaponColumnPrefab, cardSection.transform);
+
+        foreach (Weapon heldWeapon in current.Weapons)
+        {
+            Instantiate(weaponButtonPrefab, weaponColumn).Setup(
+                () => PlanAndRefresh(() => current.SelectWeapon(heldWeapon)),
+                heldWeapon.Data.Icon,
+                heldWeapon == current.CurrentWeapon
+            );
+        }
+
         CreateLaneCard("Shoot")
             .AddOption($"{current.GetUnplannedAmmo(weapon)}/{weapon.Data.MaxAmmo}",
                 () => PlanAndRefresh(() => current.PlanShot(weapon)),
@@ -66,8 +79,7 @@ public class UIManager : MonoBehaviour
         AddMoveOption(moveCard, "NE", HexDirection.D1);
         moveCard.AddRow();
         AddMoveOption(moveCard, "W", HexDirection.D3);
-        moveCard.AddOption("Hold", () => PlanAndRefresh(current.PlanHoldMove),
-            selected: current.IsHoldingMove);
+        AddMoveOption(moveCard, "Hold", null);
         AddMoveOption(moveCard, "E", HexDirection.D0);
         moveCard.AddRow();
         AddMoveOption(moveCard, "SW", HexDirection.D4);
@@ -90,11 +102,20 @@ public class UIManager : MonoBehaviour
             GenerateDefaultCards(current);
         }
 
-        void AddMoveOption(LaneCard card, string label, HexDirection direction)
+        void AddMoveOption(LaneCard card, string label, HexDirection? direction)
         {
-            card.AddOption(label, () => PlanAndRefresh(() => current.PlanMove(direction)),
-                selected: current.IsPlanningMove(direction));
+            card.AddOption(
+                label, 
+                () => PlanAndRefresh(() => current.PlanMove(direction)),
+                selected: current.IsPlanningMove);
         }
+    }
+
+    // lets tile clicks rebuild cards
+    public void RefreshCards()
+    {
+        ClearCardSection();
+        GenerateDefaultCards(GameManager.Instance.CurrentPlayer);
     }
 
     private LaneCard CreateLaneCard(string title)

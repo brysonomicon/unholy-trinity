@@ -12,10 +12,15 @@ namespace UnholyTrinity.Players
     public class UnholyAction
     {
         public Weapon PlannedShot { get; set; }
+        public HexCoord? PlannedTarget { get; set; }
         public AimDirection PlannedAim { get; set; }
+
+        // the direction the player picked this tick, null = hold. the simulator turns this plus
+        // momentum into the actual move, so the plan never stores a path
         public HexDirection? PlannedMove { get; set; }
 
-        public MoveInput MoveInput => new(PlannedMove);
+        // aim resolves before move, so this tick's aim decides whether the move accelerates
+        public MoveInput MoveInput => new(PlannedMove, PlannedAim.ToFacing());
 
         public Action Shoot { get; set; }
         public Action Aim { get; set; }

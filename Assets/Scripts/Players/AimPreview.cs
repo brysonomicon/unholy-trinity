@@ -20,6 +20,12 @@ namespace UnholyTrinity.Players
         private Transform highlightRoot;
         private MaterialPropertyBlock propertyBlock;
 
+        // clean up previews for players/rockets after their objects die
+        private void OnDestroy()
+        {
+            Hide();
+        }
+
         public void Show(List<AimTile> aimTiles, HexLayout layout)
         {
             Hide();
