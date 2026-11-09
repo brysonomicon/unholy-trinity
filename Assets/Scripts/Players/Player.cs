@@ -321,6 +321,7 @@ namespace UnholyTrinity.Players
 
             aimPreview.Show(GetPlannedShotTiles(preview), mapManager.Layout);
             plannedBlastPreview.Show(GetPlannedBlastTiles(), mapManager.Layout);
+            gm.ShowPlannedPickups(preview);
         }
 
         private void StopProjecting()
@@ -338,6 +339,7 @@ namespace UnholyTrinity.Players
             ClearSelectedTile();
             SnapToCoord();
             ShowLiveAim();
+            gm.ShowLivePickups();
 
             // ghost i stands where the player ends tick i, which is where tick i + 1's shot fires
             // from. each is picked up as its tick resolves, taking its cone with it

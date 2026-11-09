@@ -260,6 +260,26 @@ public class GameManager : ScriptableObject
     [CanBeNull]
     private PickupField LivePickups => _pickupManager != null ? _pickupManager.Field : null;
 
+    // pickup visuals as the planning player's preview leaves them at the tick being planned.
+    // only the current planner calls this, and it's rebuilt from the live state each time,
+    // so one player's plan never carries over into the other's turn
+    public void ShowPlannedPickups(IReadOnlyList<PreviewTick> preview)
+    {
+        if (_pickupManager != null)
+        {
+            _pickupManager.ShowPlanned(preview);
+        }
+    }
+
+    // back to what's really on the map, for resolution
+    public void ShowLivePickups()
+    {
+        if (_pickupManager != null)
+        {
+            _pickupManager.RefreshVisuals();
+        }
+    }
+
     // simulates only this player's plan, from where they are now. the opponent's plan
     // is hidden, so they're left out entirely. empty until the map is known
     public List<PreviewTick> PreviewPlan(Player player, IReadOnlyList<MoveInput> plan)
