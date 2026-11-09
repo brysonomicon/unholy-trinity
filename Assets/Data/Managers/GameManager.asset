@@ -14,4 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   maxPlayers: 2
   turnManager: {fileID: 11400000, guid: e0a137fa641acb64fafc8baac28caf4f, type: 2}
-  resolutionDuration: 4
+  tickDuration: 1
+  environmentIgnoringArmour: 0
