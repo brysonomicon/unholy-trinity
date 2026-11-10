@@ -2,7 +2,8 @@
     "name": "UnholyTrinity.HexMap.Editor",
     "rootNamespace": "UnholyTrinity.Hex.Editing",
     "references": [
-        "UnholyTrinity.HexMap"
+        "UnholyTrinity.HexMap",
+        "UnholyTrinity.Pickups"
     ],
     "includePlatforms": [
         "Editor"

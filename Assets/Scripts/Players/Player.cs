@@ -1,12 +1,14 @@
 using System.Linq;
 using System.Collections.Generic;
 using UnholyTrinity.Hex;
+using UnholyTrinity.Pickups;
 using UnholyTrinity.Weapons;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace UnholyTrinity.Players
 {
-    public partial class Player : MonoBehaviour
+    public partial class Player : MonoBehaviour, IHealable
     {
         #region Fields
 
@@ -37,6 +39,7 @@ namespace UnholyTrinity.Players
         // set up by BeginMovePhase each tick. beams read MoveStartCoord for their start sample,
         // tickMovePath will be needed for pickups
         private readonly List<HexCoord> tickMovePath = new();
+
         public HexCoord MoveStartCoord { get; private set; }
 
         // the selected tile that rocket launcher fires at
@@ -52,12 +55,15 @@ namespace UnholyTrinity.Players
         [field: SerializeField]
         public AimDirection CurrentAimDirection { get; private set; }
 
-        [Header("Health")] [SerializeField, Min(1)]
-        private int startingHealth = 100;
+        [Header("Health")]
+        [SerializeField, Min(1), FormerlySerializedAs("startingHealth")]
+        private int maxHealth = 100;
 
         [field: SerializeField] public int CurrentHealth { get; private set; }
 
         public bool IsDead => CurrentHealth <= 0;
+
+        public IReadOnlyList<HexCoord> TickMovePath => tickMovePath;
 
         public int PlanningTickOfTurn => plannedActions.Count;
 
@@ -106,7 +112,7 @@ namespace UnholyTrinity.Players
 
         private void Awake()
         {
-            CurrentHealth = startingHealth;
+            CurrentHealth = maxHealth;
             CurrentWeapon = new Weapon(startingWeapon);
             weapons.Insert(0, CurrentWeapon);
             GameManager.NewTurnEvent += OnNewTurn;
@@ -568,7 +574,6 @@ namespace UnholyTrinity.Players
             SnapToCoord();
             Debug.Log($"{name} is now aiming {CurrentAimDirection}");
         }
-
         public void BeginMovePhase()
         {
             MoveStartCoord = Coord;
@@ -580,6 +585,23 @@ namespace UnholyTrinity.Players
         public List<AimTile> GetBeamTilesFromCurrentCoord(WeaponData weaponData, AimDirection firedAim)
         {
             return weaponData.GetAimTiles(mapManager.Map, Coord, firedAim);
+        }
+        
+
+        private void Step(HexDirection direction)
+        {
+            HexCoord destination = GetStepDestination(Coord, direction);
+
+            if (destination == Coord)
+            {
+                Debug.Log($"{name} is blocked moving {direction}");
+                return;
+            }
+
+            Coord = destination;
+            tickMovePath.Add(Coord);
+            SnapToCoord();
+            Debug.Log($"{name} moved to {Coord}");
         }
 
         #endregion
@@ -601,6 +623,19 @@ namespace UnholyTrinity.Players
             {
                 Debug.Log($"{name} died. RIP");
             }
+        }
+
+        public bool TryHeal(int amount)
+        {
+            if (IsDead || amount <= 0 || CurrentHealth >= maxHealth)
+            {
+                Debug.Log($"{name} cannot be healed (dead: {IsDead}, amount: {amount}, current: {CurrentHealth}/{maxHealth})");
+                return false;
+            }
+
+            CurrentHealth = Mathf.Min(CurrentHealth + amount, maxHealth);
+            Debug.Log($"{name} healed {amount} health, now at {CurrentHealth}/{maxHealth}");
+            return true;
         }
 
         #endregion

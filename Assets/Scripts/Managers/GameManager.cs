@@ -28,6 +28,10 @@ public class GameManager : ScriptableObject
     [SerializeField][Min(0.1f)] private float tickDuration = 1f;
         
     private readonly List<Player> _players = new();
+
+    // scene object, so it registers itself instead of being serialized on this asset
+    [CanBeNull] private PickupManager _pickupManager;
+
     private readonly List<Rocket> _rockets = new();
     private readonly List<(
         Player shooter, 
@@ -58,6 +62,9 @@ public class GameManager : ScriptableObject
             TurnPhase.Resolution => null,
             _ => throw new ArgumentOutOfRangeException()
         };
+
+    // false until the spawner has registered every player
+    public bool AllPlayersRegistered => _players.Count == maxPlayers;
 
     public List<Vector3> CurrentPlayerPositions => new (_players.Select(x => x.transform.position).ToList());
 
@@ -116,6 +123,19 @@ public class GameManager : ScriptableObject
         if(_players.Count == maxPlayers)
         {
             NewTurnEvent?.Invoke(_players.First());
+        }
+    }
+
+    public void RegisterPickupManager(PickupManager pickupManager)
+    {
+        _pickupManager = pickupManager;
+    }
+
+    public void UnregisterPickupManager(PickupManager pickupManager)
+    {
+        if (_pickupManager == pickupManager)
+        {
+            _pickupManager = null;
         }
     }
 
@@ -189,9 +209,26 @@ public class GameManager : ScriptableObject
         #endregion
 
         // absorb ghosts after each turn
+        // respawns tick first so a pickup that comes back this tick can be collected
+        // this tick, even by a player who doesn't move. so RespawnTicks = 1 means a pickup
+        // collected on tick N is available again on tick N + 1
+        bool hasPickups = _pickupManager != null;
+        if (hasPickups)
+        {
+            _pickupManager.AdvanceTicks(1);
+        }
+
         foreach (Player player in _players)
         {
             player.PickUpGhost();
+        }
+
+        if (hasPickups)
+        {
+            foreach (Player player in _players)
+            {
+                _pickupManager.CollectAlong(player.TickMovePath, player.Coord, player);
+            }
         }
     }
 

@@ -47,31 +47,43 @@ namespace UnholyTrinity.Hex.Editing
             var center = layout.HexToWorld(tile.Coord);
             FillHex(layout, center, 0.92f, color, tile.Type == TileType.Wall ? 0.9f : 0.55f);
 
-            if (tile.Type == TileType.Boost)
+            switch (tile.Type)
             {
-                if (tile.Boost.Mode == BoostMode.Fixed)
-                    DrawArrow(layout, center, tile.Boost.Direction, Color.white);
-                Handles.Label(center, tile.Boost.Strength.ToString("+0;-0;0"), EditorStyles.whiteBoldLabel);
+                case TileType.Boost:
+                    if (tile.Boost.Mode == BoostMode.Fixed)
+                        DrawArrow(layout, center, tile.Boost.Direction, Color.white);
+                    Handles.Label(center, tile.Boost.Strength.ToString("+0;-0;0"), EditorStyles.whiteBoldLabel);
+                    break;
+
+                case TileType.Wall:
+                    DrawWallLabel(center, tile.WallSettings);
+                    break;
+
+                case TileType.PickupPoint:
+                    Handles.Label(center, tile.Pickup.HasPickup ? tile.Pickup.Pickup.name : "P?", EditorStyles.boldLabel);
+                    break;
+
+                case TileType.Health:
+                    var label = tile.Health.Lethal ? "KILL" : $"H{tile.Health.Amount:+0;-0;0}";
+                    if (tile.Health.Trigger == HealthTrigger.OnStop)
+                        label += " stop";
+                    Handles.Label(center, label, EditorStyles.whiteBoldLabel);
+                    break;
             }
-            else if (tile.Type == TileType.Wall && tile.WallSettings.Kind == WallKind.Bouncy)
+        }
+
+        private static void DrawWallLabel(Vector3 center, WallSettings wall)
+        {
+            switch (wall.Kind)
             {
-                Handles.Label(center, "B", EditorStyles.whiteBoldLabel);
-            }
-            else if (tile.Type == TileType.Wall && tile.WallSettings.Kind == WallKind.Spiked)
-            {
-                var scaled = tile.WallSettings.DamageMode == SpikeDamageMode.ScaledBySpeed ? "×v" : "";
-                Handles.Label(center, $"S{tile.WallSettings.Damage}{scaled}", EditorStyles.whiteBoldLabel);
-            }
-            else if (tile.Type == TileType.PickupPoint)
-            {
-                Handles.Label(center, $"P{tile.Pickup.SpawnGroup}", EditorStyles.boldLabel);
-            }
-            else if (tile.Type == TileType.Health)
-            {
-                var label = tile.Health.Lethal ? "KILL" : $"H{tile.Health.Amount:+0;-0;0}";
-                if (tile.Health.Trigger == HealthTrigger.OnStop)
-                    label += " stop";
-                Handles.Label(center, label, EditorStyles.whiteBoldLabel);
+                case WallKind.Bouncy:
+                    Handles.Label(center, "B", EditorStyles.whiteBoldLabel);
+                    break;
+
+                case WallKind.Spiked:
+                    var scaled = wall.DamageMode == SpikeDamageMode.ScaledBySpeed ? "×v" : "";
+                    Handles.Label(center, $"S{wall.Damage}{scaled}", EditorStyles.whiteBoldLabel);
+                    break;
             }
         }
 
