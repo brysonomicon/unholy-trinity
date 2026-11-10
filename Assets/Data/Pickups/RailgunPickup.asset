@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: RailgunPickup
   m_EditorClassIdentifier: UnholyTrinity.Weapons::UnholyTrinity.Weapons.WeaponPickup
   <DisplayName>k__BackingField: 
-  <RespawnTicks>k__BackingField: 1
+  <RespawnTicks>k__BackingField: 3
   <Trigger>k__BackingField: 0
   <VisualPrefab>k__BackingField: {fileID: 5148614561132371304, guid: 5245416e7b1c22746afd62fdd6fb67e2, type: 3}
   <Weapon>k__BackingField: {fileID: 11400000, guid: e725bc1c13b3e2b4c92a4eab21521cba, type: 2}

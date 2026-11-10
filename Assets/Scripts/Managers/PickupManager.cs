@@ -60,6 +60,10 @@ public class PickupManager : MonoBehaviour
     public void CollectAlong(IEnumerable<HexCoord> path, HexCoord end, IPickupCollector collector) =>
         Field.CollectAlong(path, end, collector);
 
+    // collects one hex's pickup as a player reaches it, so collection lines up with subtick movement
+    public bool TryCollect(HexCoord coord, PickupTrigger reached, IPickupCollector collector) =>
+        Field.TryCollect(coord, reached, collector);
+
     // shows each visual as available or taken in a planned state instead of the real one.
     // remembers who asked, so only they can switch back
     public void ShowPlannedState(PickupField plannedState, object shownBy)

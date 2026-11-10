@@ -79,7 +79,7 @@ public class UIManager : MonoBehaviour
         AddMoveOption(moveCard, "NE", HexDirection.D1);
         moveCard.AddRow();
         AddMoveOption(moveCard, "W", HexDirection.D3);
-        AddMoveOption(moveCard, "Hold", null);
+        AddMoveOption(moveCard, "Brake", null);
         AddMoveOption(moveCard, "E", HexDirection.D0);
         moveCard.AddRow();
         AddMoveOption(moveCard, "SW", HexDirection.D4);

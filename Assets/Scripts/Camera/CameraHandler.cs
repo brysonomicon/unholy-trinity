@@ -77,6 +77,7 @@ public class CameraHandler : MonoBehaviour
 
     void Start()
     {
+        gm ??= GameManager.Instance;
         cam ??= GetComponent<Camera>();
         if (!gm.AllPlayersRegistered)
         {
