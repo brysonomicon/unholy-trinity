@@ -32,11 +32,14 @@ public class GameManager : ScriptableObject
     [SerializeField] private EnvironmentalDamage environmentIgnoringArmour = EnvironmentalDamage.None;
 
     [Header("Movement")]
-    [Tooltip("Hexes per tick for a move that isn't lined up with the player's aim.")]
+    [Tooltip("Hexes per tick when starting, reversing, or changing direction without aiming along the move.")]
     [SerializeField][Min(1)] private int baseMoveSpeed = 2;
 
-    [Tooltip("Top speed when moving the way the player aims. Each aimed tick in the same direction adds 1 up to this.")]
+    [Tooltip("Top speed reachable by moving while aiming along the move.")]
     [SerializeField][Min(1)] private int aimedMaxMoveSpeed = 5;
+
+    [Tooltip("Speed added each tick while moving and aiming along the move, up to the aimed max.")]
+    [SerializeField][Min(1)] private int aimedMoveGain = 1;
 
     [Tooltip("Playtest toggle: a diagonal aim (between two hex directions) counts as lined up with both of them.")]
     [SerializeField] private bool diagonalAimAccelerates;
@@ -296,7 +299,7 @@ public class GameManager : ScriptableObject
     private SimState CreateSimState(IEnumerable<UnitState> units, [CanBeNull] PickupField pickups)
     {
         SimSettings settings = new(
-            environmentIgnoringArmour, baseMoveSpeed, aimedMaxMoveSpeed, diagonalAimAccelerates);
+            environmentIgnoringArmour, baseMoveSpeed, aimedMaxMoveSpeed, diagonalAimAccelerates, aimedMoveGain);
         return new SimState(_mapManager.Map, units, pickups, settings);
     }
 

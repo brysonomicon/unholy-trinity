@@ -14,12 +14,19 @@ namespace UnholyTrinity.Simulation
         /// <summary>True once something ended the move early: a wall, another unit or death.</summary>
         public bool IsHalted { get; private set; }
 
+        /// <summary>
+        /// The velocity the unit carries out of this tick. Set from the plan, so a wall or another unit halting the
+        /// move doesn't change it; only death does (see <see cref="MoveModel.VelocityAfter"/>).
+        /// </summary>
+        public HexVelocity Momentum { get; set; }
+
         public bool IsMoving => !IsHalted && StepsRemaining > 0;
 
-        public UnitMove(HexDirection direction, int steps)
+        public UnitMove(HexDirection direction, int steps, HexVelocity momentum)
         {
             Direction = direction;
             StepsRemaining = steps;
+            Momentum = momentum;
         }
 
         internal void CompleteStep()

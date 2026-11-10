@@ -16,21 +16,26 @@ namespace UnholyTrinity.Simulation
 
         readonly int baseSpeed;
         readonly int aimedMaxSpeed;
+        readonly int aimedGain;
 
         public SimSettings(EnvironmentalDamage armourIgnoredBy, int baseSpeed = 1, int aimedMaxSpeed = 1,
-            bool betweenAimsAccelerate = false)
+            bool betweenAimsAccelerate = false, int aimedGain = 1)
         {
             ArmourIgnoredBy = armourIgnoredBy;
             this.baseSpeed = baseSpeed;
             this.aimedMaxSpeed = aimedMaxSpeed;
             BetweenAimsAccelerate = betweenAimsAccelerate;
+            this.aimedGain = aimedGain;
         }
 
-        /// <summary>Speed of a move that isn't lined up with the unit's aim. At least 1.</summary>
+        /// <summary>Speed when starting, reversing, or changing direction without aiming along the move. At least 1.</summary>
         public int BaseSpeed => Math.Max(1, baseSpeed);
 
-        /// <summary>Top speed when moving the way the unit aims; each aimed tick adds 1 up to this. At least <see cref="BaseSpeed"/>.</summary>
+        /// <summary>Top speed reachable by aimed moves. At least <see cref="BaseSpeed"/>.</summary>
         public int AimedMaxSpeed => Math.Max(BaseSpeed, aimedMaxSpeed);
+
+        /// <summary>Speed added per tick while moving and aiming along the move. At least 1.</summary>
+        public int AimedGain => Math.Max(1, aimedGain);
 
         public bool IgnoresArmour(EnvironmentalDamage source) => (ArmourIgnoredBy & source) != 0;
     }

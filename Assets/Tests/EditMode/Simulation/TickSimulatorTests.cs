@@ -99,14 +99,14 @@ namespace UnholyTrinity.Simulation.Tests
         }
 
         [Test]
-        public void Wall_BlocksMove_AndStopsMomentum()
+        public void Wall_BlocksMove_ButKeepsPlannedMomentum()
         {
             var state = new SimState(Corridor(1), new[] { Unit(0, At(0)) });
 
             var log = TickSimulator.Simulate(state, new[] { Input(0, East) });
 
             Assert.AreEqual(At(0), state.GetUnit(0).Coord);
-            Assert.AreEqual(HexVelocity.Zero, state.GetUnit(0).Velocity);
+            Assert.AreEqual(new HexVelocity(East, 1), state.GetUnit(0).Velocity);
             Assert.IsInstanceOf<BlockedEvent>(log.Events.Single());
         }
 

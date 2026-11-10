@@ -8,12 +8,14 @@ namespace UnholyTrinity.Simulation
     /// carried out of it. Previews and resolution both go through here, so the player always sees the real outcome.
     ///
     /// Rules:
-    /// - No input keeps sliding at the current velocity.
-    /// - Input opposite to the current velocity brakes to a stop.
-    /// - Input lined up with the unit's aim (see <see cref="Facing.LinesUpWith"/>) starts at base speed, then adds
-    ///   1 per tick in the same direction up to <see cref="SimSettings.AimedMaxSpeed"/>.
-    /// - Any other input moves at <see cref="SimSettings.BaseSpeed"/> in that direction.
-    /// - Anything that halts the move (a wall, another unit, death) zeroes the velocity.
+    /// - A tick with no plan at all (<see cref="MoveInput.None"/>) doesn't move and keeps the current momentum.
+    /// - A planned tick with no direction holds: no move, and momentum drops to zero.
+    /// - Moving, aimed along the move (see <see cref="Facing.LinesUpWith"/>) and not reversing: previous speed plus
+    ///   <see cref="SimSettings.AimedGain"/>, up to <see cref="SimSettings.AimedMaxSpeed"/>. This applies when
+    ///   turning too, so an aimed turn carries speed into the new direction.
+    /// - Otherwise, the same direction as the current momentum keeps its speed.
+    /// - Anything else, including reversing and starting from a stop, moves at <see cref="SimSettings.BaseSpeed"/>.
+    /// - Momentum is the planned velocity even if a wall or another unit stops the move early. Only death zeroes it.
     /// </summary>
     public static class MoveModel
     {
@@ -21,23 +23,29 @@ namespace UnholyTrinity.Simulation
         {
             HexVelocity velocity = unit.Velocity;
 
+            if (!input.IsPlanned)
+                return new UnitMove(velocity.Direction, 0, velocity);
+
             if (input.Direction is not { } direction)
-                return new UnitMove(velocity.Direction, velocity.Speed);
+                return new UnitMove(velocity.Direction, 0, HexVelocity.Zero);
 
-            if (velocity.IsMoving && direction == velocity.Direction.Opposite())
-                return new UnitMove(direction, 0);
+            bool isMoving = velocity.IsMoving;
+            bool isAimingAlongMove = input.Facing is { } facing
+                                     && facing.LinesUpWith(direction, settings.BetweenAimsAccelerate);
+            bool isSameDirection = isMoving && velocity.Direction == direction;
+            bool isReversing = isMoving && velocity.Direction.Opposite() == direction;
 
-            bool aimed = input.Facing is { } facing && facing.LinesUpWith(direction, settings.BetweenAimsAccelerate);
-            if (!aimed)
-                return new UnitMove(direction, settings.BaseSpeed);
+            int speed = settings.BaseSpeed;
 
-            int speed = velocity.IsMoving && velocity.Direction == direction
-                ? velocity.Speed + 1
-                : settings.BaseSpeed;
-            return new UnitMove(direction, Math.Min(speed, settings.AimedMaxSpeed));
+            if (isMoving && isAimingAlongMove && !isReversing)
+                speed = Math.Min(velocity.Speed + settings.AimedGain, settings.AimedMaxSpeed);
+            else if (isSameDirection)
+                speed = velocity.Speed;
+
+            return new UnitMove(direction, speed, new HexVelocity(direction, speed));
         }
 
-        public static HexVelocity VelocityAfter(UnitMove move) =>
-            move.IsHalted ? HexVelocity.Zero : new HexVelocity(move.Direction, move.StepsTaken);
+        public static HexVelocity VelocityAfter(UnitState unit, UnitMove move) =>
+            unit.IsDead ? HexVelocity.Zero : move.Momentum;
     }
 }

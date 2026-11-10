@@ -54,7 +54,7 @@ namespace UnholyTrinity.Simulation
                     LogIfKilled(unit, move, log);
                 }
 
-                unit.Velocity = MoveModel.VelocityAfter(move);
+                unit.Velocity = MoveModel.VelocityAfter(unit, move);
             }
 
             return log;

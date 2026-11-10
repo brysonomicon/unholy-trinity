@@ -506,7 +506,7 @@ namespace UnholyTrinity.Players
                 : PlannedAimSteps > 0;
         }
 
-        // null holds, which keeps sliding at the current momentum
+        // null holds, which stops the player and zeroes momentum
         public void PlanMove(HexDirection? direction)
         {
             Debug.Log(direction is { } d
