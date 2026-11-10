@@ -41,18 +41,6 @@ namespace UnholyTrinity.Hex
             && spawn.Definition.Trigger == reached
             && spawn.TryCollect(collector);
 
-        /// <summary>Collects OnEnter pickups along the slide's path, then the OnStop pickup where it ends.</summary>
-        // public void CollectAlong() =>
-            //todo
-
-        /// <summary>Collects OnEnter pickups on each hex of <paramref name="path"/>, then the OnStop pickup at <paramref name="end"/>.</summary>
-        public void CollectAlong(IEnumerable<HexCoord> path, HexCoord end, IPickupCollector collector)
-        {
-            foreach (var coord in path)
-                TryCollect(coord, PickupTrigger.OnEnter, collector);
-            TryCollect(end, PickupTrigger.OnStop, collector);
-        }
-
         /// <summary>Counts every respawn timer down; returns the points that became available again.</summary>
         public List<HexCoord> AdvanceTicks(int ticks)
         {

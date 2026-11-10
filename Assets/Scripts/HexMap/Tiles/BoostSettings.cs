@@ -39,12 +39,10 @@ namespace UnholyTrinity.Hex
             Fixed(int strength, HexDirection direction) =>
             new BoostSettings(strength, BoostMode.Fixed, direction);
 
-        /// <summary>
-        /// Velocity after passing over this tile. Speed never drops below zero.
-        /// Along-movement tiles do nothing to a stationary unit (it has no direction);
-        /// a positive fixed tile will push a stationary unit, conveyor-style.
-        /// Old code: needs refactor
-        /// </summary>
+        // Old code: needs refactor.
+        // Velocity after passing over this tile. Speed never drops below zero.
+        // Along-movement tiles do nothing to a stationary unit (it has no direction);
+        // a positive fixed tile will push a stationary unit, conveyor-style.
         // public readonly HexVelocity Apply(HexVelocity velocity)
         // {
         //     if (Mode != BoostMode.AlongMovement)
