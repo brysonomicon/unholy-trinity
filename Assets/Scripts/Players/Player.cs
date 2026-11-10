@@ -261,6 +261,28 @@ namespace UnholyTrinity.Players
             );
         }
 
+        // the cone of the shot planned on tickIndex, or null if that tick doesn't fire. it fires from
+        // where the plan stands after tickIndex ticks, before that tick's aim and move
+        private List<AimTile> GetPlannedShotCone(List<PreviewTick> preview, int tickIndex)
+        {
+            Weapon shot = tickIndex < plannedActions.Count
+                ? plannedActions[tickIndex].PlannedShot
+                : null;
+
+            return shot?.Data.GetAimTiles(
+                mapManager.Map, GetPlannedCoord(preview, tickIndex), GetPlannedAim(tickIndex)
+            );
+        }
+
+        // the real cone, shown during resolution so it follows every aim change and move
+        private void ShowLiveAim()
+        {
+            aimPreview.Show(
+                CurrentWeapon.Data.GetAimTiles(mapManager.Map, Coord, CurrentAimDirection),
+                mapManager.Layout
+            );
+        }
+
         public bool IsInShotCone(HexCoord coord)
         {
             return GetPlannedShotTiles(PreviewPlan()).Any(aimTile => aimTile.Coord == coord);
@@ -283,19 +305,23 @@ namespace UnholyTrinity.Players
             List<PreviewTick> preview = PreviewPlan();
             int tickCount = plannedActions.Count;
 
-            List<Pose> ghostPoses = new();
+            // ghost i stands where tick i + 1 starts, which is where that tick's shot fires from.
+            // the tick being planned already has the main aim preview, so its ghost skips the cone
+            List<PlanGhost> ghosts = new();
 
             for (int i = 0; i < tickCount; i++)
             {
-                ghostPoses.Add(GetPlannedPose(preview, i));
+                List<AimTile> cone = i < tickCount - 1 ? GetPlannedShotCone(preview, i) : null;
+                ghosts.Add(new PlanGhost(GetPlannedPose(preview, i), cone));
             }
-            planGhosts.Show(ghostPoses);
+            planGhosts.Show(ghosts, mapManager.Layout, aimPreview);
 
             Pose plannedPose = GetPlannedPose(preview, tickCount);
             transform.SetPositionAndRotation(plannedPose.position, plannedPose.rotation);
 
             aimPreview.Show(GetPlannedShotTiles(preview), mapManager.Layout);
             plannedBlastPreview.Show(GetPlannedBlastTiles(), mapManager.Layout);
+            gm.ShowPlannedPickups(preview);
         }
 
         private void StopProjecting()
@@ -309,20 +335,23 @@ namespace UnholyTrinity.Players
 
         private void RevealPlan()
         {
-            aimPreview.Hide();
             plannedBlastPreview.Hide();
             ClearSelectedTile();
             SnapToCoord();
+            ShowLiveAim();
+            gm.ShowLivePickups();
 
+            // ghost i stands where the player ends tick i, which is where tick i + 1's shot fires
+            // from. each is picked up as its tick resolves, taking its cone with it
             List<PreviewTick> preview = PreviewPlan();
-            List<Pose> ghostPoses = new();
+            List<PlanGhost> ghosts = new();
 
             for (int i = 1; i <= plannedActions.Count; i++)
             {
-                ghostPoses.Add(GetPlannedPose(preview, i));
+                ghosts.Add(new PlanGhost(GetPlannedPose(preview, i), GetPlannedShotCone(preview, i)));
             }
 
-            planGhosts.Show(ghostPoses);
+            planGhosts.Show(ghosts, mapManager.Layout, aimPreview);
         }
 
         private Pose GetPose(HexCoord coord, AimDirection aim)
@@ -644,6 +673,7 @@ namespace UnholyTrinity.Players
         {
             CurrentAimDirection = aim;
             SnapToCoord();
+            ShowLiveAim();
             Debug.Log($"{name} is now aiming {CurrentAimDirection}");
         }
 
@@ -657,7 +687,7 @@ namespace UnholyTrinity.Players
         // snapshot for the simulator. id is how the game manager tells units apart
         public UnitState ToUnitState(int id)
         {
-            return new UnitState(id, Coord, Velocity, CurrentHealth, maxHealth, CurrentArmour, ArmourProtection);
+            return new UnitState(id, Coord, Velocity, CurrentHealth, maxHealth, MaxArmour, CurrentArmour, ArmourProtection);
         }
 
         // writes the result of a simulated move phase back to the player
@@ -670,6 +700,7 @@ namespace UnholyTrinity.Players
             {
                 Coord = unit.Coord;
                 SnapToCoord();
+                ShowLiveAim();
             }
 
             if (unit.Health != CurrentHealth || unit.Armour != CurrentArmour)

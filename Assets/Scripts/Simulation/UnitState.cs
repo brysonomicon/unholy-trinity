@@ -8,7 +8,7 @@ namespace UnholyTrinity.Simulation
     /// A unit as the simulation sees it. Simulations change these copies, never the scene: a preview throws
     /// them away and resolution writes them back to the players.
     /// </summary>
-    public class UnitState : IHealable
+    public class UnitState : IHealable, IArmourable
     {
         public int Id { get; }
         public HexCoord Coord { get; internal set; }
@@ -17,11 +17,12 @@ namespace UnholyTrinity.Simulation
         public int Health { get; private set; }
         public int MaxHealth { get; }
         public int Armour { get; private set; }
+        public int MaxArmour { get; }
         public ArmourProtection ArmourProtection { get; }
         public bool IsDead => Health <= 0;
 
         public UnitState(int id, HexCoord coord, HexVelocity velocity, int health, int maxHealth,
-            int armour = 0, ArmourProtection armourProtection = default)
+            int maxArmour, int armour = 0, ArmourProtection armourProtection = default)
         {
             if (maxHealth < 1)
                 throw new ArgumentOutOfRangeException(nameof(maxHealth), maxHealth, "Max health must be at least 1.");
@@ -31,13 +32,16 @@ namespace UnholyTrinity.Simulation
             Velocity = velocity;
             MaxHealth = maxHealth;
             Health = Math.Clamp(health, 0, maxHealth);
-            Armour = Math.Max(armour, 0);
+            MaxArmour = maxArmour;
+            Armour = Math.Clamp(armour, 0, maxArmour);
             ArmourProtection = armourProtection;
         }
 
-        public UnitState Clone() => new UnitState(Id, Coord, Velocity, Health, MaxHealth, Armour, ArmourProtection);
+        public UnitState Clone() => new UnitState(Id, Coord, Velocity, Health, MaxHealth, MaxArmour, Armour, ArmourProtection);
 
         public bool TryHeal(int amount) => Heal(amount) > 0;
+
+        public bool TryAddArmour(int amount) => AddArmour(amount) > 0;
 
         /// <summary>Restores up to <paramref name="amount"/> HP; returns the HP actually restored.</summary>
         public int Heal(int amount)
@@ -48,6 +52,17 @@ namespace UnholyTrinity.Simulation
             int healed = Math.Min(amount, MaxHealth - Health);
             Health += healed;
             return healed;
+        }
+
+        /// <summary>Restores up to <paramref name="amount"/> armour; returns the armour actually restored.</summary>
+        public int AddArmour(int amount)
+        {
+            if (IsDead || amount <= 0)
+                return 0;
+            
+            int armoured = Math.Min(amount, MaxArmour - Armour);
+            Armour += armoured;
+            return armoured;
         }
 
         /// <summary>

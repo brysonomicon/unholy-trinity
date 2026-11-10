@@ -393,7 +393,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c09497707f2b8d0489fe3cbeed9215dd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnholyTrinity.Players.PlayerSpawner
-  gameManager: {fileID: 11400000, guid: df4deffeedcb94d4bb67ddca6e302f96, type: 2}
   mapManager: {fileID: 495801503}
   playerPrefab: {fileID: 9068410019634648079, guid: c560c3193c1df7f488f308a030123633, type: 3}
   spawnCoords:
@@ -401,6 +400,10 @@ MonoBehaviour:
     <R>k__BackingField: 0
   - <Q>k__BackingField: 0
     <R>k__BackingField: 1
+  playerColours:
+  - {r: 0, g: 1, b: 1, a: 1}
+  - {r: 1, g: 0, b: 1, a: 1}
+  - {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!4 &1440695144
 Transform:
   m_ObjectHideFlags: 0

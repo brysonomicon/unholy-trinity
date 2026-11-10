@@ -31,7 +31,7 @@ namespace UnholyTrinity.Simulation.Tests
         }
 
         static SimState State(SimSettings settings, HexVelocity velocity = default, int corridor = 30) =>
-            new SimState(Corridor(corridor), new[] { new UnitState(0, At(0), velocity, 10, maxHealth: 10) },
+            new SimState(Corridor(corridor), new[] { new UnitState(0, At(0), velocity, 10, maxHealth: 10, maxArmour: 0) },
                 settings: settings);
 
         static UnitState Tick(SimState state, HexDirection? direction, Facing? facing = null)

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnholyTrinity.Hex;
+using UnholyTrinity.Simulation;
 using UnityEngine;
 
 /// <summary>
@@ -45,6 +46,40 @@ public class PickupManager : MonoBehaviour
         foreach (var (coord, visual) in _visuals)
         {
             visual.SetActive(Field.IsAvailable(coord));
+        }
+    }
+
+    // shows pickups as they'd be at the end of a planned preview, so a plan that collects one
+    // hides it. replays the preview's collect and respawn events over the live state rather than
+    // touching the live field. RefreshVisuals goes back to the live state
+    public void ShowPlanned(IReadOnlyList<PreviewTick> preview)
+    {
+        Dictionary<HexCoord, bool> available = new();
+
+        foreach (HexCoord coord in _visuals.Keys)
+        {
+            available[coord] = Field.IsAvailable(coord);
+        }
+
+        foreach (PreviewTick tick in preview)
+        {
+            foreach (TickEvent tickEvent in tick.Log.Events)
+            {
+                switch (tickEvent)
+                {
+                    case PickupCollectedEvent collected when available.ContainsKey(collected.At):
+                        available[collected.At] = false;
+                        break;
+                    case PickupRespawnedEvent respawned when available.ContainsKey(respawned.At):
+                        available[respawned.At] = true;
+                        break;
+                }
+            }
+        }
+
+        foreach (var (coord, visual) in _visuals)
+        {
+            visual.SetActive(available[coord]);
         }
     }
 
