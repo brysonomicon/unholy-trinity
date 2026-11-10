@@ -15,7 +15,7 @@ MonoBehaviour:
   <DisplayName>k__BackingField: 
   <RespawnTicks>k__BackingField: 1
   <Trigger>k__BackingField: 0
-  <VisualPrefab>k__BackingField: {fileID: 7810473164152590907, guid: 49e0bd29598f8674c8a88ab7bfc19f40, type: 3}
-  <Weapon>k__BackingField: {fileID: 11400000, guid: 6d3c5020ba2fab449a084dc37927c5db, type: 2}
+  <VisualPrefab>k__BackingField: {fileID: 7810473164152590907, guid: a6baff0171a73f94cb55a35e6c55c8ba, type: 3}
+  <Weapon>k__BackingField: {fileID: 11400000, guid: e725bc1c13b3e2b4c92a4eab21521cba, type: 2}
   <Amount>k__BackingField: 1
   <TakenWhenUnusable>k__BackingField: 0
