@@ -768,6 +768,34 @@ namespace UnholyTrinity.Players
             return true;
         }
 
+        // ammo only goes into a weapon the player already holds. the ammo pickup decides whether
+        // it's still taken when the weapon isn't held or is already full
+        public AmmoGiven TryGiveAmmo(WeaponData data, int amount)
+        {
+            if (IsDead || amount <= 0)
+            {
+                return AmmoGiven.Refused;
+            }
+
+            Weapon heldWeapon = weapons.Find(weapon => weapon.Data == data);
+
+            if (heldWeapon == null)
+            {
+                Debug.Log($"{name} can't use {data.DisplayName} ammo without the weapon");
+                return AmmoGiven.WeaponNotHeld;
+            }
+
+            if (heldWeapon.Ammo >= data.MaxAmmo)
+            {
+                Debug.Log($"{name} can't take {data.DisplayName} ammo, already full at {heldWeapon.Ammo}/{data.MaxAmmo}");
+                return AmmoGiven.AmmoFull;
+            }
+
+            heldWeapon.AddAmmo(amount);
+            Debug.Log($"{name} picked up {amount} {data.DisplayName} ammo, now at {heldWeapon.Ammo}/{data.MaxAmmo}");
+            return AmmoGiven.Added;
+        }
+
         #endregion
 
         #region Event Handlers

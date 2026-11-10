@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35a4a98c9b444575bd3165af04b73a9b, type: 3}
+  m_Name: AmmoRocketPickup
+  m_EditorClassIdentifier: UnholyTrinity.Weapons::UnholyTrinity.Weapons.AmmoPickup
+  <DisplayName>k__BackingField: 
+  <RespawnTicks>k__BackingField: 1
+  <Trigger>k__BackingField: 0
+  <VisualPrefab>k__BackingField: {fileID: 7810473164152590907, guid: 49e0bd29598f8674c8a88ab7bfc19f40, type: 3}
+  <Weapon>k__BackingField: {fileID: 11400000, guid: 6d3c5020ba2fab449a084dc37927c5db, type: 2}
+  <Amount>k__BackingField: 1
+  <TakenWhenUnusable>k__BackingField: 0
