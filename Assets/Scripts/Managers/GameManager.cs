@@ -43,16 +43,16 @@ public class GameManager : ScriptableObject
 
     // index in this list is the player's unit id in simulations
     private readonly List<Player> _players = new();
+
+    // scene object, so it registers itself instead of being serialized on this asset
+    [CanBeNull] private PickupManager _pickupManager;
+
     private readonly List<Rocket> _rockets = new();
     private readonly List<(
         Player shooter, 
         WeaponData Data, 
         AimDirection firedAim,
         List<AimTile> firedTiles)> _beams = new();
-
-    // scene objects, so they're handed over at runtime instead of being serialized on this asset
-    [CanBeNull] private MapManager _mapManager;
-    [CanBeNull] private PickupManager _pickupManager;
 
     public int Round { get; private set; }
     // counts every tick of the game and only resets with ResetGame.
@@ -206,7 +206,16 @@ public class GameManager : ScriptableObject
 
         #region move phase
 
-        ResolveMovePhase(tickIndex);
+        foreach (Player player in _players)
+        {
+            player.BeginMovePhase();
+
+            // let the game manager handle progressing the iterator of ResolveMove instead 
+            // PlanMove so planning doesn't change the real state
+            IEnumerator<(int, HexCoord)> move = player.GetPlannedAction(tickIndex)?.Move?.Invoke();
+            while (move != null && move.MoveNext())
+            {}
+        }
 
         AdvanceRockets();
 
@@ -216,68 +225,27 @@ public class GameManager : ScriptableObject
         #endregion
 
         // absorb ghosts after each turn
+        // respawns tick first so a pickup that comes back this tick can be collected
+        // this tick, even by a player who doesn't move. so RespawnTicks = 1 means a pickup
+        // collected on tick N is available again on tick N + 1
+        bool hasPickups = _pickupManager != null;
+        if (hasPickups)
+        {
+            _pickupManager.AdvanceTicks(1);
+        }
+
         foreach (Player player in _players)
         {
             player.PickUpGhost();
         }
-    }
 
-    // runs the simulator on the live pickups, so collections and respawns stick, then
-    // writes each player's result back. input order is movement priority
-    // TODO: alternate priority between players
-    private void ResolveMovePhase(int tickIndex)
-    {
-        SimState state = CreateSimState(_players.Select((player, id) => player.ToUnitState(id)), LivePickups);
-
-        List<UnitTickInput> inputs = _players
-            .Select((player, id) => new UnitTickInput(id, player.GetPlannedAction(tickIndex)?.MoveInput ?? MoveInput.None))
-            .ToList();
-
-        TickLog log = TickSimulator.Simulate(state, inputs);
-
-        for (int id = 0; id < _players.Count; id++)
+        if (hasPickups)
         {
-            _players[id].ApplyUnitState(state.GetUnit(id));
+            foreach (Player player in _players)
+            {
+                _pickupManager.CollectAlong(player.TickMovePath, player.Coord, player);
+            }
         }
-
-        if (_pickupManager != null)
-        {
-            _pickupManager.RefreshVisuals();
-        }
-
-        foreach (TickEvent tickEvent in log.Events)
-        {
-            Debug.Log(tickEvent);
-        }
-    }
-
-    #endregion
-
-    #region Simulation
-
-    private const int PreviewUnitId = 0;
-
-    [CanBeNull]
-    private PickupField LivePickups => _pickupManager != null ? _pickupManager.Field : null;
-
-    // simulates only this player's plan, from where they are now. the opponent's plan
-    // is hidden, so they're left out entirely. empty until the map is known
-    public List<PreviewTick> PreviewPlan(Player player, IReadOnlyList<MoveInput> plan)
-    {
-        if (_mapManager == null || _mapManager.Map == null)
-        {
-            return new List<PreviewTick>();
-        }
-
-        SimState state = CreateSimState(new[] { player.ToUnitState(PreviewUnitId) }, LivePickups);
-        return TickSimulator.PreviewPlan(state, PreviewUnitId, plan);
-    }
-
-    private SimState CreateSimState(IEnumerable<UnitState> units, [CanBeNull] PickupField pickups)
-    {
-        SimSettings settings = new(
-            environmentIgnoringArmour, baseMoveSpeed, aimedMaxMoveSpeed, diagonalAimAccelerates);
-        return new SimState(_mapManager.Map, units, pickups, settings);
     }
 
     #endregion

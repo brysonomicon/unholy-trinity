@@ -8,7 +8,7 @@ using UnityEngine.Serialization;
 
 namespace UnholyTrinity.Players
 {
-    public class Player : MonoBehaviour
+    public partial class Player : MonoBehaviour, IHealable
     {
         #region Fields
 
@@ -49,6 +49,12 @@ namespace UnholyTrinity.Players
 
         // this turn's plan, one UnholyAction per tick
         private readonly List<UnholyAction> plannedActions = new();
+
+        // set up by BeginMovePhase each tick. beams read MoveStartCoord for their start sample,
+        // tickMovePath will be needed for pickups
+        private readonly List<HexCoord> tickMovePath = new();
+
+        public HexCoord MoveStartCoord { get; private set; }
 
         // the selected tile that rocket launcher fires at
         public HexCoord? SelectedTile { get; private set; }
@@ -477,20 +483,9 @@ namespace UnholyTrinity.Players
                 : PlannedAimSteps > 0;
         }
 
-        // null holds, which keeps sliding at the current momentum
-        public void PlanMove(HexDirection? direction)
-        {
-            Debug.Log(direction is { } d
-                ? $"{name} plans move {d} on tick {PlanningTick}"
-                : $"{name} holds move on tick {PlanningTick}");
-            PlanningAction.PlannedMove = direction;
-            ProjectPlan();
-        }
-
-        // null asks whether this tick holds
         public bool IsPlanningMove(HexDirection? direction)
         {
-            return PlanningAction.PlannedMove == direction;
+            return PlanningAction.PlannedDirection == direction;
         }
 
         public void PlanNextTick()
@@ -646,6 +641,11 @@ namespace UnholyTrinity.Players
             SnapToCoord();
             Debug.Log($"{name} is now aiming {CurrentAimDirection}");
         }
+        public void BeginMovePhase()
+        {
+            MoveStartCoord = Coord;
+            tickMovePath.Clear();
+        }
 
         // the fired aim's cone from where the player stands now, so a beam follows its shooter
         // only meaningful after the move phase
@@ -653,31 +653,22 @@ namespace UnholyTrinity.Players
         {
             return weaponData.GetAimTiles(mapManager.Map, Coord, firedAim);
         }
+        
 
-        // snapshot for the simulator. id is how the game manager tells units apart
-        public UnitState ToUnitState(int id)
+        private void Step(HexDirection direction)
         {
-            return new UnitState(id, Coord, Velocity, CurrentHealth, maxHealth, CurrentArmour, ArmourProtection);
-        }
+            HexCoord destination = GetStepDestination(Coord, direction);
 
-        // writes the result of a simulated move phase back to the player
-        public void ApplyUnitState(UnitState unit)
-        {
-            MoveStartCoord = Coord;
-            Velocity = unit.Velocity;
-
-            if (unit.Coord != Coord)
+            if (destination == Coord)
             {
-                Coord = unit.Coord;
-                SnapToCoord();
+                Debug.Log($"{name} is blocked moving {direction}");
+                return;
             }
 
-            if (unit.Health != CurrentHealth || unit.Armour != CurrentArmour)
-            {
-                CurrentHealth = unit.Health;
-                CurrentArmour = unit.Armour;
-                Debug.Log($"{name} now at {CurrentHealth}/{maxHealth} health, {CurrentArmour} armour");
-            }
+            Coord = destination;
+            tickMovePath.Add(Coord);
+            SnapToCoord();
+            Debug.Log($"{name} moved to {Coord}");
         }
 
         #endregion
