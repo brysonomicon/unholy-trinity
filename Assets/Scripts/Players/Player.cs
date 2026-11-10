@@ -222,6 +222,28 @@ namespace UnholyTrinity.Players
             );
         }
 
+        // the cone of the shot planned on tick tickIndex, fired from where the player starts that
+        // tick. null when that tick doesn't fire
+        private List<AimTile> GetPlannedShotCone(int tickIndex)
+        {
+            Weapon shot = tickIndex < plannedActions.Count
+                ? plannedActions[tickIndex].PlannedShot
+                : null;
+
+            return shot?.Data.GetAimTiles(
+                mapManager.Map, GetPlannedCoord(tickIndex), GetPlannedAim(tickIndex)
+            );
+        }
+
+        // during resolution the aim preview follows where the player really is and aims
+        private void ShowLiveAim()
+        {
+            aimPreview.Show(
+                CurrentWeapon.Data.GetAimTiles(mapManager.Map, Coord, CurrentAimDirection),
+                mapManager.Layout
+            );
+        }
+
         public bool IsInShotCone(HexCoord coord)
         {
             return GetPlannedShotTiles().Any(aimTile => aimTile.Coord == coord);
@@ -243,13 +265,16 @@ namespace UnholyTrinity.Players
         {
             int tickCount = plannedActions.Count;
 
-            List<Pose> ghostPoses = new();
+            // ghost i stands where tick i + 1 starts, which is where that tick's shot fires from.
+            // the tick being planned already has the main aim preview, so its ghost skips the cone
+            List<PlanGhost> ghosts = new();
 
             for (int i = 0; i < tickCount; i++)
             {
-                ghostPoses.Add(GetPlannedPose(i));
+                List<AimTile> cone = i < tickCount - 1 ? GetPlannedShotCone(i) : null;
+                ghosts.Add(new PlanGhost(GetPlannedPose(i), cone));
             }
-            planGhosts.Show(ghostPoses);
+            planGhosts.Show(ghosts, mapManager.Layout, aimPreview);
 
             Pose plannedPose = GetPlannedPose(tickCount);
             transform.SetPositionAndRotation(plannedPose.position, plannedPose.rotation);
@@ -273,20 +298,22 @@ namespace UnholyTrinity.Players
         // resolution plays out for real from here, so the forecast and planned pickups are cleared
         private void RevealPlan()
         {
-            aimPreview.Hide();
             plannedBlastPreview.Hide();
             ClearSelectedTile();
             SnapToCoord();
             ClearForecast();
+            ShowLiveAim();
 
-            List<Pose> ghostPoses = new();
+            // ghost i stands where the player ends tick i, which is where tick i + 1's shot fires
+            // from. each is picked up as its tick resolves, taking its cone with it
+            List<PlanGhost> ghosts = new();
 
             for (int i = 1; i <= plannedActions.Count; i++)
             {
-                ghostPoses.Add(GetPlannedPose(i));
+                ghosts.Add(new PlanGhost(GetPlannedPose(i), GetPlannedShotCone(i)));
             }
 
-            planGhosts.Show(ghostPoses);
+            planGhosts.Show(ghosts, mapManager.Layout, aimPreview);
         }
 
         private Pose GetPose(HexCoord coord, AimDirection aim)
@@ -530,9 +557,11 @@ namespace UnholyTrinity.Players
         }
 
         // called by game manager once this ticks move has resolved
+        // also moves the live aim preview to where the player ended up
         public void PickUpGhost()
         {
             planGhosts.PickUpNext();
+            ShowLiveAim();
         }
 
         // for rail and LG
@@ -599,6 +628,7 @@ namespace UnholyTrinity.Players
         {
             CurrentAimDirection = aim;
             SnapToCoord();
+            ShowLiveAim();
             Debug.Log($"{name} is now aiming {CurrentAimDirection}");
         }
         public void BeginMovePhase()
