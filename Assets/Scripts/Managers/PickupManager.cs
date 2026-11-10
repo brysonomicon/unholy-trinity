@@ -39,13 +39,14 @@ public class PickupManager : MonoBehaviour
         }
     }
 
-    public void AdvanceTicks(int ticks) => Field.AdvanceTicks(ticks);
-
-    // public void CollectAlong(SlideResult slide, IPickupCollector collector) =>
-    //     Field.CollectAlong(slide, collector);
-
-    public void CollectAlong(IEnumerable<HexCoord> path, HexCoord end, IPickupCollector collector) =>
-        Field.CollectAlong(path, end, collector);
+    // shows each visual only while its pickup is available
+    public void RefreshVisuals()
+    {
+        foreach (var (coord, visual) in _visuals)
+        {
+            visual.SetActive(Field.IsAvailable(coord));
+        }
+    }
 
     private void SpawnVisuals()
     {
