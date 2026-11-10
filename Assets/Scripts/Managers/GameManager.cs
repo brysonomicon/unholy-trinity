@@ -236,7 +236,7 @@ public class GameManager : MonoBehaviour
         
         _rockets.ForEach(rocket =>
         {
-            var rocketMover = new MoveData(AdvanceRocket(rocket));
+            var rocketMover = new MoveData(AdvanceRocket(rocket.shooter, rocket.rocket));
             movingObjects.Add(rocketMover);
         });
 
@@ -412,11 +412,6 @@ public class GameManager : MonoBehaviour
     private float GetFalloff(HexCoord coord, List<AimTile> aimTiles)
     {
         return aimTiles.FirstOrDefault(aimTile => aimTile.Coord == coord).Falloff;
-    }
-
-    private Player GetOpponent(Player shooter)
-    {
-        return _players.First(player => player != shooter);
     }
 
     #endregion
