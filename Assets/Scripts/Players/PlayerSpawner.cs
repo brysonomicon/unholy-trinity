@@ -8,21 +8,21 @@ namespace UnholyTrinity.Players
     [DefaultExecutionOrder(-50)]
     public class PlayerSpawner : MonoBehaviour
     {
-        [SerializeField] private GameManager gameManager;
         [SerializeField] private MapManager mapManager;
         [SerializeField] private Player playerPrefab;
         [SerializeField] private HexCoord[] spawnCoords;
 
         private void Start()
         {
-            gameManager.ResetGame();
+            GameManager manager = GameManager.Instance;
+            manager.ResetGame();
             
             for (int i = 0; i < spawnCoords.Length; i++)
             {
                 Player spawnedPlayer = Instantiate(playerPrefab);
                 spawnedPlayer.name = $"Player {i + 1}";
                 spawnedPlayer.Initialize(mapManager, spawnCoords[i]);
-                gameManager.RegisterPlayer(spawnedPlayer);
+                manager.RegisterPlayer(spawnedPlayer);
             }
         }
     }

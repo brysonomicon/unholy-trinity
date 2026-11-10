@@ -15,6 +15,11 @@ namespace UnholyTrinity.Weapons
         [field: SerializeField] public int PickupAmmo { get; private set; } = 5;
         [field: SerializeField][Min(1)] public int TickCost { get; private set; } = 1;
         [field: SerializeField][Min(0)] public int Cooldown { get; private set; }
+        
+        // rocket launcher needs to target a specific tile so it will override this
+        public virtual bool RequiresTarget => false;
+        // LG overrides this so its damage resolves after the move phase
+        public virtual bool IsContinuous => false;
 
         [Header("Aim Cone")]
         [SerializeField] private float[] tierMaxAngles = { 1f, 20f, 30f };

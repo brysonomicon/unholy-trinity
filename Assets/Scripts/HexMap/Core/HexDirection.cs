@@ -33,6 +33,8 @@ namespace UnholyTrinity.Hex
         static readonly string[] PointyNames = { "E", "NE", "NW", "W", "SW", "SE" };
         static readonly string[] FlatNames = { "SE", "NE", "N", "NW", "SW", "S" };
 
+        public static HexCoord[] GetOffsets(this HexDirection _) => Offsets;
+        
         public static HexCoord ToOffset(this HexDirection direction) => Offsets[(int)direction];
 
         public static HexDirection Opposite(this HexDirection direction) => direction.Rotate(3);
@@ -45,5 +47,11 @@ namespace UnholyTrinity.Hex
             orientation == HexOrientation.PointyTop ? PointyNames[(int)direction] : FlatNames[(int)direction];
 
         internal static int Mod(int value) => ((value % Count) + Count) % Count;
+        
+        public static HexDirection Plus(this HexDirection lhs, HexDirection rhs)
+        {
+            int total = (int)lhs + (int)rhs;
+            return (HexDirection)(total % Count);
+        }
     }
 }

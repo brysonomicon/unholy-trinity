@@ -40,6 +40,76 @@ namespace UnholyTrinity.Hex
             return (Math.Abs(d.Q) + Math.Abs(d.R) + Math.Abs(d.S)) / 2;
         }
 
+        public HexDirection DirectionTo(HexCoord destination)
+        {
+            return DirectionTo(this, destination);
+        }
+
+        public static HexDirection DirectionTo(HexCoord start, HexCoord dest)
+        {
+            HexCoord delta = dest - start;
+            return delta.Q switch
+            {
+                > 0 when delta.R == 0 => HexDirection.D0,
+                > 0 when delta.R < 0 => HexDirection.D1,
+                0 when delta.R < 0 => HexDirection.D2,
+                < 0 when delta.R == 0 => HexDirection.D3,
+                < 0 when delta.R > 0 => HexDirection.D4,
+                0 when delta.R > 0 => HexDirection.D5,
+                _ => throw new ArithmeticException(
+                    $"The hex math didn't work out :C {delta}")
+            };
+        }
+
+        public HexCoord Normalize()
+        {
+            if (this == HexCoord.Zero)
+            {
+                return this;
+            }
+
+            var mag =
+                Math.Sqrt(this.Q * this.Q + this.R * this.R + this.S * this.S);
+
+            HexCoord norm = CubeRound(this.Q / mag, this.R / mag, this.S / mag);
+            return norm;
+        }
+
+        public HexDirection ToDirection()
+        {
+            HexCoord norm = Normalize();
+            var offsets = HexDirection.D0.GetOffsets();
+
+            for (int i = 0; i < offsets.Length; i++)
+            {
+                if (offsets[i] == norm)
+                {
+                    return (HexDirection)i;
+                }
+            }
+
+            throw new ArgumentException(
+                $"{this} normalization failed. Unable to convert to direction.");
+        }
+
+        public HexCoord AbsClamp(HexCoord other)
+        {
+            return new HexCoord(Math.Clamp(Q, -other.Q, other.Q),
+                Math.Clamp(R, -other.R, other.R));
+        }
+
+        public HexCoord AbsClamp(int val)
+        {
+            return new HexCoord(Math.Clamp(Q, -val, val),
+                Math.Clamp(R, -val, val));
+        }
+
+        public HexCoord Clamp(int min, int max)
+        {
+            return new HexCoord(Math.Clamp(Q, min, max),
+                Math.Clamp(R, min, max));
+        }
+
         /// <summary>
         /// Rotates this coordinate around <paramref name="center"/>
         /// by 60 degree steps (positive is counter-clockwise).
@@ -152,6 +222,9 @@ namespace UnholyTrinity.Hex
         public static HexCoord operator +(HexCoord a, HexCoord b) =>
             new HexCoord(a.Q + b.Q, a.R + b.R);
 
+        public static HexCoord operator +(HexCoord a, HexDirection b) =>
+            a + b.ToOffset();
+
         public static HexCoord operator -(HexCoord a, HexCoord b) =>
             new HexCoord(a.Q - b.Q, a.R - b.R);
 
@@ -169,6 +242,6 @@ namespace UnholyTrinity.Hex
             obj is HexCoord other && this == other;
 
         public override int GetHashCode() => (Q * 397) ^ R;
-        public override string ToString() => $"({Q}, {R})";
+        public override string ToString() => $"({Q}, {R}, {S})";
     }
 }

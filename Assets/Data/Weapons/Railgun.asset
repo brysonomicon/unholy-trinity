@@ -20,8 +20,8 @@ MonoBehaviour:
   <Cooldown>k__BackingField: 2
   tierMaxAngles:
   - 1
-  - 20
-  - 30
+  - 7
+  - 10
   tierFalloff:
   - 1
   - 0.66

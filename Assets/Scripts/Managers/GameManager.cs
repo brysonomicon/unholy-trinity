@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using UnholyTrinity.Players;
 using UnholyTrinity.Weapons;
+using UnholyTrinity.Hex;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "NewGameManager",
@@ -30,6 +31,13 @@ public class GameManager : ScriptableObject
 
     // scene object, so it registers itself instead of being serialized on this asset
     [CanBeNull] private PickupManager _pickupManager;
+
+    private readonly List<Rocket> _rockets = new();
+    private readonly List<(
+        Player shooter, 
+        WeaponData Data, 
+        AimDirection firedAim,
+        List<AimTile> firedTiles)> _beams = new();
 
     public int Round { get; private set; }
     // counts every tick of the game and only resets with ResetGame.
@@ -93,6 +101,8 @@ public class GameManager : ScriptableObject
         Round = 1;
         CurrentTick = 0;
         _players.Clear();
+        _rockets.Clear();
+        _beams.Clear();
         turnManager.ResetPhases();
     }
 
@@ -137,10 +147,13 @@ public class GameManager : ScriptableObject
     {
         for (int i = 0; i < turnManager.TicksPerTurn; i ++)
         {
+            await Task.Delay((int)(tickDuration * 1000));
             CurrentTick++;
             ResolveTick(i);
-            await Task.Delay((int)(tickDuration * 1000));
         }
+
+        await Task.Delay((int)(tickDuration * 1000));
+
         //! [CB] Fun fact, there's a race condition if you don't wait long enough
         Round++;
         Debug.Log($"New round: {Round}");
@@ -157,19 +170,45 @@ public class GameManager : ScriptableObject
         // shot -> aim -> move -> LG damage so that LG can be applied according to 
         // opponent move path relative to shooter aim cone
 
-        // shoot phase
+        #region shoot phase
+
         foreach (Player player in _players)
         {
             player.GetPlannedAction(tickIndex)?.Shoot?.Invoke();
         }
 
-        // aim phase
+        #endregion
+
+        #region aim phase
+
         foreach (Player player in _players)
         {
             player.GetPlannedAction(tickIndex)?.Aim?.Invoke();
         }
 
-        // move phase
+        #endregion
+
+        #region move phase
+
+        foreach (Player player in _players)
+        {
+            player.BeginMovePhase();
+
+            // let the game manager handle progressing the iterator of ResolveMove instead 
+            // PlanMove so planning doesn't change the real state
+            IEnumerator<(int, HexCoord)> move = player.GetPlannedAction(tickIndex)?.Move?.Invoke();
+            while (move != null && move.MoveNext())
+            {}
+        }
+
+        AdvanceRockets();
+
+        // LG needs both players end position, so it resolves after everyone moves
+        ResolveBeams();
+
+        #endregion
+
+        // absorb ghosts after each turn
         // respawns tick first so a pickup that comes back this tick can be collected
         // this tick, even by a player who doesn't move. so RespawnTicks = 1 means a pickup
         // collected on tick N is available again on tick N + 1
@@ -181,8 +220,7 @@ public class GameManager : ScriptableObject
 
         foreach (Player player in _players)
         {
-            player.BeginMovePhase();
-            player.GetPlannedAction(tickIndex)?.Move?.Invoke();
+            player.PickUpGhost();
         }
 
         if (hasPickups)
@@ -198,30 +236,132 @@ public class GameManager : ScriptableObject
 
     #region Combat
 
+    // damages every player standing on a hit tile. cones never include the shooter's tile
+    // so players can't hit themselves with rail but can hit themselves with rocket splash
     public void ResolveShot(Player shooter, WeaponData weaponData, List<AimTile> aimTiles)
     {
-        Player opponent = GetOpponent(shooter);
-
-        // shoot the opponent if they are in the aim cone of the shooter
         foreach (AimTile at in aimTiles)
         {
-            if (at.Coord != opponent.Coord)
+            foreach (Player player in _players)
             {
-                continue;
-            }
+                if (at.Coord != player.Coord)
+                {
+                    continue;
+                }
 
-            int damageAmount = weaponData.GetDamage(at);
+                int damageAmount = weaponData.GetDamage(at);
 
-            if (damageAmount > 0)
-            {
-                Debug.Log($"{shooter.name} hit {opponent.name} with {weaponData.DisplayName} for {damageAmount} damage");
-                opponent.TakeDamage(damageAmount);
-            }
-            else 
-            {
-                Debug.Log($"{shooter.name} missed");
+                if (damageAmount > 0)
+                {
+                    Debug.Log($"{shooter.name} hit {player.name} with {weaponData.DisplayName} for {damageAmount} damage");
+                    player.TakeDamage(damageAmount);
+                }
+                else
+                {
+                    Debug.Log($"{shooter.name} missed");
+                }
             }
         }
+    }
+
+    public void LaunchRocket(Player shooter, RocketLauncherData rocketData, MapManager mapManager, HexCoord target)
+    {
+        Rocket rocket = Instantiate(rocketData.RocketPrefab);
+        rocket.Launch(shooter, rocketData, mapManager, shooter.Coord, target);
+        _rockets.Add(rocket);
+        Debug.Log($"{shooter.name} launched a rocket at {target}");
+    }
+
+    // moves all rockets on the map
+    private void AdvanceRockets()
+    {
+        foreach (Rocket rocket in _rockets.ToList())
+        {
+            AdvanceRocket(rocket);
+        }
+    }
+
+    // advances a single rocket forward by the speed defined in the weapon data
+    private void AdvanceRocket(Rocket rocket)
+    {
+        bool shouldDetonate = false;
+
+        for (int step = 0; step < rocket.Data.Speed && !shouldDetonate; step++)
+        {
+            rocket.StepForward();
+            shouldDetonate = rocket.HasArrived || IsDirectHit(rocket);
+        }
+
+        if (shouldDetonate)
+        {
+            DetonateRocket(rocket);
+        }
+    }
+
+    private bool IsDirectHit(Rocket rocket)
+    {
+        return _players.Any(player => 
+            player != rocket.Owner &&
+            player.Coord == rocket.Coord
+        );
+    }
+
+    private void DetonateRocket(Rocket rocket)
+    {
+        Debug.Log($"{rocket.Owner.name}'s rocket exploded at {rocket.Coord}");
+        ResolveShot(rocket.Owner, rocket.Data, rocket.GetBlastTiles());
+        _rockets.Remove(rocket);
+        Destroy(rocket.gameObject);
+    }
+
+    public void StartBeam(Player shooter, WeaponData weaponData, AimDirection firedAim, List<AimTile> firedTiles)
+    {
+        _beams.Add((shooter, weaponData, firedAim, firedTiles));
+    }
+
+    // LG deals damage based on "tracking" so it needs opponent path before it's calculated.
+    // shoot: the beam is created from the shooters current tile and aim
+    // aim: a rotation only affects later ticks, so the beam keeps firedAim for the whole tick
+    // move: both players move and the beam moves with the shooter
+    // damage is then based on the average of two samples:
+    // start: target's start tile in the cone as fired, just like the railgun
+    // end: target's end tile in firedAim's cone from the shooter's end tile
+    // this way moving in lockstep deals full damage as expected.
+    // TODO with momentum: the two samples work for one hex per tick, with more
+    // tiles crossed mid-tick would get skipped and players go different distances, so
+    // this will need to sample both paths by a fraction of the tick
+    private void ResolveBeams()
+    {
+        foreach ((Player shooter, WeaponData weaponData, AimDirection firedAim, List<AimTile> firedTiles) in _beams)
+        {
+            List<AimTile> endTiles = shooter.GetBeamTilesFromCurrentCoord(weaponData, firedAim);
+
+            foreach (Player target in _players.Where(player => player != shooter))
+            {
+                float startFalloff = GetFalloff(target.MoveStartCoord, firedTiles);
+                float endFalloff = GetFalloff(target.Coord, endTiles);
+                float averageFalloff = (startFalloff + endFalloff) / 2f;
+                int damageAmount = weaponData.GetDamage(new AimTile(target.Coord, averageFalloff));
+
+                if (damageAmount > 0)
+                {
+                    Debug.Log($"{shooter.name} hit {target.name} with {weaponData.DisplayName} for {damageAmount} damage");
+                    target.TakeDamage(damageAmount);
+                }
+                else
+                {
+                    Debug.Log($"{shooter.name} missed");
+                }
+            }
+        }
+
+        _beams.Clear();
+    }
+
+    // tiles outside the cone count as 0, FirstOrDefault gives a default AimTile with 0 falloff
+    private float GetFalloff(HexCoord coord, List<AimTile> aimTiles)
+    {
+        return aimTiles.FirstOrDefault(aimTile => aimTile.Coord == coord).Falloff;
     }
 
     private Player GetOpponent(Player shooter)

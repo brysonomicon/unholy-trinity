@@ -12,6 +12,7 @@ namespace UnholyTrinity.Weapons
         public static HexCoord ToOffset(this AimDirection aim)
         {
             int index = (int)aim;
+
             HexDirection hexDirection = (HexDirection)(index / 2);
 
             if (index % 2 == 0)
@@ -20,6 +21,17 @@ namespace UnholyTrinity.Weapons
             }
 
             return hexDirection.ToOffset() + hexDirection.Rotate(1).ToOffset();
+        }
+
+
+        public static HexDirection ToHexDirection(this AimDirection aim)
+        {
+            int index = (int)aim;
+            HexDirection hexDirection = (HexDirection)(index / 2);
+
+            return index % 2 == 0
+                ? hexDirection
+                : hexDirection.Plus(hexDirection.Rotate(1));
         }
     }
 }

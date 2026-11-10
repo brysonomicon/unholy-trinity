@@ -20,10 +20,16 @@ MonoBehaviour:
   <Cooldown>k__BackingField: 1
   tierMaxAngles:
   - 1
+  - 10
   - 20
-  - 30
   tierFalloff:
   - 1
   - 0.66
   - 0.33
   damage: 100
+  <RocketPrefab>k__BackingField: {fileID: 5528225168912305416, guid: e2df89657d20cef43b6c051251884f66, type: 3}
+  <Speed>k__BackingField: 2
+  blastFalloff:
+  - 1
+  - 0.66
+  - 0.33
