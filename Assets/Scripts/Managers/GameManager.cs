@@ -1,32 +1,56 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using Helpers;
 using JetBrains.Annotations;
+using Managers;
+using NaughtyAttributes;
+using Nrjwolf.Tools.AttachAttributes;
 using UnholyTrinity.Players;
 using UnholyTrinity.Weapons;
 using UnholyTrinity.Hex;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "NewGameManager",
-    menuName = "Managers/GameManager")]
-public class GameManager : ScriptableObject
+[RequireComponent(typeof(MovementManager))]
+public class GameManager : MonoBehaviour
 {
     #region Fields
 
-    public static GameManager Instance {get; private set;}
+    private static GameManager _instance;
+    public static GameManager Instance
+    {
+        get
+        {
+            if (_instance) return _instance;
+            GameManager gm = FindFirstObjectByType<GameManager>();
+            _instance = !gm ? new GameObject().AddComponent<GameManager>() : gm;
+            return _instance;
+        }
+        private set => _instance = value;
+    }
+
     public static event Action<int> NewRoundEvent;
     public static event Action<Player> NewTurnEvent;
     
-    [SerializeField]
-    private int maxPlayers = 2;
+    [SerializeField] private int maxPlayers = 2;
+
+    [SerializeField][GetComponent] private MovementManager moveManager;
     
-    [SerializeField]
-    private TurnManager turnManager;
+    [SerializeField] private TurnManager turnManager = TurnManager.Instance;
 
     // second between ticks so resolution can be watched
-    [SerializeField][Min(0.1f)] private float tickDuration = 1f;
-        
+    private float TickDuration => turnManager.TickDuration;
+    [MinValue(0.1f)]
+    [MaxValue(nameof(TickDuration))]
+    private float shootDuration;
+
+    [MinValue(0.1f)]
+    [MaxValue(nameof(TickDuration))]
+    private float aimDuration;
+
+    [SerializeField] [Min(0.1f)] private float turnStartDelay = 0.1f;
+
     private readonly List<Player> _players = new();
 
     // in registration order, so index 0 is player 1
@@ -38,12 +62,13 @@ public class GameManager : ScriptableObject
 
     private readonly List<(Player shooter, Rocket rocket)> _rockets = new();
     private readonly List<(
-        Player shooter, 
-        WeaponData Data, 
+        Player shooter,
+        WeaponData Data,
         AimDirection firedAim,
         List<AimTile> firedTiles)> _beams = new();
 
     public int Round { get; private set; }
+
     // counts every tick of the game and only resets with ResetGame.
     // cooldowns are stored as the tick they expire on
     public int CurrentTick { get; private set; }
@@ -75,7 +100,7 @@ public class GameManager : ScriptableObject
     #endregion
 
     #region Unity Lifecycle
-
+    
     private void OnEnable()
     {
         if (Instance == null)
@@ -86,13 +111,14 @@ public class GameManager : ScriptableObject
         Round = 1;
         TurnManager.NewPhaseEvent += OnPhaseChanged;
     }
-    
+
     private void OnDestroy()
     {
         if (Instance == this)
         {
             Instance = null;
         }
+
         TurnManager.NewPhaseEvent -= OnPhaseChanged;
     }
 
@@ -112,7 +138,7 @@ public class GameManager : ScriptableObject
 
     public void RegisterPlayer(Player player)
     {
-        if(_players.Contains(player))
+        if (_players.Contains(player))
         {
             throw new ArgumentException($"{player.gameObject.name} is already registered.");
         }
@@ -147,16 +173,15 @@ public class GameManager : ScriptableObject
 
     #region Resolution
 
-    private async void ResolutionRoutine()
+    private IEnumerator ResolutionRoutine()
     {
-        for (int i = 0; i < turnManager.TicksPerTurn; i ++)
+        for (int i = 0; i < turnManager.TicksPerTurn; i++)
         {
-            await Task.Delay((int)(tickDuration * 1000));
             CurrentTick++;
-            ResolveTick(i);
+            yield return ResolveTick(i);
         }
 
-        await Task.Delay((int)(tickDuration * 1000));
+        yield return (turnStartDelay);
 
         //! [CB] Fun fact, there's a race condition if you don't wait long enough
         Round++;
@@ -168,7 +193,7 @@ public class GameManager : ScriptableObject
     // a phase runs for every player before the next phase starts. both players
     // actions in the same phase happen at the same time. tickIndex is the slot
     // within this turn's lanes
-    private void ResolveTick(int tickIndex)
+    private IEnumerator ResolveTick(int tickIndex)
     {
         Debug.Log($"Resolving tick {CurrentTick}");
         // shot -> aim -> move -> LG damage so that LG can be applied according to 
@@ -181,6 +206,8 @@ public class GameManager : ScriptableObject
             player.GetPlannedAction(tickIndex)?.Shoot?.Invoke();
         }
 
+        yield return new WaitForSeconds(shootDuration);
+
         #endregion
 
         #region aim phase
@@ -190,45 +217,36 @@ public class GameManager : ScriptableObject
             player.GetPlannedAction(tickIndex)?.Aim?.Invoke();
         }
 
+        yield return new WaitForSeconds(aimDuration);
+
         #endregion
 
         #region move phase
 
+        HashSet<MoveData> movingObjects = new();
+        
+        // [CB] TODO: Make a common interface for movement.
         foreach (Player player in _players)
         {
             player.BeginMovePhase();
-
-            // let the game manager handle progressing the iterator of ResolveMove instead 
-            // PlanMove so planning doesn't change the real state
-            IEnumerator<(int, HexCoord)> move = player.GetPlannedAction(tickIndex)?.Move?.Invoke();
-
-            // the first yield is where the player starts, every yield after it is a hex they
-            // just entered. a lethal tile ends the move where the player dies
-            bool isStart = true;
-            while (move != null && move.MoveNext())
-            {
-                if (isStart)
-                {
-                    isStart = false;
-                    continue;
-                }
-
-                player.ApplyHealthTile(HealthTrigger.OnEnter);
-
-                if (player.IsDead)
-                {
-                    break;
-                }
-            }
+            IEnumerator<(int, HexCoord)> playerMove =
+                player.GetPlannedAction(tickIndex)?.Move.Invoke();
+            if (playerMove == null) continue;
+            movingObjects.Add(new MoveData(playerMove));
         }
-
-        // OnStop health tiles fire where each player ends up, including players who didn't move
-        foreach (Player player in _players)
+        
+        _rockets.ForEach(rocket =>
         {
-            player.ApplyHealthTile(HealthTrigger.OnStop);
+            var rocketMover = new MoveData(AdvanceRocket(rocket.shooter, rocket.rocket));
+            movingObjects.Add(rocketMover);
+        });
+
+        if (movingObjects.Count > 0)
+        {
+            yield return moveManager.HandleTick(movingObjects);
         }
 
-        AdvanceRockets();
+        // AdvanceRockets();
 
         // LG needs both players end position, so it resolves after everyone moves
         ResolveBeams();
@@ -265,7 +283,8 @@ public class GameManager : ScriptableObject
 
     // damages every player standing on a hit tile. cones never include the shooter's tile
     // so players can't hit themselves with rail but can hit themselves with rocket splash
-    public void ResolveShot(Player shooter, WeaponData weaponData, List<AimTile> aimTiles)
+    public void ResolveShot(Player shooter, WeaponData weaponData,
+        List<AimTile> aimTiles)
     {
         foreach (AimTile at in aimTiles)
         {
@@ -291,7 +310,8 @@ public class GameManager : ScriptableObject
         }
     }
 
-    public void LaunchRocket(Player shooter, RocketLauncherData rocketData, MapManager mapManager, HexCoord target)
+    public void LaunchRocket(Player shooter, RocketLauncherData rocketData,
+        MapManager mapManager, HexCoord target)
     {
         Rocket rocket = Instantiate(rocketData.RocketPrefab);
         rocket.Launch(rocketData, mapManager, shooter.Coord, target);
@@ -300,23 +320,26 @@ public class GameManager : ScriptableObject
     }
 
     // moves all rockets on the map
-    private void AdvanceRockets()
-    {
-        foreach ((Player shooter, Rocket rocket) in _rockets.ToList())
-        {
-            AdvanceRocket(shooter, rocket);
-        }
-    }
+    // private void AdvanceRockets()
+    // {
+    //     foreach ((Player shooter, Rocket rocket) in _rockets.ToList())
+    //     {
+    //         AdvanceRocket(shooter, rocket);
+    //     }
+    // }
 
     // advances a single rocket forward by the speed defined in the weapon data
-    private void AdvanceRocket(Player shooter, Rocket rocket)
+    private IEnumerator<(int, HexCoord)> AdvanceRocket(Player shooter, Rocket rocket)
     {
         bool shouldDetonate = false;
+
+        yield return (rocket.Data.Speed, rocket.Coord);
 
         for (int step = 0; step < rocket.Data.Speed && !shouldDetonate; step++)
         {
             rocket.StepForward();
             shouldDetonate = rocket.HasArrived || IsDirectHit(shooter, rocket);
+            yield return (shouldDetonate ? 0 : rocket.Data.Speed, rocket.Coord);
         }
 
         if (shouldDetonate)
@@ -341,7 +364,8 @@ public class GameManager : ScriptableObject
         Destroy(rocket.gameObject);
     }
 
-    public void StartBeam(Player shooter, WeaponData weaponData, AimDirection firedAim, List<AimTile> firedTiles)
+    public void StartBeam(Player shooter, WeaponData weaponData,
+        AimDirection firedAim, List<AimTile> firedTiles)
     {
         _beams.Add((shooter, weaponData, firedAim, firedTiles));
     }
@@ -391,11 +415,6 @@ public class GameManager : ScriptableObject
         return aimTiles.FirstOrDefault(aimTile => aimTile.Coord == coord).Falloff;
     }
 
-    private Player GetOpponent(Player shooter)
-    {
-        return _players.First(player => player != shooter);
-    }
-
     #endregion
 
     #region Event Handlers
@@ -405,7 +424,7 @@ public class GameManager : ScriptableObject
         if (newPhase == TurnPhase.Resolution)
         {
             // [CB] We can't do Coroutines within a SO, but this is a useful marker.
-            ResolutionRoutine();
+            StartCoroutine(ResolutionRoutine());
         }
         else
         {
@@ -413,7 +432,9 @@ public class GameManager : ScriptableObject
             // [CB] We could cache the above Task and check if it's done
             // If it isn't we create another Task and check in that thread
             // until it's done and *then* invoke this.
-            NewTurnEvent?.Invoke(newPhase == TurnPhase.PlayerOne ? _players.First() : _players.Last());
+            NewTurnEvent?.Invoke(newPhase == TurnPhase.PlayerOne
+                ? _players.First()
+                : _players.Last());
         }
     }
 
