@@ -117,6 +117,10 @@ namespace UnholyTrinity.Players
             private readonly int absorbPercent;
             private readonly bool roundAbsorbUp;
 
+            // ammo per held weapon, so weapon and ammo pickups in the plan follow the same rules as
+            // the player's. planned shots don't spend it yet
+            private readonly Dictionary<WeaponData, int> ammo = new();
+
             public int Health { get; private set; }
             public int Armour { get; private set; }
             public bool IsDead => Health <= 0;
@@ -129,6 +133,11 @@ namespace UnholyTrinity.Players
                 roundAbsorbUp = player.roundAbsorbUp;
                 Health = player.CurrentHealth;
                 Armour = player.CurrentArmour;
+
+                foreach (Weapon weapon in player.weapons)
+                {
+                    ammo[weapon.Data] = weapon.Ammo;
+                }
             }
 
             public void TakeDamage(int damageAmount)
@@ -167,9 +176,42 @@ namespace UnholyTrinity.Players
 
             public void Kill() => Health = 0;
 
-            // weapons are always picked up while alive, the same as Player.TryGiveWeapon, so the
-            // pickup counts as taken. using them later in the plan isn't forecast yet
-            public bool TryGiveWeapon(WeaponData data) => !IsDead;
+            // same as Player.TryGiveWeapon: a new weapon comes with its pickup ammo, a held one gets
+            // topped up, and it's taken even when full. using it later in the plan isn't forecast yet
+            public bool TryGiveWeapon(WeaponData data)
+            {
+                if (IsDead)
+                {
+                    return false;
+                }
+
+                ammo[data] = ammo.TryGetValue(data, out int held)
+                    ? Mathf.Min(held + data.PickupAmmo, data.MaxAmmo)
+                    : data.PickupAmmo;
+                return true;
+            }
+
+            // same rules as Player.TryGiveAmmo
+            public AmmoGiven TryGiveAmmo(WeaponData data, int amount)
+            {
+                if (IsDead || amount <= 0)
+                {
+                    return AmmoGiven.Refused;
+                }
+
+                if (!ammo.TryGetValue(data, out int held))
+                {
+                    return AmmoGiven.WeaponNotHeld;
+                }
+
+                if (held >= data.MaxAmmo)
+                {
+                    return AmmoGiven.AmmoFull;
+                }
+
+                ammo[data] = Mathf.Min(held + amount, data.MaxAmmo);
+                return AmmoGiven.Added;
+            }
         }
     }
 }
