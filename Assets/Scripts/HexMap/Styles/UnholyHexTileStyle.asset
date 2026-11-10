@@ -20,6 +20,13 @@ MonoBehaviour:
     SpikedPrefab: {fileID: 0}
     HarmPrefab: {fileID: 0}
     KillPrefab: {fileID: 0}
+  - Type: 5
+    Prefab: {fileID: 0}
+    FrictionPrefab: {fileID: 0}
+    BouncyPrefab: {fileID: 0}
+    SpikedPrefab: {fileID: 0}
+    HarmPrefab: {fileID: 0}
+    KillPrefab: {fileID: 3383222381437710300, guid: 656ba03daf9d09049b813a88bbea21d2, type: 3}
   TileMaterial: {fileID: 0}
   TileScale: 1
   FloorHeight: 0.1

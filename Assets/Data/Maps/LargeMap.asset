@@ -1534,7 +1534,7 @@ MonoBehaviour:
   - Coord:
       <Q>k__BackingField: -12
       <R>k__BackingField: 12
-    Type: 0
+    Type: 5
     Boost:
       Strength: 0
       Mode: 0
@@ -1553,7 +1553,7 @@ MonoBehaviour:
     Health:
       Amount: 0
       Trigger: 0
-      Lethal: 0
+      Lethal: 1
   - Coord:
       <Q>k__BackingField: -12
       <R>k__BackingField: 13
@@ -1994,7 +1994,7 @@ MonoBehaviour:
   - Coord:
       <Q>k__BackingField: -11
       <R>k__BackingField: 12
-    Type: 0
+    Type: 5
     Boost:
       Strength: 0
       Mode: 0
@@ -2013,7 +2013,7 @@ MonoBehaviour:
     Health:
       Amount: 0
       Trigger: 0
-      Lethal: 0
+      Lethal: 1
   - Coord:
       <Q>k__BackingField: -11
       <R>k__BackingField: 13
@@ -2477,7 +2477,7 @@ MonoBehaviour:
   - Coord:
       <Q>k__BackingField: -10
       <R>k__BackingField: 12
-    Type: 0
+    Type: 5
     Boost:
       Strength: 0
       Mode: 0
@@ -2496,7 +2496,7 @@ MonoBehaviour:
     Health:
       Amount: 0
       Trigger: 0
-      Lethal: 0
+      Lethal: 1
   - Coord:
       <Q>k__BackingField: -10
       <R>k__BackingField: 13
@@ -2983,7 +2983,7 @@ MonoBehaviour:
   - Coord:
       <Q>k__BackingField: -9
       <R>k__BackingField: 12
-    Type: 0
+    Type: 5
     Boost:
       Strength: 0
       Mode: 0
@@ -3002,7 +3002,7 @@ MonoBehaviour:
     Health:
       Amount: 0
       Trigger: 0
-      Lethal: 0
+      Lethal: 1
   - Coord:
       <Q>k__BackingField: -9
       <R>k__BackingField: 13
@@ -3512,7 +3512,7 @@ MonoBehaviour:
   - Coord:
       <Q>k__BackingField: -8
       <R>k__BackingField: 12
-    Type: 0
+    Type: 5
     Boost:
       Strength: 0
       Mode: 0
@@ -3531,7 +3531,7 @@ MonoBehaviour:
     Health:
       Amount: 0
       Trigger: 0
-      Lethal: 0
+      Lethal: 1
   - Coord:
       <Q>k__BackingField: -8
       <R>k__BackingField: 13
@@ -4064,7 +4064,7 @@ MonoBehaviour:
   - Coord:
       <Q>k__BackingField: -7
       <R>k__BackingField: 12
-    Type: 0
+    Type: 5
     Boost:
       Strength: 0
       Mode: 0
@@ -4083,7 +4083,7 @@ MonoBehaviour:
     Health:
       Amount: 0
       Trigger: 0
-      Lethal: 0
+      Lethal: 1
   - Coord:
       <Q>k__BackingField: -7
       <R>k__BackingField: 13
@@ -4639,7 +4639,7 @@ MonoBehaviour:
   - Coord:
       <Q>k__BackingField: -6
       <R>k__BackingField: 12
-    Type: 0
+    Type: 5
     Boost:
       Strength: 0
       Mode: 0
@@ -4658,7 +4658,7 @@ MonoBehaviour:
     Health:
       Amount: 0
       Trigger: 0
-      Lethal: 0
+      Lethal: 1
   - Coord:
       <Q>k__BackingField: -6
       <R>k__BackingField: 13
@@ -5237,7 +5237,7 @@ MonoBehaviour:
   - Coord:
       <Q>k__BackingField: -5
       <R>k__BackingField: 12
-    Type: 0
+    Type: 5
     Boost:
       Strength: 0
       Mode: 0
@@ -5256,7 +5256,7 @@ MonoBehaviour:
     Health:
       Amount: 0
       Trigger: 0
-      Lethal: 0
+      Lethal: 1
   - Coord:
       <Q>k__BackingField: -5
       <R>k__BackingField: 13
@@ -5858,7 +5858,7 @@ MonoBehaviour:
   - Coord:
       <Q>k__BackingField: -4
       <R>k__BackingField: 12
-    Type: 0
+    Type: 5
     Boost:
       Strength: 0
       Mode: 0
@@ -5877,7 +5877,7 @@ MonoBehaviour:
     Health:
       Amount: 0
       Trigger: 0
-      Lethal: 0
+      Lethal: 1
   - Coord:
       <Q>k__BackingField: -4
       <R>k__BackingField: 13
@@ -6502,7 +6502,7 @@ MonoBehaviour:
   - Coord:
       <Q>k__BackingField: -3
       <R>k__BackingField: 12
-    Type: 0
+    Type: 5
     Boost:
       Strength: 0
       Mode: 0
@@ -6521,7 +6521,7 @@ MonoBehaviour:
     Health:
       Amount: 0
       Trigger: 0
-      Lethal: 0
+      Lethal: 1
   - Coord:
       <Q>k__BackingField: -3
       <R>k__BackingField: 13
@@ -7169,7 +7169,7 @@ MonoBehaviour:
   - Coord:
       <Q>k__BackingField: -2
       <R>k__BackingField: 12
-    Type: 0
+    Type: 5
     Boost:
       Strength: 0
       Mode: 0
@@ -7188,7 +7188,7 @@ MonoBehaviour:
     Health:
       Amount: 0
       Trigger: 0
-      Lethal: 0
+      Lethal: 1
   - Coord:
       <Q>k__BackingField: -2
       <R>k__BackingField: 13
@@ -7859,7 +7859,7 @@ MonoBehaviour:
   - Coord:
       <Q>k__BackingField: -1
       <R>k__BackingField: 12
-    Type: 0
+    Type: 5
     Boost:
       Strength: 0
       Mode: 0
@@ -7878,7 +7878,7 @@ MonoBehaviour:
     Health:
       Amount: 0
       Trigger: 0
-      Lethal: 0
+      Lethal: 1
   - Coord:
       <Q>k__BackingField: -1
       <R>k__BackingField: 13
@@ -8572,7 +8572,7 @@ MonoBehaviour:
   - Coord:
       <Q>k__BackingField: 0
       <R>k__BackingField: 12
-    Type: 0
+    Type: 5
     Boost:
       Strength: 0
       Mode: 0
@@ -8591,7 +8591,7 @@ MonoBehaviour:
     Health:
       Amount: 0
       Trigger: 0
-      Lethal: 0
+      Lethal: 1
   - Coord:
       <Q>k__BackingField: 0
       <R>k__BackingField: 13
