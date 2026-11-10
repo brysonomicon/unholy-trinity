@@ -8,7 +8,7 @@ using UnityEngine.Serialization;
 
 namespace UnholyTrinity.Players
 {
-    public partial class Player : MonoBehaviour, IHealable
+    public partial class Player : MonoBehaviour, IHealable, IWeaponCollector
     {
         #region Fields
 
@@ -679,6 +679,33 @@ namespace UnholyTrinity.Players
             {
                 TakeDamage(-health.Amount);
             }
+        }
+
+        #endregion
+
+        #region Weapon Pickups
+
+        public bool TryGiveWeapon(WeaponData data)
+        {
+            if (IsDead)
+            {
+                return false;
+            }
+
+            Weapon heldWeapon = weapons.Find(weapon => weapon.Data == data);
+
+            if (heldWeapon == null)
+            {
+                weapons.Add(new Weapon(data));
+                Debug.Log($"{name} picked up {data.DisplayName}");
+                return true;
+            }
+
+            // weapons are still picked up if ammo is full, weapon.cs clamps at full
+            // the idea is that a weapon can be "denied" for a time by triggering its respawn
+            heldWeapon.AddAmmo(data.PickupAmmo);
+            Debug.Log($"{name} picked up {data.DisplayName} ammo, now at {heldWeapon.Ammo}/{data.MaxAmmo}");
+            return true;
         }
 
         #endregion

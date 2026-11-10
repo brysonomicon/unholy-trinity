@@ -1,10 +1,9 @@
 using System.Collections.Generic;
 using UnholyTrinity.Hex;
-using UnholyTrinity.Weapons;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace UnholyTrinity.Players
+namespace UnholyTrinity.Weapons
 {
     public class AimPreview : MonoBehaviour
     {
