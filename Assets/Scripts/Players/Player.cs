@@ -8,7 +8,7 @@ using UnityEngine.Serialization;
 
 namespace UnholyTrinity.Players
 {
-    public partial class Player : MonoBehaviour, IHealable, IArmourable, IWeaponCollector
+    public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
     {
         #region Fields
 
@@ -256,6 +256,8 @@ namespace UnholyTrinity.Players
 
             aimPreview.Show(GetPlannedShotTiles(), mapManager.Layout);
             plannedBlastPreview.Show(GetPlannedBlastTiles(), mapManager.Layout);
+
+            UpdateForecast();
         }
 
         private void StopProjecting()
@@ -265,14 +267,17 @@ namespace UnholyTrinity.Players
             plannedBlastPreview.Hide();
             ClearSelectedTile();
             SnapToCoord();
+            ClearForecast();
         }
 
+        // resolution plays out for real from here, so the forecast and planned pickups are cleared
         private void RevealPlan()
         {
             aimPreview.Hide();
             plannedBlastPreview.Hide();
             ClearSelectedTile();
             SnapToCoord();
+            ClearForecast();
 
             List<Pose> ghostPoses = new();
 
@@ -639,7 +644,7 @@ namespace UnholyTrinity.Players
                 return;
             }
 
-            int absorbed = GetArmourAbsorbed(damageAmount);
+            int absorbed = GetArmourAbsorbed(damageAmount, CurrentArmour, armourAbsorbPercent, roundAbsorbUp);
             CurrentArmour -= absorbed;
             damageAmount -= absorbed;
 
@@ -684,17 +689,18 @@ namespace UnholyTrinity.Players
             return true;
         }
 
-        // whole-number math so results don't drift. never absorbs more armour than the player has
-        private int GetArmourAbsorbed(int damageAmount)
+        // whole-number math so results don't drift. never absorbs more armour than there is.
+        // static so the plan forecast absorbs damage exactly the same way
+        private static int GetArmourAbsorbed(int damageAmount, int armour, int absorbPercent, bool roundUp)
         {
-            if (CurrentArmour <= 0)
+            if (armour <= 0)
             {
                 return 0;
             }
 
-            int rounding = roundAbsorbUp ? 99 : 0;
-            int share = (damageAmount * armourAbsorbPercent + rounding) / 100;
-            return Mathf.Min(share, CurrentArmour);
+            int rounding = roundUp ? 99 : 0;
+            int share = (damageAmount * absorbPercent + rounding) / 100;
+            return Mathf.Min(share, armour);
         }
 
         // kills outright, e.g. lava or a fall into the void
@@ -715,10 +721,18 @@ namespace UnholyTrinity.Players
         // the move ends, including when the player didn't move
         public void ApplyHealthTile(HealthTrigger reached)
         {
-            if (IsDead ||
-                mapManager == null ||
-                mapManager.Map == null ||
-                !mapManager.Map.TryGetTile(Coord, out HexTile tile) ||
+            if (mapManager != null)
+            {
+                ApplyHealthTile(mapManager.Map, Coord, reached, this);
+            }
+        }
+
+        // the health tile rule itself. static so the plan forecast runs exactly the same rule
+        private static void ApplyHealthTile(HexMap map, HexCoord coord, HealthTrigger reached, IVitals target)
+        {
+            if (target.IsDead ||
+                map == null ||
+                !map.TryGetTile(coord, out HexTile tile) ||
                 tile.Type != TileType.Health ||
                 tile.Health.Trigger != reached)
             {
@@ -729,15 +743,15 @@ namespace UnholyTrinity.Players
 
             if (health.Lethal)
             {
-                Kill();
+                target.Kill();
             }
             else if (health.Amount > 0)
             {
-                TryHeal(health.Amount);
+                target.TryHeal(health.Amount);
             }
             else if (health.Amount < 0)
             {
-                TakeDamage(-health.Amount);
+                target.TakeDamage(-health.Amount);
             }
         }
 

@@ -17,6 +17,9 @@ namespace UnholyTrinity.Pickups
             Definition = definition ? definition : throw new ArgumentNullException(nameof(definition));
         }
 
+        /// <summary>An independent copy, so planning can collect it without touching the real point.</summary>
+        public PickupSpawn Clone() => new PickupSpawn(Definition) { TicksUntilRespawn = TicksUntilRespawn };
+
         /// <summary>Applies the effect and starts the respawn countdown; false if unavailable or the collector couldn't use it.</summary>
         public bool TryCollect(IPickupCollector collector)
         {

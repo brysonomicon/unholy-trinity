@@ -16,6 +16,9 @@ public class PickupManager : MonoBehaviour
 
     private readonly Dictionary<HexCoord, GameObject> _visuals = new();
 
+    // the player whose plan the visuals currently show, null when they show the real state
+    private object _plannedStateShownBy;
+
     public PickupField Field { get; private set; }
 
     private void Start()
@@ -56,6 +59,35 @@ public class PickupManager : MonoBehaviour
 
     public void CollectAlong(IEnumerable<HexCoord> path, HexCoord end, IPickupCollector collector) =>
         Field.CollectAlong(path, end, collector);
+
+    // shows each visual as available or taken in a planned state instead of the real one.
+    // remembers who asked, so only they can switch back
+    public void ShowPlannedState(PickupField plannedState, object shownBy)
+    {
+        _plannedStateShownBy = shownBy;
+        ShowState(plannedState);
+    }
+
+    // back to the real state once the player who showed a planned state stops planning. turn changes
+    // tell one player to stop and the next to start in either order, so this ignores anyone else
+    public void ShowLiveState(object shownBy)
+    {
+        if (_plannedStateShownBy != shownBy)
+        {
+            return;
+        }
+
+        _plannedStateShownBy = null;
+        ShowState(Field);
+    }
+
+    private void ShowState(PickupField state)
+    {
+        foreach (var coord in _visuals.Keys)
+        {
+            SetVisualActive(coord, state.IsAvailable(coord));
+        }
+    }
 
     private void SpawnVisuals()
     {
