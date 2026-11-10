@@ -12,14 +12,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bfcb2bb40e4ea8a48857126cc97049c9, type: 3}
   m_Name: UnholyHexTileStyle
   m_EditorClassIdentifier: UnholyTrinity.HexMap::UnholyTrinity.Hex.HexTileStyle
-  Prefabs: []
+  Prefabs:
+  - Type: 0
+    Prefab: {fileID: 425061214102703943, guid: c4ef33679b692714a9b2dceaedc26b4a, type: 3}
+    FrictionPrefab: {fileID: 0}
+    BouncyPrefab: {fileID: 0}
+    SpikedPrefab: {fileID: 0}
+    HarmPrefab: {fileID: 0}
+    KillPrefab: {fileID: 0}
   TileMaterial: {fileID: 0}
   TileScale: 1
   FloorHeight: 0.1
   WallHeight: 1.2
   PitHeight: 0.01
-  FloorColor: {r: 0.55, g: 0.55, b: 0.58, a: 1}
-  WallColor: {r: 0.22, g: 0.22, b: 0.26, a: 1}
+  FloorColor: {r: 0.22745098, g: 0.21176471, b: 0.19215687, a: 1}
+  WallColor: {r: 0.11764706, g: 0.105882354, b: 0.101960786, a: 1}
   BouncyWallColor: {r: 0.3372549, g: 0.7058824, b: 0.9137255, a: 1}
   SpikedWallColor: {r: 0.8352941, g: 0.36862746, b: 0, a: 1}
   PickupColor: {r: 0.9411765, g: 0.89411765, b: 0.25882354, a: 1}
