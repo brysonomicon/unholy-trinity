@@ -79,6 +79,11 @@ namespace UnholyTrinity.Players
 
         public int MaxArmour => maxArmour;
 
+        public int MaxHealth => maxHealth;
+
+        // raised whenever a player's health or armour changes, so UI can update
+        public static event System.Action<Player> HealthChangedEvent;
+
         public IReadOnlyList<HexCoord> TickMovePath => tickMovePath;
 
         public int PlanningTickOfTurn => plannedActions.Count;
@@ -647,6 +652,8 @@ namespace UnholyTrinity.Players
             {
                 Debug.Log($"{name} died. RIP");
             }
+
+            HealthChangedEvent?.Invoke(this);
         }
 
         public bool TryHeal(int amount)
@@ -659,6 +666,7 @@ namespace UnholyTrinity.Players
 
             CurrentHealth = Mathf.Min(CurrentHealth + amount, maxHealth);
             Debug.Log($"{name} healed {amount} health, now at {CurrentHealth}/{maxHealth}");
+            HealthChangedEvent?.Invoke(this);
             return true;
         }
 
@@ -672,6 +680,7 @@ namespace UnholyTrinity.Players
 
             CurrentArmour = Mathf.Min(CurrentArmour + amount, maxArmour);
             Debug.Log($"{name} gained {amount} armour, now at {CurrentArmour}/{maxArmour}");
+            HealthChangedEvent?.Invoke(this);
             return true;
         }
 
@@ -698,6 +707,7 @@ namespace UnholyTrinity.Players
 
             CurrentHealth = 0;
             Debug.Log($"{name} died. RIP");
+            HealthChangedEvent?.Invoke(this);
         }
 
         // heals, harms or kills if the player is on a health tile with a matching trigger. the game

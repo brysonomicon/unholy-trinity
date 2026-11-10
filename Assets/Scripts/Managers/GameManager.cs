@@ -29,6 +29,9 @@ public class GameManager : ScriptableObject
         
     private readonly List<Player> _players = new();
 
+    // in registration order, so index 0 is player 1
+    public IReadOnlyList<Player> Players => _players;
+
     // scene object, so it registers itself instead of being serialized on this asset
     [CanBeNull] private PickupManager _pickupManager;
 
