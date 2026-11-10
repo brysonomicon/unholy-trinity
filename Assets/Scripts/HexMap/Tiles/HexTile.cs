@@ -1,3 +1,5 @@
+using UnholyTrinity.Pickups;
+
 namespace UnholyTrinity.Hex
 {
     /// <summary>
@@ -30,7 +32,7 @@ namespace UnholyTrinity.Hex
         public static HexTile Wall(HexCoord coord, WallSettings wall) => new HexTile(coord, TileType.Wall, wall: wall);
         public static HexTile BouncyWall(HexCoord coord) => Wall(coord, WallSettings.Bouncy);
         public static HexTile SpikedWall(HexCoord coord, int damage, SpikeDamageMode mode = SpikeDamageMode.Fixed) => Wall(coord, WallSettings.Spiked(damage, mode));
-        public static HexTile PickupPoint(HexCoord coord, int spawnGroup = 0) => new HexTile(coord, TileType.PickupPoint, pickup: new PickupPointData(spawnGroup));
+        public static HexTile PickupPoint(HexCoord coord, PickupDefinition pickup = null) => new HexTile(coord, TileType.PickupPoint, pickup: new PickupPointData(pickup));
         public static HexTile BoostTile(HexCoord coord, BoostSettings boost) => new HexTile(coord, TileType.Boost, boost: boost);
         public static HexTile PortalTile(HexCoord coord, HexCoord target, int rotationSteps = 0) => new HexTile(coord, TileType.Portal, portal: new PortalLink(target, rotationSteps));
         public static HexTile HealthTile(HexCoord coord, HealthTileSettings health) => new HexTile(coord, TileType.Health, health: health);

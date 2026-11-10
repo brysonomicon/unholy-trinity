@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnholyTrinity.Hex;
-using UnholyTrinity.Players;
 using UnityEngine;
 
 namespace UnholyTrinity.Weapons
@@ -15,19 +14,16 @@ namespace UnholyTrinity.Weapons
         private List<HexCoord> path;
         private int pathIndex;
 
-        public Player Owner { get; private set; }
         public RocketLauncherData Data { get; private set; }
         public HexCoord Coord => path[pathIndex];
         public bool HasArrived => pathIndex == path.Count - 1;
 
         public void Launch(
-            Player owner, 
             RocketLauncherData data, 
             MapManager mapManager,
             HexCoord origin, 
             HexCoord target
         ){
-            Owner = owner;
             Data = data;
             this.mapManager = mapManager;
             path = origin.LineTo(target);

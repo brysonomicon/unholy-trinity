@@ -41,13 +41,10 @@ public class GameManager : MonoBehaviour
 
     // second between ticks so resolution can be watched
     private float TickDuration => turnManager.TickDuration;
-
-    [SerializeField]
     [MinValue(0.1f)]
     [MaxValue(nameof(TickDuration))]
     private float shootDuration;
 
-    [SerializeField]
     [MinValue(0.1f)]
     [MaxValue(nameof(TickDuration))]
     private float aimDuration;
@@ -55,8 +52,14 @@ public class GameManager : MonoBehaviour
     [SerializeField] [Min(0.1f)] private float turnStartDelay = 0.1f;
 
     private readonly List<Player> _players = new();
-    private readonly List<Rocket> _rockets = new();
 
+    // in registration order, so index 0 is player 1
+    public IReadOnlyList<Player> Players => _players;
+
+    // scene object, so it registers itself instead of being serialized on this asset
+    [CanBeNull] private PickupManager _pickupManager;
+
+    private readonly List<(Player shooter, Rocket rocket)> _rockets = new();
     private readonly List<(
         Player shooter,
         WeaponData Data,
@@ -88,8 +91,10 @@ public class GameManager : MonoBehaviour
             _ => throw new ArgumentOutOfRangeException()
         };
 
-    public List<Vector3> CurrentPlayerPositions =>
-        new(_players.Select(x => x.transform.position).ToList());
+    // false until the spawner has registered every player
+    public bool AllPlayersRegistered => _players.Count == maxPlayers;
+
+    public List<Vector3> CurrentPlayerPositions => new (_players.Select(x => x.transform.position).ToList());
 
     #endregion
 
@@ -134,22 +139,32 @@ public class GameManager : MonoBehaviour
     {
         if (_players.Contains(player))
         {
-            throw new ArgumentException(
-                $"{player.gameObject.name} is already registered.");
+            throw new ArgumentException($"{player.gameObject.name} is already registered.");
         }
-
-        if (_players.Count >= maxPlayers)
+        if(_players.Count >= maxPlayers)
         {
-            throw new ArgumentOutOfRangeException(
-                $"There are already {maxPlayers} registered players.");
+            throw new ArgumentOutOfRangeException($"There are already {maxPlayers} registered players.");
         }
 
         _players.Add(player);
         Debug.Log($"Registering {player.gameObject.name}");
         //Start the game when we get enough players.
-        if (_players.Count == maxPlayers)
+        if(_players.Count == maxPlayers)
         {
             NewTurnEvent?.Invoke(_players.First());
+        }
+    }
+
+    public void RegisterPickupManager(PickupManager pickupManager)
+    {
+        _pickupManager = pickupManager;
+    }
+
+    public void UnregisterPickupManager(PickupManager pickupManager)
+    {
+        if (_pickupManager == pickupManager)
+        {
+            _pickupManager = null;
         }
     }
 
@@ -238,9 +253,26 @@ public class GameManager : MonoBehaviour
         #endregion
 
         // absorb ghosts after each turn
+        // respawns tick first so a pickup that comes back this tick can be collected
+        // this tick, even by a player who doesn't move. so RespawnTicks = 1 means a pickup
+        // collected on tick N is available again on tick N + 1
+        bool hasPickups = _pickupManager != null;
+        if (hasPickups)
+        {
+            _pickupManager.AdvanceTicks(1);
+        }
+
         foreach (Player player in _players)
         {
             player.PickUpGhost();
+        }
+
+        if (hasPickups)
+        {
+            foreach (Player player in _players)
+            {
+                _pickupManager.CollectAlong(player.TickMovePath, player.Coord, player);
+            }
         }
     }
 
@@ -266,8 +298,7 @@ public class GameManager : MonoBehaviour
 
                 if (damageAmount > 0)
                 {
-                    Debug.Log(
-                        $"{shooter.name} hit {player.name} with {weaponData.DisplayName} for {damageAmount} damage");
+                    Debug.Log($"{shooter.name} hit {player.name} with {weaponData.DisplayName} for {damageAmount} damage");
                     player.TakeDamage(damageAmount);
                 }
                 else
@@ -282,22 +313,22 @@ public class GameManager : MonoBehaviour
         MapManager mapManager, HexCoord target)
     {
         Rocket rocket = Instantiate(rocketData.RocketPrefab);
-        rocket.Launch(shooter, rocketData, mapManager, shooter.Coord, target);
-        _rockets.Add(rocket);
+        rocket.Launch(rocketData, mapManager, shooter.Coord, target);
+        _rockets.Add((shooter, rocket));
         Debug.Log($"{shooter.name} launched a rocket at {target}");
     }
 
-    // // moves all rockets on the map
+    // moves all rockets on the map
     // private void AdvanceRockets()
     // {
-    //     foreach (Rocket rocket in _rockets.ToList())
+    //     foreach ((Player shooter, Rocket rocket) in _rockets.ToList())
     //     {
-    //         AdvanceRocket(rocket);
+    //         AdvanceRocket(shooter, rocket);
     //     }
     // }
 
     // advances a single rocket forward by the speed defined in the weapon data
-    private IEnumerator<(int, HexCoord)> AdvanceRocket(Rocket rocket)
+    private IEnumerator<(int, HexCoord)> AdvanceRocket(Player shooter, Rocket rocket)
     {
         bool shouldDetonate = false;
 
@@ -306,29 +337,29 @@ public class GameManager : MonoBehaviour
         for (int step = 0; step < rocket.Data.Speed && !shouldDetonate; step++)
         {
             rocket.StepForward();
-            shouldDetonate = rocket.HasArrived || IsDirectHit(rocket);
+            shouldDetonate = rocket.HasArrived || IsDirectHit(shooter, rocket);
             yield return (shouldDetonate ? 0 : rocket.Data.Speed, rocket.Coord);
         }
 
         if (shouldDetonate)
         {
-            DetonateRocket(rocket);
+            DetonateRocket(shooter, rocket);
         }
     }
 
-    private bool IsDirectHit(Rocket rocket)
+    private bool IsDirectHit(Player shooter, Rocket rocket)
     {
-        return _players.Any(player =>
-            player != rocket.Owner &&
+        return _players.Any(player => 
+            player != shooter &&
             player.Coord == rocket.Coord
         );
     }
 
-    private void DetonateRocket(Rocket rocket)
+    private void DetonateRocket(Player shooter, Rocket rocket)
     {
-        Debug.Log($"{rocket.Owner.name}'s rocket exploded at {rocket.Coord}");
-        ResolveShot(rocket.Owner, rocket.Data, rocket.GetBlastTiles());
-        _rockets.Remove(rocket);
+        Debug.Log($"{shooter.name}'s rocket exploded at {rocket.Coord}");
+        ResolveShot(shooter, rocket.Data, rocket.GetBlastTiles());
+        _rockets.Remove((shooter, rocket));
         Destroy(rocket.gameObject);
     }
 
@@ -351,27 +382,20 @@ public class GameManager : MonoBehaviour
     // this will need to sample both paths by a fraction of the tick
     private void ResolveBeams()
     {
-        foreach ((Player shooter, WeaponData weaponData, AimDirection firedAim,
-                     List<AimTile> firedTiles) in _beams)
+        foreach ((Player shooter, WeaponData weaponData, AimDirection firedAim, List<AimTile> firedTiles) in _beams)
         {
-            List<AimTile> endTiles =
-                shooter.GetBeamTilesFromCurrentCoord(weaponData, firedAim);
+            List<AimTile> endTiles = shooter.GetBeamTilesFromCurrentCoord(weaponData, firedAim);
 
-            foreach (Player target in
-                     _players.Where(player => player != shooter))
+            foreach (Player target in _players.Where(player => player != shooter))
             {
-                float startFalloff =
-                    GetFalloff(target.MoveStartCoord, firedTiles);
+                float startFalloff = GetFalloff(target.MoveStartCoord, firedTiles);
                 float endFalloff = GetFalloff(target.Coord, endTiles);
                 float averageFalloff = (startFalloff + endFalloff) / 2f;
-                int damageAmount =
-                    weaponData.GetDamage(new AimTile(target.Coord,
-                        averageFalloff));
+                int damageAmount = weaponData.GetDamage(new AimTile(target.Coord, averageFalloff));
 
                 if (damageAmount > 0)
                 {
-                    Debug.Log(
-                        $"{shooter.name} hit {target.name} with {weaponData.DisplayName} for {damageAmount} damage");
+                    Debug.Log($"{shooter.name} hit {target.name} with {weaponData.DisplayName} for {damageAmount} damage");
                     target.TakeDamage(damageAmount);
                 }
                 else
@@ -387,8 +411,7 @@ public class GameManager : MonoBehaviour
     // tiles outside the cone count as 0, FirstOrDefault gives a default AimTile with 0 falloff
     private float GetFalloff(HexCoord coord, List<AimTile> aimTiles)
     {
-        return aimTiles.FirstOrDefault(aimTile => aimTile.Coord == coord)
-            .Falloff;
+        return aimTiles.FirstOrDefault(aimTile => aimTile.Coord == coord).Falloff;
     }
 
     private Player GetOpponent(Player shooter)

@@ -85,20 +85,31 @@ namespace UnholyTrinity.Hex
             var problems = new List<string>();
             foreach (var tile in tiles.Values)
             {
-                if (tile.Type != TileType.Portal)
-                    continue;
-
-                var target = tile.Portal.Target;
-                if (target == tile.Coord)
-                    problems.Add($"Portal {tile.Coord} links to itself.");
-                else if (!tiles.TryGetValue(target, out var other))
-                    problems.Add($"Portal {tile.Coord} links to {target}, which is off the map.");
-                else if (other.Type != TileType.Portal)
-                    problems.Add($"Portal {tile.Coord} links to {target}, which is a {other.Type}, not a portal.");
-                else if (other.Portal.Target != tile.Coord)
-                    problems.Add($"Portal {tile.Coord} links to {target}, but that portal links to {other.Portal.Target}.");
+                if (tile.Type == TileType.Portal)
+                    ValidatePortal(tile, problems);
+                else if (tile.Type == TileType.PickupPoint)
+                    ValidatePickupPoint(tile, problems);
             }
             return problems;
+        }
+
+        void ValidatePortal(HexTile tile, List<string> problems)
+        {
+            var target = tile.Portal.Target;
+            if (target == tile.Coord)
+                problems.Add($"Portal {tile.Coord} links to itself.");
+            else if (!tiles.TryGetValue(target, out var other))
+                problems.Add($"Portal {tile.Coord} links to {target}, which is off the map.");
+            else if (other.Type != TileType.Portal)
+                problems.Add($"Portal {tile.Coord} links to {target}, which is a {other.Type}, not a portal.");
+            else if (other.Portal.Target != tile.Coord)
+                problems.Add($"Portal {tile.Coord} links to {target}, but that portal links to {other.Portal.Target}.");
+        }
+
+        static void ValidatePickupPoint(HexTile tile, List<string> problems)
+        {
+            if (!tile.Pickup.HasPickup)
+                problems.Add($"Pickup point {tile.Coord} has no pickup assigned.");
         }
     }
 }

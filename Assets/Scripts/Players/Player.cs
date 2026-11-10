@@ -2,12 +2,14 @@ using System.Linq;
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using UnholyTrinity.Hex;
+using UnholyTrinity.Pickups;
 using UnholyTrinity.Weapons;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace UnholyTrinity.Players
 {
-    public partial class Player : MonoBehaviour
+    public partial class Player : MonoBehaviour, IHealable, IArmourable, IWeaponCollector
     {
         #region Fields
 
@@ -38,6 +40,7 @@ namespace UnholyTrinity.Players
         // set up by BeginMovePhase each tick. beams read MoveStartCoord for their start sample,
         // tickMovePath will be needed for pickups
         private readonly List<HexCoord> tickMovePath = new();
+
         public HexCoord MoveStartCoord { get; private set; }
 
         // the selected tile that rocket launcher fires at
@@ -53,12 +56,36 @@ namespace UnholyTrinity.Players
         [field: SerializeField]
         public AimDirection CurrentAimDirection { get; private set; }
 
-        [Header("Health")] [SerializeField, Min(1)]
-        private int startingHealth = 100;
+        [Header("Health")]
+        [SerializeField, Min(1), FormerlySerializedAs("startingHealth")]
+        private int maxHealth = 100;
 
         [field: SerializeField] public int CurrentHealth { get; private set; }
 
         public bool IsDead => CurrentHealth <= 0;
+
+        [Header("Armour")]
+        [SerializeField, Min(0)]
+        private int maxArmour = 100;
+
+        [Tooltip("Percent of each hit the armour absorbs, spending one armour per point absorbed.")]
+        [SerializeField, Range(0, 100)]
+        private int armourAbsorbPercent = 50;
+
+        [Tooltip("Round the absorbed share up, so even small hits use armour first.")]
+        [SerializeField]
+        private bool roundAbsorbUp = true;
+
+        [field: SerializeField] public int CurrentArmour { get; private set; }
+
+        public int MaxArmour => maxArmour;
+
+        public int MaxHealth => maxHealth;
+
+        // raised whenever a player's health or armour changes, so UI can update
+        public static event System.Action<Player> HealthChangedEvent;
+
+        public IReadOnlyList<HexCoord> TickMovePath => tickMovePath;
 
         public int PlanningTickOfTurn => plannedActions.Count;
 
@@ -107,7 +134,8 @@ namespace UnholyTrinity.Players
 
         private void Awake()
         {
-            CurrentHealth = startingHealth;
+            CurrentHealth = maxHealth;
+            CurrentArmour = 0;
             CurrentWeapon = new Weapon(startingWeapon);
             weapons.Insert(0, CurrentWeapon);
             GameManager.NewTurnEvent += OnNewTurn;
@@ -573,7 +601,6 @@ namespace UnholyTrinity.Players
             SnapToCoord();
             Debug.Log($"{name} is now aiming {CurrentAimDirection}");
         }
-
         public void BeginMovePhase()
         {
             MoveStartCoord = Coord;
@@ -586,26 +613,164 @@ namespace UnholyTrinity.Players
         {
             return weaponData.GetAimTiles(mapManager.Map, Coord, firedAim);
         }
+        
+
+        private void Step(HexDirection direction)
+        {
+            HexCoord destination = GetStepDestination(Coord, direction);
+
+            if (destination == Coord)
+            {
+                Debug.Log($"{name} is blocked moving {direction}");
+                return;
+            }
+
+            Coord = destination;
+            tickMovePath.Add(Coord);
+            SnapToCoord();
+            Debug.Log($"{name} moved to {Coord}");
+        }
 
         #endregion
 
         #region Health
 
+        // armour absorbs its share of the hit first, then the rest comes off health. every damage
+        // source (weapons, beams, harm tiles) comes through here, so they all go through armour
         public void TakeDamage(int damageAmount)
+        {
+            if (IsDead || damageAmount <= 0)
+            {
+                return;
+            }
+
+            int absorbed = GetArmourAbsorbed(damageAmount);
+            CurrentArmour -= absorbed;
+            damageAmount -= absorbed;
+
+            CurrentHealth = Mathf.Max(CurrentHealth - damageAmount, 0);
+            Debug.Log(
+                $"{name} took {damageAmount} damage (ouch), {absorbed} absorbed by armour, " +
+                $"{CurrentHealth} health and {CurrentArmour} armour remaining");
+
+            if (IsDead)
+            {
+                Debug.Log($"{name} died. RIP");
+            }
+
+            HealthChangedEvent?.Invoke(this);
+        }
+
+        public bool TryHeal(int amount)
+        {
+            if (IsDead || amount <= 0 || CurrentHealth >= maxHealth)
+            {
+                Debug.Log($"{name} cannot be healed (dead: {IsDead}, amount: {amount}, current: {CurrentHealth}/{maxHealth})");
+                return false;
+            }
+
+            CurrentHealth = Mathf.Min(CurrentHealth + amount, maxHealth);
+            Debug.Log($"{name} healed {amount} health, now at {CurrentHealth}/{maxHealth}");
+            HealthChangedEvent?.Invoke(this);
+            return true;
+        }
+
+        public bool TryAddArmour(int amount)
+        {
+            if (IsDead || amount <= 0 || CurrentArmour >= maxArmour)
+            {
+                Debug.Log($"{name} cannot gain armour (dead: {IsDead}, amount: {amount}, current: {CurrentArmour}/{maxArmour})");
+                return false;
+            }
+
+            CurrentArmour = Mathf.Min(CurrentArmour + amount, maxArmour);
+            Debug.Log($"{name} gained {amount} armour, now at {CurrentArmour}/{maxArmour}");
+            HealthChangedEvent?.Invoke(this);
+            return true;
+        }
+
+        // whole-number math so results don't drift. never absorbs more armour than the player has
+        private int GetArmourAbsorbed(int damageAmount)
+        {
+            if (CurrentArmour <= 0)
+            {
+                return 0;
+            }
+
+            int rounding = roundAbsorbUp ? 99 : 0;
+            int share = (damageAmount * armourAbsorbPercent + rounding) / 100;
+            return Mathf.Min(share, CurrentArmour);
+        }
+
+        // kills outright, e.g. lava or a fall into the void
+        public void Kill()
         {
             if (IsDead)
             {
                 return;
             }
 
-            CurrentHealth = Mathf.Max(CurrentHealth - damageAmount, 0);
-            Debug.Log(
-                $"{name} took {damageAmount} damage (ouch), {CurrentHealth} health remaining");
+            CurrentHealth = 0;
+            Debug.Log($"{name} died. RIP");
+            HealthChangedEvent?.Invoke(this);
+        }
 
+        // heals, harms or kills if the player is on a health tile with a matching trigger. the game
+        // manager calls this with OnEnter for each hex entered during the move, and with OnStop where
+        // the move ends, including when the player didn't move
+        public void ApplyHealthTile(HealthTrigger reached)
+        {
+            if (IsDead ||
+                mapManager == null ||
+                mapManager.Map == null ||
+                !mapManager.Map.TryGetTile(Coord, out HexTile tile) ||
+                tile.Type != TileType.Health ||
+                tile.Health.Trigger != reached)
+            {
+                return;
+            }
+
+            HealthTileSettings health = tile.Health;
+
+            if (health.Lethal)
+            {
+                Kill();
+            }
+            else if (health.Amount > 0)
+            {
+                TryHeal(health.Amount);
+            }
+            else if (health.Amount < 0)
+            {
+                TakeDamage(-health.Amount);
+            }
+        }
+
+        #endregion
+
+        #region Weapon Pickups
+
+        public bool TryGiveWeapon(WeaponData data)
+        {
             if (IsDead)
             {
-                Debug.Log($"{name} died. RIP");
+                return false;
             }
+
+            Weapon heldWeapon = weapons.Find(weapon => weapon.Data == data);
+
+            if (heldWeapon == null)
+            {
+                weapons.Add(new Weapon(data));
+                Debug.Log($"{name} picked up {data.DisplayName}");
+                return true;
+            }
+
+            // weapons are still picked up if ammo is full, weapon.cs clamps at full
+            // the idea is that a weapon can be "denied" for a time by triggering its respawn
+            heldWeapon.AddAmmo(data.PickupAmmo);
+            Debug.Log($"{name} picked up {data.DisplayName} ammo, now at {heldWeapon.Ammo}/{data.MaxAmmo}");
+            return true;
         }
 
         #endregion
