@@ -8,7 +8,7 @@ using UnityEngine.Serialization;
 
 namespace UnholyTrinity.Players
 {
-    public partial class Player : MonoBehaviour, IHealable, IWeaponCollector
+    public partial class Player : MonoBehaviour, IHealable, IArmourable, IWeaponCollector
     {
         #region Fields
 
@@ -63,6 +63,22 @@ namespace UnholyTrinity.Players
 
         public bool IsDead => CurrentHealth <= 0;
 
+        [Header("Armour")]
+        [SerializeField, Min(0)]
+        private int maxArmour = 100;
+
+        [Tooltip("Percent of each hit the armour absorbs, spending one armour per point absorbed.")]
+        [SerializeField, Range(0, 100)]
+        private int armourAbsorbPercent = 50;
+
+        [Tooltip("Round the absorbed share up, so even small hits use armour first.")]
+        [SerializeField]
+        private bool roundAbsorbUp = true;
+
+        [field: SerializeField] public int CurrentArmour { get; private set; }
+
+        public int MaxArmour => maxArmour;
+
         public IReadOnlyList<HexCoord> TickMovePath => tickMovePath;
 
         public int PlanningTickOfTurn => plannedActions.Count;
@@ -113,6 +129,7 @@ namespace UnholyTrinity.Players
         private void Awake()
         {
             CurrentHealth = maxHealth;
+            CurrentArmour = 0;
             CurrentWeapon = new Weapon(startingWeapon);
             weapons.Insert(0, CurrentWeapon);
             GameManager.NewTurnEvent += OnNewTurn;
@@ -608,16 +625,23 @@ namespace UnholyTrinity.Players
 
         #region Health
 
+        // armour absorbs its share of the hit first, then the rest comes off health. every damage
+        // source (weapons, beams, harm tiles) comes through here, so they all go through armour
         public void TakeDamage(int damageAmount)
         {
-            if (IsDead)
+            if (IsDead || damageAmount <= 0)
             {
                 return;
             }
 
+            int absorbed = GetArmourAbsorbed(damageAmount);
+            CurrentArmour -= absorbed;
+            damageAmount -= absorbed;
+
             CurrentHealth = Mathf.Max(CurrentHealth - damageAmount, 0);
             Debug.Log(
-                $"{name} took {damageAmount} damage (ouch), {CurrentHealth} health remaining");
+                $"{name} took {damageAmount} damage (ouch), {absorbed} absorbed by armour, " +
+                $"{CurrentHealth} health and {CurrentArmour} armour remaining");
 
             if (IsDead)
             {
@@ -636,6 +660,32 @@ namespace UnholyTrinity.Players
             CurrentHealth = Mathf.Min(CurrentHealth + amount, maxHealth);
             Debug.Log($"{name} healed {amount} health, now at {CurrentHealth}/{maxHealth}");
             return true;
+        }
+
+        public bool TryAddArmour(int amount)
+        {
+            if (IsDead || amount <= 0 || CurrentArmour >= maxArmour)
+            {
+                Debug.Log($"{name} cannot gain armour (dead: {IsDead}, amount: {amount}, current: {CurrentArmour}/{maxArmour})");
+                return false;
+            }
+
+            CurrentArmour = Mathf.Min(CurrentArmour + amount, maxArmour);
+            Debug.Log($"{name} gained {amount} armour, now at {CurrentArmour}/{maxArmour}");
+            return true;
+        }
+
+        // whole-number math so results don't drift. never absorbs more armour than the player has
+        private int GetArmourAbsorbed(int damageAmount)
+        {
+            if (CurrentArmour <= 0)
+            {
+                return 0;
+            }
+
+            int rounding = roundAbsorbUp ? 99 : 0;
+            int share = (damageAmount * armourAbsorbPercent + rounding) / 100;
+            return Mathf.Min(share, CurrentArmour);
         }
 
         // kills outright, e.g. lava or a fall into the void

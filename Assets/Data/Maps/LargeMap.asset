@@ -4374,7 +4374,7 @@ MonoBehaviour:
         <R>k__BackingField: 0
       RotationSteps: 0
     Pickup:
-      Pickup: {fileID: 11400000, guid: 8e40e0538863f3b499787eb2a8061a06, type: 2}
+      Pickup: {fileID: 11400000, guid: 29977f085c7bf9b44aa68e69959c2f74, type: 2}
     Wall:
       Kind: 0
       Damage: 0
@@ -5628,7 +5628,7 @@ MonoBehaviour:
   - Coord:
       <Q>k__BackingField: -4
       <R>k__BackingField: 2
-    Type: 0
+    Type: 2
     Boost:
       Strength: 0
       Mode: 0
@@ -5639,7 +5639,7 @@ MonoBehaviour:
         <R>k__BackingField: 0
       RotationSteps: 0
     Pickup:
-      Pickup: {fileID: 0}
+      Pickup: {fileID: 11400000, guid: 9db539ad75801b2458bff2632295b3e0, type: 2}
     Wall:
       Kind: 0
       Damage: 0
