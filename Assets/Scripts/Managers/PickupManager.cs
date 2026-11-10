@@ -51,8 +51,8 @@ public class PickupManager : MonoBehaviour
 
     public void AdvanceTicks(int ticks) => Field.AdvanceTicks(ticks);
 
-    public void CollectAlong(SlideResult slide, IPickupCollector collector) =>
-        Field.CollectAlong(slide, collector);
+    // public void CollectAlong(SlideResult slide, IPickupCollector collector) =>
+    //     Field.CollectAlong(slide, collector);
 
     public void CollectAlong(IEnumerable<HexCoord> path, HexCoord end, IPickupCollector collector) =>
         Field.CollectAlong(path, end, collector);
