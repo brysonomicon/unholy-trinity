@@ -35,6 +35,9 @@ public class GameManager : ScriptableObject
     // scene object, so it registers itself instead of being serialized on this asset
     [CanBeNull] private PickupManager _pickupManager;
 
+    // null when the scene has no pickups. players read it to forecast their plan
+    [CanBeNull] public PickupManager Pickups => _pickupManager;
+
     private readonly List<(Player shooter, Rocket rocket)> _rockets = new();
     private readonly List<(
         Player shooter, 

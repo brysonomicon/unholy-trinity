@@ -26,6 +26,22 @@ namespace UnholyTrinity.Hex
                     spawns.Add(tile.Coord, new PickupSpawn(tile.Pickup.Pickup));
         }
 
+        PickupField()
+        {
+        }
+
+        /// <summary>
+        /// An independent copy of every point's state, for planning ahead without changing this field.
+        /// Event subscribers aren't copied, so the copy never drives the live visuals.
+        /// </summary>
+        public PickupField Clone()
+        {
+            var clone = new PickupField();
+            foreach (var pair in spawns)
+                clone.spawns.Add(pair.Key, pair.Value.Clone());
+            return clone;
+        }
+
         public bool IsAvailable(HexCoord coord) => spawns.TryGetValue(coord, out var spawn) && spawn.IsAvailable;
 
         /// <summary>Collects the pickup at <paramref name="coord"/> if its trigger matches how the hex was <paramref name="reached"/>.</summary>
