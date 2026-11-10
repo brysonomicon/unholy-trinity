@@ -1,26 +1,19 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using NaughtyAttributes;
 using UnholyTrinity.Hex;
-using UnholyTrinity.Weapons;
 using UnityEngine;
-
 
 namespace UnholyTrinity.Players
 {
     public partial class Player
     {
-        
-        [Header("Movement")] 
-        [SerializeField, Min(1)]
+        [Header("Movement")] [SerializeField, Min(1)]
         private int baseMomentumMax = 1;
 
         [SerializeField, MinValue("baseMomentumMax")]
         private int aimMomentumMax;
 
-        [SerializeField][Min(1)]
-        private int momentumGainPerTick = 1;
+        [SerializeField] [Min(1)] private int momentumGainPerTick = 1;
 
         [field: SerializeField]
         [Tooltip("Used to display where the player will be during the turn.")]
@@ -32,7 +25,8 @@ namespace UnholyTrinity.Players
         // momentum from the end of the previous planned tick from the planning model
         // lastMomentum only updated once per turn and didn't work for calculating momentum
         // between ticks
-        private HexCoord PreviousPlannedMomentum => GetPlannedMomentum(plannedActions.Count - 1);
+        private HexCoord PreviousPlannedMomentum =>
+            GetPlannedMomentum(plannedActions.Count - 1);
         // [SerializeField] private HexCoord lastMomentum = new(0, 0);
 
         #region Planning
@@ -44,7 +38,8 @@ namespace UnholyTrinity.Players
 
             for (int i = 0; i < tickCount; i++)
             {
-                plannedCoord = GetMoveEnd(plannedCoord, plannedActions[i].PlannedMove);
+                plannedCoord = GetMoveEnd(plannedCoord,
+                    plannedActions[i].PlannedMove);
             }
 
             return plannedCoord;
@@ -68,30 +63,6 @@ namespace UnholyTrinity.Players
             return current;
         }
 
-        // public void PlanMove(HexDirection? direction)
-        // {
-        //     //We're changing plans; so clear the current one.
-        //     PlanningAction.PlannedMove.Clear();
-        //     Coord = lastCoord;
-        //     //Don't change momentum if holding
-        //     momentum = direction.HasValue
-        //         ? UpdatePlannedMomentum(direction.Value)
-        //         : PreviousPlannedMomentum;
-
-        //     //Get a list of all steps
-        //     PlanningAction.PlannedMove = GetStepListFromMomentum();
-        //     // Updated expected location
-        //     var next = ResolveMove();
-        //     while (next.MoveNext())
-        //     {
-        //         Coord = next.Current.Item2;
-        //     }
-            
-        //     Debug.Log(string.Join(", ", PlanningAction.PlannedMove));
-
-        //     RefreshAimPreview();
-        // }
-
         // only records the choice on this ticks action, ProjectPlan handles showing it,
         // so planning no longer runs ResolveMove or change Coord which is real state that
         // planning shouldn't touch
@@ -110,32 +81,37 @@ namespace UnholyTrinity.Players
             HexCoord plannedMomentum = direction.HasValue
                 ? UpdatePlannedMomentum(direction.Value)
                 : HexCoord.Zero;
-            
+
             PlanningAction.PlannedMomentum = plannedMomentum;
 
             PlanningAction.PlannedMove = GetStepListFromMomentum(
                 GetPlannedCoord(plannedActions.Count - 1), plannedMomentum
             );
-
-            Debug.Log(string.Join(", ", PlanningAction.PlannedMove));
         }
 
         private HexCoord UpdatePlannedMomentum(HexDirection direction)
         {
-            int previousSpeed = HexCoord.Distance(HexCoord.Zero, PreviousPlannedMomentum);
+            int previousSpeed =
+                HexCoord.Distance(HexCoord.Zero, PreviousPlannedMomentum);
             bool isMoving = previousSpeed > 0;
 
             // reads this ticks planned aim because aim resolves before move. only even aims line
             // up exactly with a hex direction, so a diagonal aim never count as looking that way
-            bool isAimingAlongMove = (int)PlanningAction.PlannedAim == (int)direction * 2;
-            bool isSameDirection = isMoving && PreviousPlannedMomentum.ToDirection() == direction;
-            bool isReversing  = isMoving && PreviousPlannedMomentum.ToDirection().Opposite() == direction;
+            bool isAimingAlongMove =
+                (int)PlanningAction.PlannedAim == (int)direction * 2;
+            bool isSameDirection = isMoving &&
+                                   PreviousPlannedMomentum.ToDirection() ==
+                                   direction;
+            bool isReversing = isMoving &&
+                               PreviousPlannedMomentum.ToDirection()
+                                   .Opposite() == direction;
 
             int speed = baseMomentumMax;
 
             if (isMoving && isAimingAlongMove && !isReversing)
             {
-                speed = Mathf.Min(previousSpeed + momentumGainPerTick, aimMomentumMax);
+                speed = Mathf.Min(previousSpeed + momentumGainPerTick,
+                    aimMomentumMax);
             }
             else if (isSameDirection)
             {
@@ -154,33 +130,12 @@ namespace UnholyTrinity.Players
                 : momentum;
         }
 
-        private bool IsFasterThan(HexDirection direction, int maxSpeed)
-        {
-            HexCoord maxVal = direction.ToOffset() * maxSpeed;
-            return direction switch
-            {
-                HexDirection.D0 => maxVal.Q <= PreviousPlannedMomentum.Q,
-                HexDirection.D1 => maxVal.Q <= PreviousPlannedMomentum.Q &&
-                                   maxVal.R >= PreviousPlannedMomentum.R,
-                // > R because R is negative in this direction, so we're
-                // faster if we're LESS than R
-                HexDirection.D2 => maxVal.R >= PreviousPlannedMomentum.R,
-                HexDirection.D3 => maxVal.Q >= PreviousPlannedMomentum.Q,
-                HexDirection.D4 => maxVal.Q >= PreviousPlannedMomentum.Q &&
-                                   maxVal.R <= PreviousPlannedMomentum.R,
-                HexDirection.D5 => maxVal.R <= PreviousPlannedMomentum.R,
-                _ => throw new ArgumentOutOfRangeException(
-                    nameof(direction), direction, null)
-            };
-        }
-
         // takes its start and momentum as inputs so each tick can be planned from the
         // planning model, instead of reading real state of Coord and momentum
-        private List<HexDirection> GetStepListFromMomentum(HexCoord start, HexCoord plannedMomentum)
+        private static List<HexDirection> GetStepListFromMomentum(
+            HexCoord start, HexCoord plannedMomentum)
         {
             var target = start + plannedMomentum;
-            Debug.Log(
-                $"{gameObject.name} wants to move from {start} to {plannedMomentum}");
 
             List<HexDirection> directions = new List<HexDirection>();
 
@@ -229,7 +184,7 @@ namespace UnholyTrinity.Players
                 {
                     break;
                 }
-                
+
                 Debug.Log($"Moving from {Coord} to {current}");
                 Coord = current;
                 tickMovePath.Add(Coord);
@@ -249,7 +204,6 @@ namespace UnholyTrinity.Players
                 Debug.Log($"{name} is blocked from moving {direction}");
                 return false;
             }
-            
             
             Debug.Log($"{name} moved to {Coord}");
             return true;

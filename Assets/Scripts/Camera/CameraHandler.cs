@@ -77,6 +77,7 @@ public class CameraHandler : MonoBehaviour
 
     void Start()
     {
+        gm ??= GameManager.Instance;
         cam ??= GetComponent<Camera>();
         ComputePose(out var p, out var r, out var f);
         transform.SetPositionAndRotation(p, r);

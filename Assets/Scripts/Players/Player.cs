@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using UnholyTrinity.Hex;
 using UnholyTrinity.Weapons;
 using UnityEngine;
@@ -111,6 +112,9 @@ namespace UnholyTrinity.Players
             weapons.Insert(0, CurrentWeapon);
             GameManager.NewTurnEvent += OnNewTurn;
             TurnManager.NewPhaseEvent += OnNewPhase;
+
+            gm ??= GameManager.Instance;
+            
         }
 
         private void OnDestroy()
@@ -489,6 +493,7 @@ namespace UnholyTrinity.Players
         // cooldown and ammo again the real tick so planning doesn't break rules
 
         // the plan for a tick of this turn, or null if the player didn't plan that far
+        [CanBeNull]
         public UnholyAction GetPlannedAction(int tickIndex)
         {
             return tickIndex < plannedActions.Count
