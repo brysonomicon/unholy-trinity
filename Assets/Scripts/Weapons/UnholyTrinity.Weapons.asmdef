@@ -1,0 +1,16 @@
+{
+    "name": "UnholyTrinity.Weapons",
+    "rootNamespace": "",
+    "references": [
+        "GUID:b3a69d8ca69bf8649b863bfded8fc8ac"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

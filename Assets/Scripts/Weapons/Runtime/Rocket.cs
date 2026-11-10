@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnholyTrinity.Hex;
-using UnholyTrinity.Players;
 using UnityEngine;
 
 namespace UnholyTrinity.Weapons
