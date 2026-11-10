@@ -349,8 +349,8 @@ MonoBehaviour:
   mapManager: {fileID: 495801503}
   playerPrefab: {fileID: 9068410019634648079, guid: c560c3193c1df7f488f308a030123633, type: 3}
   spawnCoords:
-  - <Q>k__BackingField: -10
-    <R>k__BackingField: 0
+  - <Q>k__BackingField: 14
+    <R>k__BackingField: -19
   - <Q>k__BackingField: 10
     <R>k__BackingField: 1
 --- !u!4 &1440695144
