@@ -32,11 +32,9 @@ public class GameManager : ScriptableObject
     // in registration order, so index 0 is player 1
     public IReadOnlyList<Player> Players => _players;
 
-    // scene object, so it registers itself instead of being serialized on this asset
-    [CanBeNull] private PickupManager _pickupManager;
-
-    // null when the scene has no pickups. players read it to forecast their plan
-    [CanBeNull] public PickupManager Pickups => _pickupManager;
+    // scene object, so it registers itself instead of being serialized on this asset.
+    // null when the scene has no pickups
+    [CanBeNull] public PickupManager Pickups { get; private set; }
 
     private readonly List<(Player shooter, Rocket rocket)> _rockets = new();
     private readonly List<(
@@ -134,14 +132,14 @@ public class GameManager : ScriptableObject
 
     public void RegisterPickupManager(PickupManager pickupManager)
     {
-        _pickupManager = pickupManager;
+        Pickups = pickupManager;
     }
 
     public void UnregisterPickupManager(PickupManager pickupManager)
     {
-        if (_pickupManager == pickupManager)
+        if (Pickups == pickupManager)
         {
-            _pickupManager = null;
+            Pickups = null;
         }
     }
 
@@ -241,10 +239,10 @@ public class GameManager : ScriptableObject
         // respawns tick first so a pickup that comes back this tick can be collected
         // this tick, even by a player who doesn't move. so RespawnTicks = 1 means a pickup
         // collected on tick N is available again on tick N + 1
-        bool hasPickups = _pickupManager != null;
+        bool hasPickups = Pickups != null;
         if (hasPickups)
         {
-            _pickupManager.AdvanceTicks(1);
+            Pickups.AdvanceTicks(1);
         }
 
         foreach (Player player in _players)
@@ -256,7 +254,7 @@ public class GameManager : ScriptableObject
         {
             foreach (Player player in _players)
             {
-                _pickupManager.CollectAlong(player.TickMovePath, player.Coord, player);
+                Pickups.CollectAlong(player.TickMovePath, player.Coord, player);
             }
         }
     }
