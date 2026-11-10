@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: AmmoRocketPickup
   m_EditorClassIdentifier: UnholyTrinity.Weapons::UnholyTrinity.Weapons.AmmoPickup
   <DisplayName>k__BackingField: 
-  <RespawnTicks>k__BackingField: 1
+  <RespawnTicks>k__BackingField: 3
   <Trigger>k__BackingField: 0
   <VisualPrefab>k__BackingField: {fileID: 7810473164152590907, guid: 0251b4f04166a7144a555cd900ab6e12, type: 3}
   <Weapon>k__BackingField: {fileID: 11400000, guid: f97c8bffbf965d3448f34065ed101336, type: 2}
