@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnholyTrinity.Hex;
+using UnholyTrinity.Pickups;
 using UnholyTrinity.Weapons;
 using UnityEngine;
 
@@ -69,13 +70,14 @@ namespace UnholyTrinity.Players
             HexMap map = mapManager.Map;
             PlannedVitals vitals = new(this);
             HexCoord coord = Coord;
-            List<HexCoord> path = new();
 
             foreach (UnholyAction action in plannedActions)
             {
-                // move phase: health tiles on each hex entered, and a lethal one ends the move there
-                path.Clear();
+                // pickups respawn before anyone moves
+                pickups?.AdvanceTicks(1);
 
+                // each hex entered runs its OnEnter health tile and pickup, and a lethal tile ends
+                // the move there
                 foreach (HexDirection step in action.PlannedMove)
                 {
                     if (vitals.IsDead)
@@ -91,18 +93,13 @@ namespace UnholyTrinity.Players
                     }
 
                     coord = next;
-                    path.Add(coord);
                     ApplyHealthTile(map, coord, HealthTrigger.OnEnter, vitals);
+                    pickups?.TryCollect(coord, PickupTrigger.OnEnter, vitals);
                 }
 
+                // then OnStop where the move ends
                 ApplyHealthTile(map, coord, HealthTrigger.OnStop, vitals);
-
-                // after moving, pickups respawn and then get collected along the path
-                if (pickups != null)
-                {
-                    pickups.AdvanceTicks(1);
-                    pickups.CollectAlong(path, coord, vitals);
-                }
+                pickups?.TryCollect(coord, PickupTrigger.OnStop, vitals);
             }
 
             return new PlanForecast(vitals.Health, vitals.Armour, pickups);
