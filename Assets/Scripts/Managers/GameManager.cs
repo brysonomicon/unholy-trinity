@@ -32,7 +32,7 @@ public class GameManager : ScriptableObject
     // scene object, so it registers itself instead of being serialized on this asset
     [CanBeNull] private PickupManager _pickupManager;
 
-    private readonly List<Rocket> _rockets = new();
+    private readonly List<(Player shooter, Rocket rocket)> _rockets = new();
     private readonly List<(
         Player shooter, 
         WeaponData Data, 
@@ -267,50 +267,50 @@ public class GameManager : ScriptableObject
     public void LaunchRocket(Player shooter, RocketLauncherData rocketData, MapManager mapManager, HexCoord target)
     {
         Rocket rocket = Instantiate(rocketData.RocketPrefab);
-        rocket.Launch(shooter, rocketData, mapManager, shooter.Coord, target);
-        _rockets.Add(rocket);
+        rocket.Launch(rocketData, mapManager, shooter.Coord, target);
+        _rockets.Add((shooter, rocket));
         Debug.Log($"{shooter.name} launched a rocket at {target}");
     }
 
     // moves all rockets on the map
     private void AdvanceRockets()
     {
-        foreach (Rocket rocket in _rockets.ToList())
+        foreach ((Player shooter, Rocket rocket) in _rockets.ToList())
         {
-            AdvanceRocket(rocket);
+            AdvanceRocket(shooter, rocket);
         }
     }
 
     // advances a single rocket forward by the speed defined in the weapon data
-    private void AdvanceRocket(Rocket rocket)
+    private void AdvanceRocket(Player shooter, Rocket rocket)
     {
         bool shouldDetonate = false;
 
         for (int step = 0; step < rocket.Data.Speed && !shouldDetonate; step++)
         {
             rocket.StepForward();
-            shouldDetonate = rocket.HasArrived || IsDirectHit(rocket);
+            shouldDetonate = rocket.HasArrived || IsDirectHit(shooter, rocket);
         }
 
         if (shouldDetonate)
         {
-            DetonateRocket(rocket);
+            DetonateRocket(shooter, rocket);
         }
     }
 
-    private bool IsDirectHit(Rocket rocket)
+    private bool IsDirectHit(Player shooter, Rocket rocket)
     {
         return _players.Any(player => 
-            player != rocket.Owner &&
+            player != shooter &&
             player.Coord == rocket.Coord
         );
     }
 
-    private void DetonateRocket(Rocket rocket)
+    private void DetonateRocket(Player shooter, Rocket rocket)
     {
-        Debug.Log($"{rocket.Owner.name}'s rocket exploded at {rocket.Coord}");
-        ResolveShot(rocket.Owner, rocket.Data, rocket.GetBlastTiles());
-        _rockets.Remove(rocket);
+        Debug.Log($"{shooter.name}'s rocket exploded at {rocket.Coord}");
+        ResolveShot(shooter, rocket.Data, rocket.GetBlastTiles());
+        _rockets.Remove((shooter, rocket));
         Destroy(rocket.gameObject);
     }
 
