@@ -638,6 +638,49 @@ namespace UnholyTrinity.Players
             return true;
         }
 
+        // kills outright, e.g. lava or a fall into the void
+        public void Kill()
+        {
+            if (IsDead)
+            {
+                return;
+            }
+
+            CurrentHealth = 0;
+            Debug.Log($"{name} died. RIP");
+        }
+
+        // heals, harms or kills if the player is on a health tile with a matching trigger. the game
+        // manager calls this with OnEnter for each hex entered during the move, and with OnStop where
+        // the move ends, including when the player didn't move
+        public void ApplyHealthTile(HealthTrigger reached)
+        {
+            if (IsDead ||
+                mapManager == null ||
+                mapManager.Map == null ||
+                !mapManager.Map.TryGetTile(Coord, out HexTile tile) ||
+                tile.Type != TileType.Health ||
+                tile.Health.Trigger != reached)
+            {
+                return;
+            }
+
+            HealthTileSettings health = tile.Health;
+
+            if (health.Lethal)
+            {
+                Kill();
+            }
+            else if (health.Amount > 0)
+            {
+                TryHeal(health.Amount);
+            }
+            else if (health.Amount < 0)
+            {
+                TakeDamage(-health.Amount);
+            }
+        }
+
         #endregion
 
         #region Event Handlers

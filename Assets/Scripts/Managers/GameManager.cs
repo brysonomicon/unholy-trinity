@@ -197,8 +197,31 @@ public class GameManager : ScriptableObject
             // let the game manager handle progressing the iterator of ResolveMove instead 
             // PlanMove so planning doesn't change the real state
             IEnumerator<(int, HexCoord)> move = player.GetPlannedAction(tickIndex)?.Move?.Invoke();
+
+            // the first yield is where the player starts, every yield after it is a hex they
+            // just entered. a lethal tile ends the move where the player dies
+            bool isStart = true;
             while (move != null && move.MoveNext())
-            {}
+            {
+                if (isStart)
+                {
+                    isStart = false;
+                    continue;
+                }
+
+                player.ApplyHealthTile(HealthTrigger.OnEnter);
+
+                if (player.IsDead)
+                {
+                    break;
+                }
+            }
+        }
+
+        // OnStop health tiles fire where each player ends up, including players who didn't move
+        foreach (Player player in _players)
+        {
+            player.ApplyHealthTile(HealthTrigger.OnStop);
         }
 
         AdvanceRockets();
