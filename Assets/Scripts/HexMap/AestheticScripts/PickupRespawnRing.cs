@@ -11,10 +11,15 @@ namespace UnholyTrinity.Hex
         {
             [SerializeField, Tooltip("Clockwise from 12.)")]
             private Renderer[] segments = new Renderer[12];
+
+            [SerializeField]
+            private Renderer innerRing = new Renderer();
             [SerializeField] private Material litMaterial;
             [SerializeField] private Material unlitMaterial;
+            [SerializeField] private Material innerLitMaterial;
+            [SerializeField] private Material innerUnlitMaterial;
 
-            public void Show (PickupSpawn spawn)
+        public void Show (PickupSpawn spawn)
         {
             int total = spawn.Definition.RespawnTicks;
             float progress = spawn.IsAvailable ? 1f : (float)(total-spawn.TicksUntilRespawn) / total;
@@ -27,6 +32,10 @@ namespace UnholyTrinity.Hex
                     continue;
                 }
                 segments[i].sharedMaterial = i < lit ? litMaterial : unlitMaterial;
+            }
+            if (innerRing != null)
+            {
+                innerRing.sharedMaterial = spawn.IsAvailable ? innerLitMaterial : innerUnlitMaterial;
             }
         }
 

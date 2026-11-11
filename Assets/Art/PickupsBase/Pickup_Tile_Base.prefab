@@ -58,8 +58,11 @@ MonoBehaviour:
   - {fileID: 2484499135951881117}
   - {fileID: 7815747796152774362}
   - {fileID: 5715346585043487792}
+  innerRing: {fileID: 6759996311235304475}
   litMaterial: {fileID: 2100000, guid: 6b62145a0fdebc04fb305a444acfde68, type: 2}
   unlitMaterial: {fileID: 2100000, guid: a1e0da72134d4664e96357c7aa1efacd, type: 2}
+  innerLitMaterial: {fileID: 2100000, guid: 6b62145a0fdebc04fb305a444acfde68, type: 2}
+  innerUnlitMaterial: {fileID: 2100000, guid: c04d128b4f1ca7347a066576932de486, type: 2}
 --- !u!1001 &7882068260347083456
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -160,6 +163,11 @@ MeshRenderer:
 --- !u!23 &5715346585043487792 stripped
 MeshRenderer:
   m_CorrespondingSourceObject: {fileID: -6759262976863357200, guid: 6392d7031c224bd40aafe5860ff0121a, type: 3}
+  m_PrefabInstance: {fileID: 7882068260347083456}
+  m_PrefabAsset: {fileID: 0}
+--- !u!23 &6759996311235304475 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 3509130420081911515, guid: 6392d7031c224bd40aafe5860ff0121a, type: 3}
   m_PrefabInstance: {fileID: 7882068260347083456}
   m_PrefabAsset: {fileID: 0}
 --- !u!23 &7102171756391248292 stripped

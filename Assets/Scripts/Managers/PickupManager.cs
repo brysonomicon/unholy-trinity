@@ -14,17 +14,20 @@ public class PickupManager : MonoBehaviour
     [SerializeField] private MapManager mapManager;
     [SerializeField] private float visualHeightOffset = 0.5f;
     [SerializeField] private PickupRespawnRing respawnRingPrefab;
+    [SerializeField] private Material pickupGhostMaterial;
 
     private readonly struct PickupVisual
     {
         public readonly GameObject Root, Model;
         public readonly PickupRespawnRing Ring;
+        public readonly PickupGhost Ghost;
 
         public PickupVisual(GameObject root, GameObject model, PickupRespawnRing ring)
         {
             Root = root;
             Model = model;
             Ring = ring;
+            Ghost = model.GetComponent<PickupGhost>();
         }
     }
 
@@ -118,6 +121,9 @@ public class PickupManager : MonoBehaviour
                 model.AddComponent<PickupSpin>();
             }
 
+            var ghost = model.AddComponent<PickupGhost>();
+            ghost.Init(pickupGhostMaterial);
+
             var ring = respawnRingPrefab != null ? Instantiate(respawnRingPrefab, root.transform) : null;
 
             _visuals.Add(coord, new PickupVisual(root, model, ring));
@@ -160,7 +166,7 @@ public class PickupManager : MonoBehaviour
         {
             return;
         }
-        visual.Model.SetActive(spawn.IsAvailable);
+        visual.Ghost.SetGhosted(!spawn.IsAvailable);
         if (visual.Ring != null)
         {
             visual.Ring.Show(spawn);
