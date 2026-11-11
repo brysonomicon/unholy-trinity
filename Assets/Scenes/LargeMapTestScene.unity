@@ -387,7 +387,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TilePicker
   mapManager: {fileID: 495801503}
-  cam: {fileID: 0}
+  cam: {fileID: 2066222910}
   uiManager: {fileID: 7453945252367422757}
 --- !u!4 &920963449
 Transform:
@@ -912,7 +912,7 @@ PrefabInstance:
     - target: {fileID: 2474092205942020605, guid: 87f0d5f6048a7c74c9fc04cb1baba382, type: 3}
       propertyPath: gm
       value: 
-      objectReference: {fileID: 5987722757522701544}
+      objectReference: {fileID: 710682130}
     - target: {fileID: 2474092205942020605, guid: 87f0d5f6048a7c74c9fc04cb1baba382, type: 3}
       propertyPath: resolutionCamera
       value: 
@@ -1177,6 +1177,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1c107253ce0da5547abfa7e89e5369ad, type: 3}
+--- !u!20 &2066222910 stripped
+Camera:
+  m_CorrespondingSourceObject: {fileID: 7593800750552407106, guid: 1c107253ce0da5547abfa7e89e5369ad, type: 3}
+  m_PrefabInstance: {fileID: 2000134267}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &5987722757522701543
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1242,17 +1247,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 82668270a1595324f9ecffff88a59fe8, type: 3}
---- !u!114 &5987722757522701544 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 5741930934989620464, guid: 82668270a1595324f9ecffff88a59fe8, type: 3}
-  m_PrefabInstance: {fileID: 5987722757522701543}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9ceea8b0c79a94e41bf1e9426e5ed9d6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GameManager
 --- !u!1001 &7453945252367422755
 PrefabInstance:
   m_ObjectHideFlags: 0
