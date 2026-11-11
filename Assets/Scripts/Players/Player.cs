@@ -22,6 +22,7 @@ namespace UnholyTrinity.Players
 
         [Header("Map")]
         [SerializeField] private float heightOffset = 0.5f;
+        [SerializeField] private DirectionCompass directionCompass;
         
         [field: SerializeField] public PlayerCameraRig CameraRig { get; private set; }
 
@@ -306,6 +307,7 @@ namespace UnholyTrinity.Players
             ClearSelectedTile();
             SnapToCoord();
             ClearForecast();
+            directionCompass.Hide();
         }
 
         // resolution plays out for real from here, so the forecast and planned pickups are cleared
@@ -316,6 +318,7 @@ namespace UnholyTrinity.Players
             SnapToCoord();
             ClearForecast();
             ShowLiveAim();
+            directionCompass.Hide();
 
             // ghost i stands where the player ends tick i, which is where tick i + 1's shot fires
             // from. each is picked up as its tick resolves, taking its cone with it
@@ -826,6 +829,7 @@ namespace UnholyTrinity.Players
             {
                 // Do stuff to enable actions
                 ClearPlan();
+                directionCompass.Show(mapManager.Layout);
             }
             else
             {
