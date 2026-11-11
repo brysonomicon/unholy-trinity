@@ -12,6 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86d9957e0496457ba3b09a0b687bd493, type: 3}
   m_Name: TurnManager
   m_EditorClassIdentifier: Assembly-CSharp::TurnManager
-  playerOne: {fileID: 0}
-  playerTwo: {fileID: 0}
-  resolutionDuration: 1
+  <TicksPerTurn>k__BackingField: 3
+  <TickDuration>k__BackingField: 2

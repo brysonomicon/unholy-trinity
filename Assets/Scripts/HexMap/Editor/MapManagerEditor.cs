@@ -9,7 +9,8 @@ namespace UnholyTrinity.Hex.Editing
     /// <summary>
     /// Inspector palette plus Scene-view painting for a MapManager's <see cref="HexMapDefinition"/>.
     /// LMB / drag paints, Shift+LMB erases, R rotates the boost direction.
-    /// Portal mode: click the first hex, then the second, to place a linked pair.
+    /// Portal modes: Two Way places a linked pair (click A, then B). One Way picks a target first, then every
+    /// click places an entrance into it; click the target again to release it. Exit places a receive-only portal.
     /// </summary>
     [CustomEditor(typeof(MapManager))]
     public class MapManagerEditor : Editor
@@ -23,6 +24,7 @@ namespace UnholyTrinity.Hex.Editing
         private static HealthTileSettings _healthHarm = HealthTileSettings.Harm(1);
         private static PickupDefinition _pickup;
         private static int _portalRotation;
+        private static PortalPaintMode _portalMode = PortalPaintMode.TwoWay;
         private static int _fillRadius = 4;
         private static bool _fillWithWallBorder = true;
 
@@ -41,11 +43,20 @@ namespace UnholyTrinity.Hex.Editing
             public HealthTileSettings Health;
             public PickupDefinition Pickup;
             public int PortalRotation;
+            public PortalPaintMode PortalMode;
             public int FillRadius;
             public bool FillWithWallBorder;
         }
 
-        private HexCoord? _pendingPortal;
+        private enum PortalPaintMode
+        {
+            TwoWay,
+            OneWay,
+            Exit,
+        }
+
+        // Two Way: the first hex of the pair. One Way: the target new entrances link to.
+        private static HexCoord? _pendingPortal;
         private HexCoord? _hovered;
 
         private void OnEnable() => LoadPalette();
@@ -70,6 +81,7 @@ namespace UnholyTrinity.Hex.Editing
             _healthHarm = state.Health;
             _pickup = state.Pickup;
             _portalRotation = state.PortalRotation;
+            _portalMode = state.PortalMode;
             _fillRadius = state.FillRadius;
             _fillWithWallBorder = state.FillWithWallBorder;
         }
@@ -85,6 +97,7 @@ namespace UnholyTrinity.Hex.Editing
                 Health = _healthHarm,
                 Pickup = _pickup,
                 PortalRotation = _portalRotation,
+                PortalMode = _portalMode,
                 FillRadius = _fillRadius,
                 FillWithWallBorder = _fillWithWallBorder,
             };
@@ -159,8 +172,10 @@ namespace UnholyTrinity.Hex.Editing
                             (BoostMode)EditorGUILayout.EnumPopup("Mode",
                                 _boost.Mode);
                         if (_boost.Mode == BoostMode.Fixed)
+                        {
                             _boost.Direction = DirectionPopup("Direction",
                                 _boost.Direction, manager.Orientation);
+                        }
                         break;
                     case TileType.PickupPoint:
                         _pickup = (PickupDefinition)EditorGUILayout.ObjectField(
@@ -174,15 +189,27 @@ namespace UnholyTrinity.Hex.Editing
                         _healthHarm.Trigger = (HealthTrigger)EditorGUILayout.EnumPopup(new GUIContent("Trigger", "On Enter fires for every hex slid into; On Stop only where the slide ends."), _healthHarm.Trigger);
                         break;
                     case TileType.Portal:
-                        _portalRotation = EditorGUILayout.IntSlider(
-                            new GUIContent("Rotation (A to B)",
-                                "60 degree CCW steps applied when exiting at B; B to A uses the inverse."),
-                            _portalRotation, 0, 5);
-                        EditorGUILayout.LabelField(
-                            _pendingPortal.HasValue
-                                ? $"First portal at {_pendingPortal.Value}, click the second hex."
-                                : "Click the first portal hex.",
-                            EditorStyles.miniLabel);
+                        var mode = (PortalPaintMode)EditorGUILayout.EnumPopup(
+                            new GUIContent("Mode",
+                                "Two Way: a linked pair. One Way: entrances into one target. Exit: receive-only portal."),
+                            _portalMode);
+                        if (mode != _portalMode)
+                        {
+                            _portalMode = mode;
+                            _pendingPortal = null;
+                        }
+
+                        if (_portalMode != PortalPaintMode.Exit)
+                        {
+                            _portalRotation = EditorGUILayout.IntSlider(
+                                _portalMode == PortalPaintMode.TwoWay
+                                    ? new GUIContent("Rotation (A to B)",
+                                        "60 degree CCW steps applied when exiting at B; B to A uses the inverse.")
+                                    : new GUIContent("Rotation",
+                                        "60 degree CCW steps applied when exiting at the target."),
+                                _portalRotation, 0, 5);
+                        }
+                        EditorGUILayout.LabelField(PortalHint(), EditorStyles.miniLabel);
                         break;
                     // [CB] This causes exceptions to be thrown. Sketch.
                     // case TileType.Floor:
@@ -207,13 +234,17 @@ namespace UnholyTrinity.Hex.Editing
             using (new EditorGUILayout.HorizontalScope())
             {
                 if (GUILayout.Button("Fill Hexagon"))
+                {
                     FillHexagon(definition, Mathf.Max(0, _fillRadius),
                         _fillWithWallBorder);
+                }
                 if (GUILayout.Button("Clear") &&
                     EditorUtility.DisplayDialog("Clear map",
                         $"Remove all tiles from '{definition.name}'?", "Clear",
                         "Cancel"))
+                {
                     Modify(definition, "Clear Hex Map", d => d.Clear());
+                }
             }
 
             var problems = definition.Validate();
@@ -241,17 +272,23 @@ namespace UnholyTrinity.Hex.Editing
                 e.mousePosition);
 
             if (_hovered.HasValue)
+            {
                 HexMapGizmos.OutlineHex(layout, _hovered.Value,
                     e.shift
                         ? HexTileStyle.WongVermilion
                         : HexTileStyle.WongYellow);
+            }
             if (_pendingPortal.HasValue)
+            {
                 HexMapGizmos.OutlineHex(layout, _pendingPortal.Value,
                     HexTileStyle.WongReddishPurple, 5f);
+            }
             if (_paintType == TileType.Boost && _boost.Mode == BoostMode.Fixed &&
                 _hovered.HasValue)
+            {
                 HexMapGizmos.DrawArrow(layout, layout.HexToWorld(_hovered.Value),
                     _boost.Direction, HexTileStyle.WongYellow);
+            }
 
             switch (e.type)
             {
@@ -295,9 +332,16 @@ namespace UnholyTrinity.Hex.Editing
         {
             if (erase)
             {
-                if (definition.TryGetTile(coord, out _))
+                if (definition.TryGetTile(coord, out var erased))
                 {
-                    Modify(definition, "Erase Hex", d => d.RemoveTile(coord));
+                    Modify(definition, "Erase Hex", d =>
+                    {
+                        d.RemoveTile(coord);
+                        if (erased.Type == TileType.Portal)
+                            UnlinkEntrancesTo(d, coord);
+                    });
+                    if (_pendingPortal == coord)
+                        _pendingPortal = null;
                 }                
                 return;
             }
@@ -322,28 +366,97 @@ namespace UnholyTrinity.Hex.Editing
 
             if (definition.TryGetTile(coord, out var existing) &&
                 SameTile(existing, tile))
+            {
                 return;
+            }
+
             Modify(definition, "Paint Hex", d => d.SetTile(tile));
         }
 
         public void PlacePortal(HexMapDefinition definition, HexCoord coord)
         {
-            if (!_pendingPortal.HasValue || _pendingPortal.Value == coord)
+            switch (_portalMode)
             {
-                _pendingPortal = coord;
-                Repaint();
-                return;
+                case PortalPaintMode.Exit:
+                    _pendingPortal = null;
+                    // a two-way partner that pointed here keeps working as a one-way entrance
+                    Modify(definition, "Place Portal Exit", d => d.SetTile(HexTile.PortalExit(coord)));
+                    break;
+
+                case PortalPaintMode.OneWay:
+                    if (!_pendingPortal.HasValue)
+                    {
+                        _pendingPortal = coord;
+                        break;
+                    }
+
+                    var portalTarget = _pendingPortal.Value;
+                    if (portalTarget == coord)
+                    {
+                        // clicking the target again releases it
+                        _pendingPortal = null;
+                        break;
+                    }
+
+                    Modify(definition, "Place Portal Entrance", d =>
+                    {
+                        if (!d.TryGetTile(portalTarget, out var targetTile) ||
+                            targetTile.Type != TileType.Portal)
+                        {
+                            d.SetTile(HexTile.PortalExit(portalTarget));
+                        }
+
+                        d.SetTile(HexTile.PortalTile(coord, portalTarget, _portalRotation));
+                    });
+                    break;
+
+                default:
+                    if (!_pendingPortal.HasValue || _pendingPortal.Value == coord)
+                    {
+                        _pendingPortal = coord;
+                        break;
+                    }
+
+                    var a = _pendingPortal.Value;
+                    _pendingPortal = null;
+                    Modify(definition, "Place Portal Pair", d =>
+                    {
+                        d.SetTile(HexTile.PortalTile(a, coord, _portalRotation));
+                        d.SetTile(
+                            HexTile.PortalTile(coord, a, (6 - _portalRotation) % 6));
+                    });
+                    break;
             }
 
-            var a = _pendingPortal.Value;
-            _pendingPortal = null;
-            Modify(definition, "Place Portal Pair", d =>
-            {
-                d.SetTile(HexTile.PortalTile(a, coord, _portalRotation));
-                d.SetTile(
-                    HexTile.PortalTile(coord, a, (6 - _portalRotation) % 6));
-            });
             Repaint();
+        }
+
+        private static string PortalHint()
+        {
+            switch (_portalMode)
+            {
+                case PortalPaintMode.Exit:
+                    return "Click to place a receive-only exit.";
+                case PortalPaintMode.OneWay:
+                    return _pendingPortal.HasValue
+                        ? $"Target {_pendingPortal.Value}: click to add entrances, click the target to release."
+                        : "Click the target (an exit or existing portal).";
+                default:
+                    return _pendingPortal.HasValue
+                        ? $"First portal at {_pendingPortal.Value}, click the second hex."
+                        : "Click the first portal hex.";
+            }
+        }
+
+        // entrances into a removed portal become floor so the map never holds a dangling link
+        private static void UnlinkEntrancesTo(HexMapDefinition definition, HexCoord target)
+        {
+            var dangling = definition.Entries
+                .Where(e => e.Type == TileType.Portal && !e.Portal.ExitOnly && e.Portal.Target == target)
+                .Select(e => e.Coord)
+                .ToList();
+            foreach (var coord in dangling)
+                definition.SetTile(HexTile.Floor(coord));
         }
 
         private static void FillHexagon(
@@ -354,13 +467,17 @@ namespace UnholyTrinity.Hex.Editing
             Modify(definition, "Fill Hexagon", d =>
             {
                 foreach (var coord in HexCoord.Range(HexCoord.Zero, radius))
+                {
                     if (!d.TryGetTile(coord, out _))
                         d.SetTile(HexTile.Floor(coord));
+                }
                 if (wallBorder)
                 {
                     foreach (var coord in HexCoord.Ring(HexCoord.Zero,
                                  radius + 1))
+                    {
                         d.SetTile(HexTile.Wall(coord));
+                    }
                 }
                     
             });
