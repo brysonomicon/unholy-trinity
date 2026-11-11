@@ -33,8 +33,23 @@ namespace UnholyTrinity.Hex.Editing
                     DrawTile(layout, tile, style.ColorFor(tile));
                 }
                 foreach (var entry in manager.Definition.Entries)
-                    if (entry.Type == TileType.Portal)
-                        DrawPortalLink(layout, entry.Coord, entry.Portal.Target, style.PortalColor);
+                {
+                    if (entry.Type != TileType.Portal)
+                        continue;
+                    if (entry.Portal.ExitOnly)
+                    {
+                        OutlineHex(layout, entry.Coord, style.PortalColor, 5f);
+                        Handles.Label(layout.HexToWorld(entry.Coord), "EXIT", EditorStyles.whiteBoldLabel);
+                        continue;
+                    }
+
+                    bool twoWay = manager.Definition.TryGetTile(entry.Portal.Target, out var target)
+                                  && target.Type == TileType.Portal && target.Portal.IsEntrance
+                                  && target.Portal.Target == entry.Coord;
+                    DrawPortalLink(layout, entry.Coord, entry.Portal.Target, style.PortalColor, !twoWay);
+                    if (entry.Portal.RotationSteps % 6 != 0)
+                        Handles.Label(layout.HexToWorld(entry.Coord), $"R{entry.Portal.RotationSteps}", EditorStyles.whiteBoldLabel);
+                }
             }
             finally
             {
@@ -123,12 +138,21 @@ namespace UnholyTrinity.Hex.Editing
             Handles.DrawAAPolyLine(4f, tip - dir * (layout.Size * 0.3f) + side, tip, tip - dir * (layout.Size * 0.3f) - side);
         }
 
-        private static void DrawPortalLink(HexLayout layout, HexCoord from, HexCoord to, Color color)
+        // two-way pairs draw once per side, so a plain dotted line; one-way links get an arrowhead at the target
+        private static void DrawPortalLink(HexLayout layout, HexCoord from, HexCoord to, Color color, bool oneWay)
         {
             var a = layout.HexToWorld(from) + Vector3.up * 0.05f;
             var b = layout.HexToWorld(to) + Vector3.up * 0.05f;
             Handles.color = color;
             Handles.DrawDottedLine(a, b, 4f);
+            if (!oneWay || (b - a).sqrMagnitude < 0.0001f)
+                return;
+
+            var dir = (b - a).normalized;
+            var tip = b - dir * (layout.Size * 0.6f);
+            var side = Vector3.Cross(Vector3.up, dir) * (layout.Size * 0.25f);
+            var back = tip - dir * (layout.Size * 0.35f);
+            Handles.DrawAAPolyLine(4f, back + side, tip, back - side);
         }
     }
 }

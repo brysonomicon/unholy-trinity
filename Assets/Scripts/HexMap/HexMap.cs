@@ -56,7 +56,7 @@ namespace UnholyTrinity.Hex
 
         public bool TryGetPortalExit(HexCoord coord, out HexCoord exit, out int rotationSteps)
         {
-            if (tiles.TryGetValue(coord, out var tile) && tile.Type == TileType.Portal
+            if (tiles.TryGetValue(coord, out var tile) && tile.Type == TileType.Portal && tile.Portal.IsEntrance
                 && tiles.TryGetValue(tile.Portal.Target, out var target) && target.Type == TileType.Portal
                 && tile.Portal.Target != coord)
             {
@@ -68,6 +68,15 @@ namespace UnholyTrinity.Hex
             exit = coord;
             rotationSteps = 0;
             return false;
+        }
+
+        /// <summary>Every portal entrance that sends units to <paramref name="target"/>.</summary>
+        public IEnumerable<HexCoord> EntrancesTo(HexCoord target)
+        {
+            foreach (var tile in tiles.Values)
+                if (tile.Type == TileType.Portal && tile.Portal.IsEntrance && tile.Portal.Target == target
+                    && tile.Coord != target)
+                    yield return tile.Coord;
         }
 
         public IEnumerable<HexTile> TilesOfType(TileType type)
@@ -95,6 +104,14 @@ namespace UnholyTrinity.Hex
 
         void ValidatePortal(HexTile tile, List<string> problems)
         {
+            if (tile.Portal.ExitOnly)
+            {
+                using var entrances = EntrancesTo(tile.Coord).GetEnumerator();
+                if (!entrances.MoveNext())
+                    problems.Add($"Portal exit {tile.Coord} has no entrances.");
+                return;
+            }
+
             var target = tile.Portal.Target;
             if (target == tile.Coord)
                 problems.Add($"Portal {tile.Coord} links to itself.");
@@ -102,8 +119,6 @@ namespace UnholyTrinity.Hex
                 problems.Add($"Portal {tile.Coord} links to {target}, which is off the map.");
             else if (other.Type != TileType.Portal)
                 problems.Add($"Portal {tile.Coord} links to {target}, which is a {other.Type}, not a portal.");
-            else if (other.Portal.Target != tile.Coord)
-                problems.Add($"Portal {tile.Coord} links to {target}, but that portal links to {other.Portal.Target}.");
         }
 
         static void ValidatePickupPoint(HexTile tile, List<string> problems)

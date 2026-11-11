@@ -238,7 +238,7 @@ public class GameManager : MonoBehaviour
             IEnumerator<(int, HexCoord)> playerMove =
                 player.GetPlannedAction(tickIndex)?.Move.Invoke();
             if (playerMove == null) continue;
-            movingObjects.Add(new MoveData(WithTileEffects(player, playerMove)));
+            movingObjects.Add(new MoveData(WithTileEffects(player, playerMove, tickIndex)));
         }
         
         _rockets.ForEach(rocket =>
@@ -277,8 +277,9 @@ public class GameManager : MonoBehaviour
     // runs OnEnter health tiles and pickups on each hex the player enters, on the subtick they
     // enter it, so pickups vanish as the player reaches them. the first yield is where the player
     // starts. ends with 0 moves left when the move finishes, is blocked, or the player dies, so the
-    // movement manager knows the player is done
-    private IEnumerator<(int, HexCoord)> WithTileEffects(Player player, IEnumerator<(int, HexCoord)> move)
+    // movement manager knows the player is done. a portal entrance moves the player to its target
+    // after the entrance's own effects, then the target's OnEnter effects run too
+    private IEnumerator<(int, HexCoord)> WithTileEffects(Player player, IEnumerator<(int, HexCoord)> move, int tickIndex)
     {
         if (!move.MoveNext())
         {
@@ -298,6 +299,19 @@ public class GameManager : MonoBehaviour
             {
                 yield return (0, entered);
                 yield break;
+            }
+
+            if (player.ApplyPortal(tickIndex))
+            {
+                entered = player.Coord;
+                player.ApplyHealthTile(HealthTrigger.OnEnter);
+                Pickups?.TryCollect(entered, PickupTrigger.OnEnter, player);
+
+                if (player.IsDead)
+                {
+                    yield return (0, entered);
+                    yield break;
+                }
             }
 
             yield return (remainingMoves, entered);

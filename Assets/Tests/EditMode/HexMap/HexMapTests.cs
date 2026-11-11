@@ -68,15 +68,51 @@ namespace UnholyTrinity.Hex.Tests
             map.SetTile(HexTile.PortalTile(new HexCoord(1, 0), new HexCoord(2, 0)));           // target not a portal
             map.SetTile(HexTile.Floor(new HexCoord(2, 0)));
             map.SetTile(HexTile.PortalTile(new HexCoord(3, 0), new HexCoord(3, 0)));           // self
-            map.SetTile(HexTile.PortalTile(new HexCoord(4, 0), new HexCoord(5, 0)));           // not reciprocal
-            map.SetTile(HexTile.PortalTile(new HexCoord(5, 0), new HexCoord(3, 0)));
+            map.SetTile(HexTile.PortalExit(new HexCoord(6, 0)));                               // exit nobody uses
 
             var problems = map.Validate();
             Assert.That(problems.Any(p => p.Contains("(0, 0)") && p.Contains("off the map")));
             Assert.That(problems.Any(p => p.Contains("(1, 0)") && p.Contains("not a portal")));
             Assert.That(problems.Any(p => p.Contains("(3, 0)") && p.Contains("itself")));
-            Assert.That(problems.Any(p => p.Contains("(4, 0)") && p.Contains("but that portal")));
+            Assert.That(problems.Any(p => p.Contains("(6, 0)") && p.Contains("no entrances")));
             Assert.IsFalse(map.TryGetPortalExit(new HexCoord(0, 0), out _, out _));
+        }
+
+        [Test]
+        public void Validate_AcceptsOneWayAndManyToOnePortals()
+        {
+            var map = new HexMap();
+            var exit = new HexCoord(5, 0);
+            var pairEnd = new HexCoord(0, 3);
+            map.SetTile(HexTile.PortalExit(exit));
+            map.SetTile(HexTile.PortalTile(new HexCoord(0, 0), exit, 1));
+            map.SetTile(HexTile.PortalTile(new HexCoord(1, 0), exit, 2));
+            // entrances into one side of a two-way pair
+            map.SetTile(HexTile.PortalTile(new HexCoord(0, 2), pairEnd));
+            map.SetTile(HexTile.PortalTile(pairEnd, new HexCoord(2, 2)));
+            map.SetTile(HexTile.PortalTile(new HexCoord(2, 2), pairEnd));
+
+            Assert.IsEmpty(map.Validate());
+            CollectionAssert.AreEquivalent(new[] { new HexCoord(0, 0), new HexCoord(1, 0) }, map.EntrancesTo(exit));
+            CollectionAssert.AreEquivalent(new[] { new HexCoord(0, 2), new HexCoord(2, 2) }, map.EntrancesTo(pairEnd));
+        }
+
+        [Test]
+        public void PortalExit_SendsNothingAnywhere()
+        {
+            var map = new HexMap();
+            var exit = new HexCoord(3, 0);
+            map.SetTile(HexTile.PortalExit(exit));
+            map.SetTile(HexTile.PortalTile(new HexCoord(0, 0), exit, 2));
+            map.SetTile(HexTile.PortalTile(new HexCoord(1, 0), exit, 4));
+
+            Assert.IsFalse(map.TryGetPortalExit(exit, out _, out _));
+            Assert.IsTrue(map.TryGetPortalExit(new HexCoord(0, 0), out var a, out int rotA));
+            Assert.IsTrue(map.TryGetPortalExit(new HexCoord(1, 0), out var b, out int rotB));
+            Assert.AreEqual(exit, a);
+            Assert.AreEqual(exit, b);
+            Assert.AreEqual(2, rotA);
+            Assert.AreEqual(4, rotB);
         }
 
         [Test]
@@ -98,6 +134,8 @@ namespace UnholyTrinity.Hex.Tests
                 map.SetTile(HexTile.HealTile(new HexCoord(3, 1), 2));
                 map.SetTile(HexTile.HarmTile(new HexCoord(4, 1), 3, HealthTrigger.OnStop));
                 map.SetTile(HexTile.KillTile(new HexCoord(0, 2)));
+                map.SetTile(HexTile.PortalExit(new HexCoord(1, 2)));
+                map.SetTile(HexTile.PortalTile(new HexCoord(2, 2), new HexCoord(1, 2), 3));
 
                 definition.Write(map);
                 var rebuilt = definition.Build();

@@ -2,22 +2,35 @@ using System;
 
 namespace UnholyTrinity.Hex
 {
-    /// <summary>Destination of a <see cref="TileType.Portal"/> tile. Portals come in reciprocal pairs.</summary>
+    /// <summary>
+    /// Payload of a <see cref="TileType.Portal"/> tile. An entrance sends whatever steps onto it to
+    /// <see cref="Target"/>; an exit only receives. Two entrances targeting each other make a two-way pair,
+    /// and any number of entrances may share one target.
+    /// </summary>
     [Serializable]
     public struct PortalLink : IEquatable<PortalLink>
     {
         public HexCoord Target;
         /// <summary>60 degree steps (counter-clockwise) applied to a unit's direction when it exits at <see cref="Target"/>.</summary>
         public int RotationSteps;
+        /// <summary>True for a receive-only exit; <see cref="Target"/> and <see cref="RotationSteps"/> are ignored.</summary>
+        public bool ExitOnly;
 
         public PortalLink(HexCoord target, int rotationSteps = 0)
         {
             Target = target;
             RotationSteps = rotationSteps;
+            ExitOnly = false;
         }
+
+        public static PortalLink Exit => new PortalLink { ExitOnly = true };
+
+        public bool IsEntrance => !ExitOnly;
 
         public bool Equals(PortalLink other)
         {
+            if (ExitOnly || other.ExitOnly)
+                return ExitOnly == other.ExitOnly;
             return Target.Equals(other.Target) && RotationSteps == other.RotationSteps;
         }
 
@@ -28,7 +41,7 @@ namespace UnholyTrinity.Hex
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Target, RotationSteps);
+            return ExitOnly ? 1 : HashCode.Combine(Target, RotationSteps);
         }
     }
 }
