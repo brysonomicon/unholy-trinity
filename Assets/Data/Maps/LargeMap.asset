@@ -1281,15 +1281,15 @@ MonoBehaviour:
   - Coord:
       <Q>k__BackingField: -12
       <R>k__BackingField: 1
-    Type: 0
+    Type: 4
     Boost:
       Strength: 0
       Mode: 0
       Direction: 0
     Portal:
       Target:
-        <Q>k__BackingField: 0
-        <R>k__BackingField: 0
+        <Q>k__BackingField: 9
+        <R>k__BackingField: 3
       RotationSteps: 0
     Pickup:
       Pickup: {fileID: 0}
@@ -13954,15 +13954,15 @@ MonoBehaviour:
   - Coord:
       <Q>k__BackingField: 9
       <R>k__BackingField: 3
-    Type: 0
+    Type: 4
     Boost:
       Strength: 0
       Mode: 0
       Direction: 0
     Portal:
       Target:
-        <Q>k__BackingField: 0
-        <R>k__BackingField: 0
+        <Q>k__BackingField: -12
+        <R>k__BackingField: 1
       RotationSteps: 0
     Pickup:
       Pickup: {fileID: 0}
