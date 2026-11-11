@@ -19,12 +19,14 @@ namespace UnholyTrinity.Players
         private float labelHeight;
 
         private readonly List<(TMP_Text label, Vector3 offset)> labels = new();
-        private Camera viewCamera;
+        
+        // fully qualified: inside UnholyTrinity.*, plain "Camera" resolves to the UnholyTrinity.Camera namespace
+        private UnityEngine.Camera viewCamera;
 
         public void Show(HexLayout layout)
         {
             Hide();
-            viewCamera = Camera.main;
+            viewCamera = UnityEngine.Camera.main;
 
             float hexDistance = Vector3.Distance(
                 layout.HexToWorld(HexCoord.Zero),
