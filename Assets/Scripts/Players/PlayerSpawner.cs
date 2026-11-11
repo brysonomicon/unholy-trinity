@@ -1,4 +1,5 @@
 using System;
+using Nrjwolf.Tools.AttachAttributes;
 using UnholyTrinity.Hex;
 using UnholyTrinity.Weapons;
 using UnityEngine;
@@ -20,7 +21,7 @@ namespace UnholyTrinity.Players
             public AimDirection Aim { get; private set; }
         }
 
-        [SerializeField] private MapManager mapManager;
+        [SerializeField][GetComponent] private MapManager mapManager;
         [SerializeField] private Player playerPrefab;
         [SerializeField] private SpawnPoint[] spawnPoints;
 

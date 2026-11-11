@@ -10,6 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1540755217613567755}
   - component: {fileID: 7730307120146724165}
+  - component: {fileID: 2658597681120904646}
+  - component: {fileID: 53186102402279379}
   m_Layer: 0
   m_Name: MapManager
   m_TagString: Untagged
@@ -49,3 +51,41 @@ MonoBehaviour:
   orientation: 0
   hexSize: 1
   orientationToggleKey: 95
+--- !u!114 &2658597681120904646
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7894865683037652111}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74e01cb9717c6d346a6db4b58838f629, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TilePicker
+  mapManager: {fileID: 7730307120146724165}
+  cam: {fileID: 0}
+  uiManager: {fileID: 0}
+--- !u!114 &53186102402279379
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7894865683037652111}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c09497707f2b8d0489fe3cbeed9215dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UnholyTrinity.Players.PlayerSpawner
+  mapManager: {fileID: 7730307120146724165}
+  playerPrefab: {fileID: 9068410019634648079, guid: c560c3193c1df7f488f308a030123633, type: 3}
+  spawnPoints:
+  - <Coord>k__BackingField:
+      <Q>k__BackingField: -20
+      <R>k__BackingField: 17
+    <Aim>k__BackingField: 2
+  - <Coord>k__BackingField:
+      <Q>k__BackingField: 2
+      <R>k__BackingField: -20
+    <Aim>k__BackingField: 10

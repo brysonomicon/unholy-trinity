@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 8283930086807354043}
   - component: {fileID: 5741930934989620464}
   - component: {fileID: 2963884451855807945}
+  - component: {fileID: 2405119649128882642}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -62,3 +63,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Managers.MovementManager
   moveDurationSec: 2
+--- !u!114 &2405119649128882642
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2544125384860395614}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62a04cc01d32d5649981f875f24863c9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PickupManager
+  gameManager: {fileID: 5741930934989620464}
+  mapManager: {fileID: 0}
+  visualHeightOffset: 0.5
+  respawnRingPrefab: {fileID: 0}
+  pickupGhostMaterial: {fileID: 0}

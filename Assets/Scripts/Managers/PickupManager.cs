@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Nrjwolf.Tools.AttachAttributes;
 using UnholyTrinity.Hex;
 using UnholyTrinity.Pickups;
 using UnityEngine;
@@ -10,7 +11,7 @@ using UnityEngine;
 /// </summary>
 public class PickupManager : MonoBehaviour
 {
-    [SerializeField] private GameManager gameManager;
+    [SerializeField][GetComponent] private GameManager gameManager;
     [SerializeField] private MapManager mapManager;
     [SerializeField] private float visualHeightOffset = 0.5f;
     [SerializeField] private PickupRespawnRing respawnRingPrefab;
