@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68ba49ec97707214b9725d4dc9a0e471, type: 3}
   m_Name: ArmourPickup
   m_EditorClassIdentifier: UnholyTrinity.Pickups::UnholyTrinity.Pickups.ArmourPickup
-  <DisplayName>k__BackingField: 
+  <DisplayName>k__BackingField: Heavy Armour
   <RespawnTicks>k__BackingField: 2
   <Trigger>k__BackingField: 0
   <VisualPrefab>k__BackingField: {fileID: 7810473164152590907, guid: 0685ad63801860647ac1d5d8236c3352, type: 3}
-  <Amount>k__BackingField: 1
+  <Amount>k__BackingField: 100

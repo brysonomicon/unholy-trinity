@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnholyTrinity.HexMap::UnholyTrinity.Hex.HexTileStyle
   Prefabs: []
   TileMaterial: {fileID: 0}
-  TileScale: 1
+  TileScale: 0.99
   FloorHeight: 0.1
   WallHeight: 1.2
   PitHeight: 0.01
