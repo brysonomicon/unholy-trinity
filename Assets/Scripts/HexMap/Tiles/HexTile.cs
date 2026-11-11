@@ -35,6 +35,7 @@ namespace UnholyTrinity.Hex
         public static HexTile PickupPoint(HexCoord coord, PickupDefinition pickup = null) => new HexTile(coord, TileType.PickupPoint, pickup: new PickupPointData(pickup));
         public static HexTile BoostTile(HexCoord coord, BoostSettings boost) => new HexTile(coord, TileType.Boost, boost: boost);
         public static HexTile PortalTile(HexCoord coord, HexCoord target, int rotationSteps = 0) => new HexTile(coord, TileType.Portal, portal: new PortalLink(target, rotationSteps));
+        public static HexTile PortalExit(HexCoord coord) => new HexTile(coord, TileType.Portal, portal: PortalLink.Exit);
         public static HexTile HealthTile(HexCoord coord, HealthTileSettings health) => new HexTile(coord, TileType.Health, health: health);
         public static HexTile HealTile(HexCoord coord, int amount, HealthTrigger trigger = HealthTrigger.OnEnter) => HealthTile(coord, HealthTileSettings.Heal(amount, trigger));
         public static HexTile HarmTile(HexCoord coord, int damage, HealthTrigger trigger = HealthTrigger.OnEnter) => HealthTile(coord, HealthTileSettings.Harm(damage, trigger));

@@ -7,10 +7,12 @@ using JetBrains.Annotations;
 using Managers;
 using NaughtyAttributes;
 using Nrjwolf.Tools.AttachAttributes;
-using UnholyTrinity.Pickups;
 using UnholyTrinity.Players;
 using UnholyTrinity.Weapons;
 using UnholyTrinity.Hex;
+using UnholyTrinity.Tiles;
+using UnholyTrinity.Camera;
+
 using UnityEngine;
 
 [RequireComponent(typeof(MovementManager))]
@@ -60,6 +62,8 @@ public class GameManager : MonoBehaviour
     // scene object, so it registers itself instead of being serialized on this asset.
     // null when the scene has no pickups
     [CanBeNull] public PickupManager Pickups { get; private set; }
+
+    [CanBeNull] private PickupField LivePickups => Pickups != null ? Pickups.Field : null;
 
     private readonly List<(Player shooter, Rocket rocket)> _rockets = new();
     private readonly List<(
@@ -150,6 +154,7 @@ public class GameManager : MonoBehaviour
 
         _players.Add(player);
         Debug.Log($"Registering {player.gameObject.name}");
+        CameraManager.Instance.RegisterPlayerTracked(player.transform, 1, 1);
         //Start the game when we get enough players.
         if(_players.Count == maxPlayers)
         {
@@ -252,12 +257,10 @@ public class GameManager : MonoBehaviour
             yield return moveManager.HandleTick(movingObjects);
         }
 
-        // OnStop health tiles and pickups fire where each player ends up, including players
-        // who didn't move
+        // OnStop tile effects fire where each player ends up, including players who didn't move
         foreach (Player player in _players)
         {
-            player.ApplyHealthTile(HealthTrigger.OnStop);
-            Pickups?.TryCollect(player.Coord, PickupTrigger.OnStop, player);
+            TileEffects.OnStop(player.Map, LivePickups, player.Coord, player);
         }
 
         // AdvanceRockets();
@@ -274,10 +277,10 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // runs OnEnter health tiles and pickups on each hex the player enters, on the subtick they
-    // enter it, so pickups vanish as the player reaches them. the first yield is where the player
-    // starts. ends with 0 moves left when the move finishes, is blocked, or the player dies, so the
-    // movement manager knows the player is done
+    // runs OnEnter tile effects on each hex the player enters, on the subtick they enter it, so
+    // pickups vanish as the player reaches them. the first yield is where the player starts. ends
+    // with 0 moves left when the move finishes, is blocked, or the player dies, so the movement
+    // manager knows the player is done. a portal entrance moves the player on to its target
     private IEnumerator<(int, HexCoord)> WithTileEffects(Player player, IEnumerator<(int, HexCoord)> move)
     {
         if (!move.MoveNext())
@@ -291,13 +294,18 @@ public class GameManager : MonoBehaviour
         {
             (int remainingMoves, HexCoord entered) = move.Current;
 
-            player.ApplyHealthTile(HealthTrigger.OnEnter);
-            Pickups?.TryCollect(entered, PickupTrigger.OnEnter, player);
+            HexCoord endsOn = TileEffects.OnEnter(player.Map, LivePickups, entered, player);
 
             if (player.IsDead)
             {
                 yield return (0, entered);
                 yield break;
+            }
+
+            if (endsOn != entered)
+            {
+                player.MoveThroughPortal(endsOn);
+                entered = endsOn;
             }
 
             yield return (remainingMoves, entered);

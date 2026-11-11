@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using UnholyTrinity.Pickups;
@@ -68,15 +69,97 @@ namespace UnholyTrinity.Hex.Tests
             map.SetTile(HexTile.PortalTile(new HexCoord(1, 0), new HexCoord(2, 0)));           // target not a portal
             map.SetTile(HexTile.Floor(new HexCoord(2, 0)));
             map.SetTile(HexTile.PortalTile(new HexCoord(3, 0), new HexCoord(3, 0)));           // self
-            map.SetTile(HexTile.PortalTile(new HexCoord(4, 0), new HexCoord(5, 0)));           // not reciprocal
-            map.SetTile(HexTile.PortalTile(new HexCoord(5, 0), new HexCoord(3, 0)));
+            map.SetTile(HexTile.PortalExit(new HexCoord(6, 0)));                               // exit nobody uses
 
             var problems = map.Validate();
-            Assert.That(problems.Any(p => p.Contains("(0, 0)") && p.Contains("off the map")));
-            Assert.That(problems.Any(p => p.Contains("(1, 0)") && p.Contains("not a portal")));
-            Assert.That(problems.Any(p => p.Contains("(3, 0)") && p.Contains("itself")));
-            Assert.That(problems.Any(p => p.Contains("(4, 0)") && p.Contains("but that portal")));
+            Assert.That(problems.Any(p => p.Contains(new HexCoord(0, 0).ToString()) && p.Contains("off the map")));
+            Assert.That(problems.Any(p => p.Contains(new HexCoord(1, 0).ToString()) && p.Contains("not a portal")));
+            Assert.That(problems.Any(p => p.Contains(new HexCoord(3, 0).ToString()) && p.Contains("itself")));
+            Assert.That(problems.Any(p => p.Contains(new HexCoord(6, 0).ToString()) && p.Contains("no entrances")));
             Assert.IsFalse(map.TryGetPortalExit(new HexCoord(0, 0), out _, out _));
+        }
+
+        [Test]
+        public void Validate_AcceptsOneWayAndManyToOnePortals()
+        {
+            var map = new HexMap();
+            var exit = new HexCoord(5, 0);
+            var pairEnd = new HexCoord(0, 3);
+            map.SetTile(HexTile.PortalExit(exit));
+            map.SetTile(HexTile.PortalTile(new HexCoord(0, 0), exit, 1));
+            map.SetTile(HexTile.PortalTile(new HexCoord(1, 0), exit, 2));
+            // entrances into one side of a two-way pair
+            map.SetTile(HexTile.PortalTile(new HexCoord(0, 2), pairEnd));
+            map.SetTile(HexTile.PortalTile(pairEnd, new HexCoord(2, 2)));
+            map.SetTile(HexTile.PortalTile(new HexCoord(2, 2), pairEnd));
+
+            Assert.IsEmpty(map.Validate());
+            CollectionAssert.AreEquivalent(new[] { new HexCoord(0, 0), new HexCoord(1, 0) }, map.EntrancesTo(exit));
+            CollectionAssert.AreEquivalent(new[] { new HexCoord(0, 2), new HexCoord(2, 2) }, map.EntrancesTo(pairEnd));
+        }
+
+        [Test]
+        public void PortalExit_SendsNothingAnywhere()
+        {
+            var map = new HexMap();
+            var exit = new HexCoord(3, 0);
+            map.SetTile(HexTile.PortalExit(exit));
+            map.SetTile(HexTile.PortalTile(new HexCoord(0, 0), exit, 2));
+            map.SetTile(HexTile.PortalTile(new HexCoord(1, 0), exit, 4));
+
+            Assert.IsFalse(map.TryGetPortalExit(exit, out _, out _));
+            Assert.IsTrue(map.TryGetPortalExit(new HexCoord(0, 0), out var a, out int rotA));
+            Assert.IsTrue(map.TryGetPortalExit(new HexCoord(1, 0), out var b, out int rotB));
+            Assert.AreEqual(exit, a);
+            Assert.AreEqual(exit, b);
+            Assert.AreEqual(2, rotA);
+            Assert.AreEqual(4, rotB);
+        }
+
+        static HexMap FloorHexagon(int radius)
+        {
+            var map = new HexMap();
+            foreach (var coord in HexCoord.Range(HexCoord.Zero, radius))
+                map.SetTile(HexTile.Floor(coord));
+            return map;
+        }
+
+        [Test]
+        public void RedirectThroughPortals_JumpsAndTurnsTheRemainingSteps()
+        {
+            var map = FloorHexagon(4);
+            var entrance = new HexCoord(1, 0);
+            var exit = new HexCoord(-2, 2);
+            map.SetTile(HexTile.PortalExit(exit));
+            map.SetTile(HexTile.PortalTile(entrance, exit, 2));
+
+            var steps = new List<HexDirection> { HexDirection.D0, HexDirection.D0, HexDirection.D0 };
+            var end = map.RedirectThroughPortals(HexCoord.Zero, steps, out int rotation);
+
+            Assert.AreEqual(2, rotation);
+            CollectionAssert.AreEqual(new[] { HexDirection.D0, HexDirection.D2, HexDirection.D2 }, steps);
+            Assert.AreEqual(exit.Neighbor(HexDirection.D2).Neighbor(HexDirection.D2), end);
+        }
+
+        [Test]
+        public void RedirectThroughPortals_StopsAtWallsAndIgnoresExits()
+        {
+            var map = FloorHexagon(4);
+            var exit = new HexCoord(-2, 2);
+            map.SetTile(HexTile.PortalExit(exit));
+            map.SetTile(HexTile.PortalTile(new HexCoord(1, 0), exit, 1));
+            map.SetTile(HexTile.Wall(exit.Neighbor(HexDirection.D1)));
+
+            // the turned step after the jump runs into a wall, so the walk ends on the exit
+            var steps = new List<HexDirection> { HexDirection.D0, HexDirection.D0 };
+            Assert.AreEqual(exit, map.RedirectThroughPortals(HexCoord.Zero, steps, out _));
+
+            // walking over an exit does nothing
+            var overExit = new List<HexDirection> { HexDirection.D0 };
+            var end = map.RedirectThroughPortals(exit.Neighbor(HexDirection.D3), overExit, out int rotation);
+            Assert.AreEqual(exit, end);
+            Assert.AreEqual(0, rotation);
+            CollectionAssert.AreEqual(new[] { HexDirection.D0 }, overExit);
         }
 
         [Test]
@@ -98,6 +181,8 @@ namespace UnholyTrinity.Hex.Tests
                 map.SetTile(HexTile.HealTile(new HexCoord(3, 1), 2));
                 map.SetTile(HexTile.HarmTile(new HexCoord(4, 1), 3, HealthTrigger.OnStop));
                 map.SetTile(HexTile.KillTile(new HexCoord(0, 2)));
+                map.SetTile(HexTile.PortalExit(new HexCoord(1, 2)));
+                map.SetTile(HexTile.PortalTile(new HexCoord(2, 2), new HexCoord(1, 2), 3));
 
                 definition.Write(map);
                 var rebuilt = definition.Build();
