@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using UnholyTrinity.Hex;
-using UnholyTrinity.Pickups;
+using UnholyTrinity.Tiles;
 using UnholyTrinity.Weapons;
 using UnityEngine;
 
@@ -74,8 +74,7 @@ namespace UnholyTrinity.Players
                 // pickups respawn before anyone moves
                 pickups?.AdvanceTicks(1);
 
-                // each hex entered runs its OnEnter health tile and pickup, and a lethal tile ends
-                // the move there
+                // each hex entered runs its OnEnter effects, and a lethal tile ends the move there
                 foreach (HexDirection step in action.PlannedMove)
                 {
                     if (vitals.IsDead)
@@ -90,27 +89,11 @@ namespace UnholyTrinity.Players
                         break;
                     }
 
-                    coord = next;
-                    ApplyHealthTile(map, coord, HealthTrigger.OnEnter, vitals);
-                    pickups?.TryCollect(coord, PickupTrigger.OnEnter, vitals);
-
-                    // a portal entrance moves the player on, then the target's OnEnter runs too,
-                    // the same as the game manager does at resolution
-                    HexCoord exit = map.ThroughPortal(coord);
-                    if (!vitals.IsDead && exit != coord)
-                    {
-                        coord = exit;
-                        // checks below here run because portal movement doesn't use Step()
-                        // GameManager should match, since it sets the actual position through the portal.
-                        // commented out because portals only lead to portals for now.
-                        // ApplyHealthTile(map, coord, HealthTrigger.OnEnter, vitals);
-                        // pickups?.TryCollect(coord, PickupTrigger.OnEnter, vitals);
-                    }
+                    coord = TileEffects.OnEnter(map, pickups, next, vitals);
                 }
 
                 // then OnStop where the move ends
-                ApplyHealthTile(map, coord, HealthTrigger.OnStop, vitals);
-                pickups?.TryCollect(coord, PickupTrigger.OnStop, vitals);
+                TileEffects.OnStop(map, pickups, coord, vitals);
             }
 
             return new PlanForecast(vitals.Health, vitals.Armour, pickups);

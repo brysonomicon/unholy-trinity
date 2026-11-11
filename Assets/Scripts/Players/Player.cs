@@ -18,6 +18,8 @@ namespace UnholyTrinity.Players
         // unserialized, passed to player by spawner instead
         private MapManager mapManager;
 
+        public HexMap Map => mapManager.Map;
+
         [Header("Map")]
         [SerializeField] private float heightOffset = 0.5f;
 
@@ -747,41 +749,6 @@ namespace UnholyTrinity.Players
             CurrentHealth = 0;
             Debug.Log($"{name} died. RIP");
             HealthChangedEvent?.Invoke(this);
-        }
-
-        // heals, harms or kills if the player is on a health tile with a matching trigger. the game
-        // manager calls this with OnEnter for each hex entered during the move, and with OnStop where
-        // the move ends, including when the player didn't move
-        public void ApplyHealthTile(HealthTrigger reached)
-        {
-            ApplyHealthTile(mapManager.Map, Coord, reached, this);
-        }
-
-        // the health tile rule itself. static so the plan forecast runs exactly the same rule
-        private static void ApplyHealthTile(HexMap map, HexCoord coord, HealthTrigger reached, IVitals target)
-        {
-            if (target.IsDead ||
-                !map.TryGetTile(coord, out HexTile tile) ||
-                tile.Type != TileType.Health ||
-                tile.Health.Trigger != reached)
-            {
-                return;
-            }
-
-            HealthTileSettings health = tile.Health;
-
-            if (health.Lethal)
-            {
-                target.Kill();
-            }
-            else if (health.Amount > 0)
-            {
-                target.TryHeal(health.Amount);
-            }
-            else if (health.Amount < 0)
-            {
-                target.TakeDamage(-health.Amount);
-            }
         }
 
         #endregion
