@@ -29,9 +29,7 @@ namespace UnholyTrinity.Hex
 
         public bool Equals(PortalLink other)
         {
-            if (ExitOnly || other.ExitOnly)
-                return ExitOnly == other.ExitOnly;
-            return Target.Equals(other.Target) && RotationSteps == other.RotationSteps;
+            return Target.Equals(other.Target) && RotationSteps == other.RotationSteps && ExitOnly == other.ExitOnly;
         }
 
         public override bool Equals(object obj)
@@ -41,7 +39,7 @@ namespace UnholyTrinity.Hex
 
         public override int GetHashCode()
         {
-            return ExitOnly ? 1 : HashCode.Combine(Target, RotationSteps);
+            return HashCode.Combine(Target, RotationSteps, ExitOnly);
         }
     }
 }
