@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnholyTrinity.Hex;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -32,6 +33,7 @@ public class MapManager : MonoBehaviour
     private Material _runtimeMaterial;
     private MaterialPropertyBlock _propertyBlock;
     private bool _visualsDirty;
+    private readonly Dictionary<HexCoord, int> _portalGroups = new();
 
     private static readonly int BaseColorId =
         Shader.PropertyToID("_BaseColor");
@@ -48,6 +50,14 @@ public class MapManager : MonoBehaviour
 
     /// <summary>Raised after the layout changes (e.g. orientation toggled), so units can re-position.</summary>
     public event Action LayoutChanged;
+
+    /// <summary>
+    /// Number of the portal network <paramref name="coord"/> belongs to, or -1 if it isn't a portal.
+    /// Portals linked to each other (directly or through other portals, in either direction) share a number.
+    /// Networks are numbered 0, 1, 2... in a fixed order, so the same map always gives the same numbers.
+    /// </summary>
+    public int PortalGroupIndex(HexCoord coord) =>
+        _portalGroups.TryGetValue(coord, out var index) ? index : -1;
 
     private void Awake() => Rebuild();
 
@@ -95,6 +105,7 @@ public class MapManager : MonoBehaviour
                 $"{nameof(MapManager)} on '{name}' has no map definition assigned.",
                 this);
             Map = new HexMap();
+            _portalGroups.Clear();
             return;
         }
 
@@ -105,7 +116,79 @@ public class MapManager : MonoBehaviour
         }
 
         Map = definition.Build();
+        BuildPortalGroups();
         SpawnVisuals();
+    }
+
+    /// <summary>
+    /// Groups every portal with the portals it is linked to, following links both ways, and numbers the groups
+    /// by their lowest coordinate.
+    /// </summary>
+    private void BuildPortalGroups()
+    {
+        _portalGroups.Clear();
+
+        var networks = new List<(HexCoord key, List<HexCoord> members)>();
+
+        foreach (var portal in Map.TilesOfType(TileType.Portal))
+        {
+            if (_portalGroups.ContainsKey(portal.Coord))
+            {
+                continue;
+            }
+
+            var members = new List<HexCoord>();
+            var queue = new Queue<HexCoord>();
+            queue.Enqueue(portal.Coord);
+            _portalGroups[portal.Coord] = -1;
+            var lowest = portal.Coord;
+
+            while (queue.Count > 0)
+            {
+                var coord = queue.Dequeue();
+                members.Add(coord);
+                if (coord.Q < lowest.Q || (coord.Q == lowest.Q && coord.R < lowest.R))
+                {
+                    lowest = coord;
+                }
+
+                if (!Map.TryGetTile(coord, out var tile))
+                {
+                    continue;
+                }
+
+                // Where this portal leads...
+                if (tile.Portal.IsEntrance
+                    && Map.TryGetTile(tile.Portal.Target, out var target)
+                    && target.Type == TileType.Portal
+                    && _portalGroups.TryAdd(tile.Portal.Target, -1))
+                {
+                    queue.Enqueue(tile.Portal.Target);
+                }
+
+                // ...and everything that leads here.
+                foreach (var entrance in Map.EntrancesTo(coord))
+                {
+                    if (_portalGroups.TryAdd(entrance, -1))
+                    {
+                        queue.Enqueue(entrance);
+                    }
+                }
+            }
+
+            networks.Add((lowest, members));
+        }
+
+        // Fixed order, independent of the order tiles happen to be stored in.
+        networks.Sort((a, b) => a.key.Q != b.key.Q ? a.key.Q.CompareTo(b.key.Q) : a.key.R.CompareTo(b.key.R));
+
+        for (int i = 0; i < networks.Count; i++)
+        {
+            foreach (var member in networks[i].members)
+            {
+                _portalGroups[member] = i;
+            }
+        }
     }
 
     private void SetOrientation(HexOrientation value)

@@ -27,6 +27,27 @@ MonoBehaviour:
     SpikedPrefab: {fileID: 0}
     HarmPrefab: {fileID: 4583699024745379611, guid: 9e0831a095076d74dad3b47ca877c2ed, type: 3}
     KillPrefab: {fileID: 3383222381437710300, guid: 656ba03daf9d09049b813a88bbea21d2, type: 3}
+  - Type: 1
+    Prefab: {fileID: 425061214102703943, guid: e1099649f8d11a24d9933f92e59710d8, type: 3}
+    FrictionPrefab: {fileID: 0}
+    BouncyPrefab: {fileID: 0}
+    SpikedPrefab: {fileID: 0}
+    HarmPrefab: {fileID: 4583699024745379611, guid: 9e0831a095076d74dad3b47ca877c2ed, type: 3}
+    KillPrefab: {fileID: 3383222381437710300, guid: 656ba03daf9d09049b813a88bbea21d2, type: 3}
+  - Type: 2
+    Prefab: {fileID: 425061214102703943, guid: c4ef33679b692714a9b2dceaedc26b4a, type: 3}
+    FrictionPrefab: {fileID: 0}
+    BouncyPrefab: {fileID: 0}
+    SpikedPrefab: {fileID: 0}
+    HarmPrefab: {fileID: 0}
+    KillPrefab: {fileID: 0}
+  - Type: 4
+    Prefab: {fileID: 3383222381437710300, guid: 58d595538810b754a8f54528d1a6ae72, type: 3}
+    FrictionPrefab: {fileID: 0}
+    BouncyPrefab: {fileID: 0}
+    SpikedPrefab: {fileID: 0}
+    HarmPrefab: {fileID: 0}
+    KillPrefab: {fileID: 0}
   TileMaterial: {fileID: 0}
   TileScale: 1
   FloorHeight: 0.1

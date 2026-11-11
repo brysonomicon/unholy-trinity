@@ -13,8 +13,25 @@ public class PickupManager : MonoBehaviour
     [SerializeField] private GameManager gameManager;
     [SerializeField] private MapManager mapManager;
     [SerializeField] private float visualHeightOffset = 0.5f;
+    [SerializeField] private PickupRespawnRing respawnRingPrefab;
+    [SerializeField] private Material pickupGhostMaterial;
 
-    private readonly Dictionary<HexCoord, GameObject> _visuals = new();
+    private readonly struct PickupVisual
+    {
+        public readonly GameObject Root, Model;
+        public readonly PickupRespawnRing Ring;
+        public readonly PickupGhost Ghost;
+
+        public PickupVisual(GameObject root, GameObject model, PickupRespawnRing ring)
+        {
+            Root = root;
+            Model = model;
+            Ring = ring;
+            Ghost = model.GetComponent<PickupGhost>();
+        }
+    }
+
+    private readonly Dictionary<HexCoord, PickupVisual> _visuals = new();
 
     // the player whose plan the visuals currently show, null when they show the real state
     private object _plannedStateShownBy;
@@ -52,8 +69,6 @@ public class PickupManager : MonoBehaviour
         }
     }
 
-    public void AdvanceTicks(int ticks) => Field.AdvanceTicks(ticks);
-
     // public void CollectAlong(SlideResult slide, IPickupCollector collector) =>
     //     Field.CollectAlong(slide, collector);
 
@@ -85,14 +100,6 @@ public class PickupManager : MonoBehaviour
         ShowState(Field);
     }
 
-    private void ShowState(PickupField state)
-    {
-        foreach (var coord in _visuals.Keys)
-        {
-            SetVisualActive(coord, state.IsAvailable(coord));
-        }
-    }
-
     private void SpawnVisuals()
     {
         foreach (var (coord, spawn) in Field.Spawns)
@@ -102,12 +109,25 @@ public class PickupManager : MonoBehaviour
             {
                 continue;
             }
-            Debug.Log($"Spawning visual for {spawn.Definition.name} at {coord}");
+            // Debug.Log($"Spawning visual for {spawn.Definition.name} at {coord}");
 
-            var visual = Instantiate(prefab, transform);
-            visual.name = $"{spawn.Definition.name} {coord}";
-            visual.SetActive(spawn.IsAvailable);
-            _visuals.Add(coord, visual);
+            var root = new GameObject($"{spawn.Definition.name} {coord}");
+            root.transform.SetParent(transform, false);
+
+            var model = Instantiate(prefab, root.transform);
+            model.transform.localPosition = Vector3.up * visualHeightOffset;
+            if(model.GetComponent<PickupSpin>() == null)
+            {
+                model.AddComponent<PickupSpin>();
+            }
+
+            var ghost = model.AddComponent<PickupGhost>();
+            ghost.Init(pickupGhostMaterial);
+
+            var ring = respawnRingPrefab != null ? Instantiate(respawnRingPrefab, root.transform) : null;
+
+            _visuals.Add(coord, new PickupVisual(root, model, ring));
+            Show(coord, spawn);
         }
 
         PositionVisuals();
@@ -118,19 +138,43 @@ public class PickupManager : MonoBehaviour
         var layout = mapManager.Layout;
         foreach (var (coord, visual) in _visuals)
         {
-            visual.transform.position = layout.HexToWorld(coord) + Vector3.up * visualHeightOffset;
+            visual.Root.transform.position = layout.HexToWorld(coord);
         }
     }
 
-    private void OnCollected(HexCoord coord, PickupSpawn _) => SetVisualActive(coord, false);
-
-    private void OnRespawned(HexCoord coord, PickupSpawn _) => SetVisualActive(coord, true);
-
-    private void SetVisualActive(HexCoord coord, bool active)
+    public void AdvanceTicks(int ticks)
     {
-        if (_visuals.TryGetValue(coord, out var visual))
+        Field.AdvanceTicks(ticks);
+        if (_plannedStateShownBy == null)
         {
-            visual.SetActive(active);
+            ShowState(Field);
+        }
+       
+    }
+
+    private void ShowState(PickupField state)
+    {
+        foreach (var (coord, spawn) in state.Spawns)
+        {
+            Show(coord, spawn);
         }
     }
+
+    private void Show(HexCoord coord, PickupSpawn spawn)
+    {
+        if (!_visuals.TryGetValue(coord, out var visual))
+        {
+            return;
+        }
+        visual.Ghost.SetGhosted(!spawn.IsAvailable);
+        if (visual.Ring != null)
+        {
+            visual.Ring.Show(spawn);
+        }
+    }
+
+    private void OnCollected(HexCoord coord, PickupSpawn spawn) => Show(coord, spawn);
+    private void OnRespawned(HexCoord coord, PickupSpawn spawn) => Show(coord, spawn);
+
+
 }
