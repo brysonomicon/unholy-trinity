@@ -238,7 +238,7 @@ public class GameManager : MonoBehaviour
             IEnumerator<(int, HexCoord)> playerMove =
                 player.GetPlannedAction(tickIndex)?.Move.Invoke();
             if (playerMove == null) continue;
-            movingObjects.Add(new MoveData(WithTileEffects(player, playerMove, tickIndex)));
+            movingObjects.Add(new MoveData(WithTileEffects(player, playerMove)));
         }
         
         _rockets.ForEach(rocket =>
@@ -279,7 +279,7 @@ public class GameManager : MonoBehaviour
     // starts. ends with 0 moves left when the move finishes, is blocked, or the player dies, so the
     // movement manager knows the player is done. a portal entrance moves the player to its target
     // after the entrance's own effects, then the target's OnEnter effects run too
-    private IEnumerator<(int, HexCoord)> WithTileEffects(Player player, IEnumerator<(int, HexCoord)> move, int tickIndex)
+    private IEnumerator<(int, HexCoord)> WithTileEffects(Player player, IEnumerator<(int, HexCoord)> move)
     {
         if (!move.MoveNext())
         {
@@ -301,7 +301,7 @@ public class GameManager : MonoBehaviour
                 yield break;
             }
 
-            if (player.ApplyPortal(tickIndex))
+            if (player.ApplyPortal())
             {
                 entered = player.Coord;
                 player.ApplyHealthTile(HealthTrigger.OnEnter);

@@ -43,15 +43,6 @@ namespace UnholyTrinity.Hex
         public static HexDirection Rotate(this HexDirection direction, int steps) =>
             (HexDirection)Mod((int)direction + steps);
 
-        /// <summary>Rotates every direction in <paramref name="directions"/> in place; positive is counter-clockwise.</summary>
-        public static void RotateAll(System.Collections.Generic.IList<HexDirection> directions, int steps)
-        {
-            if (directions == null || Mod(steps) == 0)
-                return;
-            for (int i = 0; i < directions.Count; i++)
-                directions[i] = directions[i].Rotate(steps);
-        }
-
         public static string DisplayName(this HexDirection direction, HexOrientation orientation) =>
             orientation == HexOrientation.PointyTop ? PointyNames[(int)direction] : FlatNames[(int)direction];
 

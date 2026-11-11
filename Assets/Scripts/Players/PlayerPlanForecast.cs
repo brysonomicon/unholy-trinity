@@ -95,6 +95,16 @@ namespace UnholyTrinity.Players
                     coord = next;
                     ApplyHealthTile(map, coord, HealthTrigger.OnEnter, vitals);
                     pickups?.TryCollect(coord, PickupTrigger.OnEnter, vitals);
+
+                    // a portal entrance moves the player on, then the target's OnEnter runs too,
+                    // the same as the game manager does at resolution
+                    HexCoord exit = ThroughPortal(coord);
+                    if (!vitals.IsDead && exit != coord)
+                    {
+                        coord = exit;
+                        ApplyHealthTile(map, coord, HealthTrigger.OnEnter, vitals);
+                        pickups?.TryCollect(coord, PickupTrigger.OnEnter, vitals);
+                    }
                 }
 
                 // then OnStop where the move ends

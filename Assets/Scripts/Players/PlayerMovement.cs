@@ -57,7 +57,7 @@ namespace UnholyTrinity.Players
             {
                 HexCoord next = GetStepDestination(current, steps[i]);
                 blocked = next == current;
-                current = next;
+                current = blocked ? next : ThroughPortal(next);
             }
 
             return current;
@@ -82,11 +82,16 @@ namespace UnholyTrinity.Players
                 ? UpdatePlannedMomentum(direction.Value)
                 : HexCoord.Zero;
 
-            PlanningAction.PlannedMomentum = plannedMomentum;
+            HexCoord start = GetPlannedCoord(plannedActions.Count - 1);
+            List<HexDirection> steps = GetStepListFromMomentum(start, plannedMomentum);
 
-            PlanningAction.PlannedMove = GetStepListFromMomentum(
-                GetPlannedCoord(plannedActions.Count - 1), plannedMomentum
-            );
+            // a portal on the way turns the rest of the move and the momentum. it's baked into the
+            // plan here so the preview, the next tick's planning and resolution all agree
+            mapManager.Map.RedirectThroughPortals(start, steps, out int portalRotation);
+
+            PlanningAction.PlannedMomentum =
+                plannedMomentum.RotateAround(HexCoord.Zero, portalRotation);
+            PlanningAction.PlannedMove = steps;
         }
 
         private HexCoord UpdatePlannedMomentum(HexDirection direction)

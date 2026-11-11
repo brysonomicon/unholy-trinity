@@ -70,6 +70,34 @@ namespace UnholyTrinity.Hex
             return false;
         }
 
+        /// <summary>
+        /// Walks <paramref name="steps"/> from <paramref name="start"/> the way a mover does: stops at the first
+        /// unwalkable hex, and on stepping onto a portal entrance jumps to its target and rotates every remaining
+        /// step by the portal's rotation, in place. Returns where the walk ends.
+        /// </summary>
+        /// <param name="totalRotation">Sum of the rotations of every portal crossed, for turning momentum to match.</param>
+        public HexCoord RedirectThroughPortals(HexCoord start, IList<HexDirection> steps, out int totalRotation)
+        {
+            totalRotation = 0;
+            var current = start;
+            for (int i = 0; i < steps.Count; i++)
+            {
+                var next = current.Neighbor(steps[i]);
+                if (!IsWalkable(next))
+                    break;
+                current = next;
+
+                if (TryGetPortalExit(current, out var exit, out int rotation))
+                {
+                    current = exit;
+                    totalRotation += rotation;
+                    for (int j = i + 1; j < steps.Count; j++)
+                        steps[j] = steps[j].Rotate(rotation);
+                }
+            }
+            return current;
+        }
+
         /// <summary>Every portal entrance that sends units to <paramref name="target"/>.</summary>
         public IEnumerable<HexCoord> EntrancesTo(HexCoord target)
         {

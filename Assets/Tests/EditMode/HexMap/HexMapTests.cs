@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using UnholyTrinity.Pickups;
@@ -113,6 +114,52 @@ namespace UnholyTrinity.Hex.Tests
             Assert.AreEqual(exit, b);
             Assert.AreEqual(2, rotA);
             Assert.AreEqual(4, rotB);
+        }
+
+        static HexMap FloorHexagon(int radius)
+        {
+            var map = new HexMap();
+            foreach (var coord in HexCoord.Range(HexCoord.Zero, radius))
+                map.SetTile(HexTile.Floor(coord));
+            return map;
+        }
+
+        [Test]
+        public void RedirectThroughPortals_JumpsAndTurnsTheRemainingSteps()
+        {
+            var map = FloorHexagon(4);
+            var entrance = new HexCoord(1, 0);
+            var exit = new HexCoord(-2, 2);
+            map.SetTile(HexTile.PortalExit(exit));
+            map.SetTile(HexTile.PortalTile(entrance, exit, 2));
+
+            var steps = new List<HexDirection> { HexDirection.D0, HexDirection.D0, HexDirection.D0 };
+            var end = map.RedirectThroughPortals(HexCoord.Zero, steps, out int rotation);
+
+            Assert.AreEqual(2, rotation);
+            CollectionAssert.AreEqual(new[] { HexDirection.D0, HexDirection.D2, HexDirection.D2 }, steps);
+            Assert.AreEqual(exit.Neighbor(HexDirection.D2).Neighbor(HexDirection.D2), end);
+        }
+
+        [Test]
+        public void RedirectThroughPortals_StopsAtWallsAndIgnoresExits()
+        {
+            var map = FloorHexagon(4);
+            var exit = new HexCoord(-2, 2);
+            map.SetTile(HexTile.PortalExit(exit));
+            map.SetTile(HexTile.PortalTile(new HexCoord(1, 0), exit, 1));
+            map.SetTile(HexTile.Wall(exit.Neighbor(HexDirection.D1)));
+
+            // the turned step after the jump runs into a wall, so the walk ends on the exit
+            var steps = new List<HexDirection> { HexDirection.D0, HexDirection.D0 };
+            Assert.AreEqual(exit, map.RedirectThroughPortals(HexCoord.Zero, steps, out _));
+
+            // walking over an exit does nothing
+            var overExit = new List<HexDirection> { HexDirection.D0 };
+            var end = map.RedirectThroughPortals(exit.Neighbor(HexDirection.D3), overExit, out int rotation);
+            Assert.AreEqual(exit, end);
+            Assert.AreEqual(0, rotation);
+            CollectionAssert.AreEqual(new[] { HexDirection.D0 }, overExit);
         }
 
         [Test]
