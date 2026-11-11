@@ -77,9 +77,16 @@ public class CameraManager : MonoBehaviour
 
     private void Activate(CinemachineCamera cam)
     {
-        if (cam == null || cam == _active)
+        if (cam == null)
         {
             throw new MissingComponentException($"{name} missing a camera.");
+        }
+
+        // moved this call to be ignored since it was throwing on end turn
+        // instead of throwing just ignore since the active cam is already activated
+        if (cam == _active)
+        {
+            return;
         }
 
         if (_active != null)
