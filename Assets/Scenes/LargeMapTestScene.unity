@@ -119,6 +119,79 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1001 &287120308
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: e6dde619f8ed0954883bc504ce3e1a17, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.028
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: e6dde619f8ed0954883bc504ce3e1a17, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.028
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: e6dde619f8ed0954883bc504ce3e1a17, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.028
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: e6dde619f8ed0954883bc504ce3e1a17, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -9.091
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: e6dde619f8ed0954883bc504ce3e1a17, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.221
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: e6dde619f8ed0954883bc504ce3e1a17, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -1.576
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: e6dde619f8ed0954883bc504ce3e1a17, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.5009885
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: e6dde619f8ed0954883bc504ce3e1a17, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.50098395
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: e6dde619f8ed0954883bc504ce3e1a17, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.49901414
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: e6dde619f8ed0954883bc504ce3e1a17, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0.4990096
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: e6dde619f8ed0954883bc504ce3e1a17, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: e6dde619f8ed0954883bc504ce3e1a17, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: e6dde619f8ed0954883bc504ce3e1a17, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: e6dde619f8ed0954883bc504ce3e1a17, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: e6dde619f8ed0954883bc504ce3e1a17, type: 3}
+      propertyPath: m_Name
+      value: LightningGunPH
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: e6dde619f8ed0954883bc504ce3e1a17, type: 3}
 --- !u!1 &381778596
 GameObject:
   m_ObjectHideFlags: 0
@@ -1330,3 +1403,4 @@ SceneRoots:
   - {fileID: 920963449}
   - {fileID: 1399727955}
   - {fileID: 5987722757522701543}
+  - {fileID: 287120308}
