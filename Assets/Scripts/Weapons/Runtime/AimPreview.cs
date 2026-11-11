@@ -25,23 +25,30 @@ namespace UnholyTrinity.Weapons
             Hide();
         }
 
+        // replaces whatever this preview was showing
         public void Show(List<AimTile> aimTiles, HexLayout layout)
         {
             Hide();
+            highlightRoot = Draw(aimTiles, layout, $"{name} Aim Preview");
+        }
 
+        // draws the tiles in this preview's style without tracking them, so one style can draw
+        // several highlights at once (e.g. a cone per ghost). the caller destroys the returned root
+        public Transform Draw(List<AimTile> aimTiles, HexLayout layout, string rootName)
+        {
             if (propertyBlock == null)
             {
                 propertyBlock = new MaterialPropertyBlock();
             }
 
-            highlightRoot = new GameObject($"{name} Aim Preview").transform;
+            Transform root = new GameObject(rootName).transform;
 
             Mesh hexMesh = HexMeshFactory.Prism(layout.Orientation, layout.Size * highlightScale, 0.001f);
 
             foreach (AimTile aimTile in aimTiles)
             {
                 GameObject highlight = new GameObject($"Aim {aimTile.Coord}");
-                highlight.transform.SetParent(highlightRoot, false);
+                highlight.transform.SetParent(root, false);
                 highlight.transform.position = layout.HexToWorld(aimTile.Coord) +
                                                Vector3.up * highlightHeight;
                 highlight.AddComponent<MeshFilter>().sharedMesh = hexMesh;
@@ -55,6 +62,8 @@ namespace UnholyTrinity.Weapons
                 propertyBlock.SetColor(BaseColorId, falloffColor);
                 highlightRenderer.SetPropertyBlock(propertyBlock);
             }
+
+            return root;
         }
 
         public void Hide()

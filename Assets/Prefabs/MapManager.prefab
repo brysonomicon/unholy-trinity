@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnholyTrinity.HexMap::UnholyTrinity.Hex.MapManager
   definition: {fileID: 11400000, guid: 0fd798c54ece71347b7375578c641f71, type: 2}
-  style: {fileID: 0}
+  style: {fileID: 11400000, guid: 0d1b3c132ebe8664f90839ab09ca7743, type: 2}
   orientation: 0
   hexSize: 1
   orientationToggleKey: 95

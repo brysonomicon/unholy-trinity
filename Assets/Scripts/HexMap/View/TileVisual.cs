@@ -31,7 +31,7 @@ namespace UnholyTrinity.Hex
         {
             bool isBoost = tile.Type == TileType.Boost;
 
-            if (directionPivot is not null)
+            if (directionPivot != null)
             {
                 bool directional = isBoost && tile.Boost.Mode == BoostMode.Fixed;
                 directionPivot.gameObject.SetActive(directional);
@@ -51,7 +51,7 @@ namespace UnholyTrinity.Hex
             _propertyBlock ??= new MaterialPropertyBlock();
             foreach (var tintRenderer in tintRenderers)
             {
-                if (tintRenderer is null)
+                if (tintRenderer == null)
                     continue;
                 tintRenderer.GetPropertyBlock(_propertyBlock);
                 _propertyBlock.SetColor(BaseColorId, color);
