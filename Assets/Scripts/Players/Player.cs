@@ -653,7 +653,6 @@ namespace UnholyTrinity.Players
         }
         public void BeginMovePhase()
         {
-            Debug.Log(driver);
             driver.TargetSpeed = 1;
             MoveStartCoord = Coord;
             tickMovePath.Clear();
