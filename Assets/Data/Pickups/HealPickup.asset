@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: HealPickup
   m_EditorClassIdentifier: UnholyTrinity.Pickups::UnholyTrinity.Pickups.HealPickup
   <DisplayName>k__BackingField: 
-  <RespawnTicks>k__BackingField: 2
+  <RespawnTicks>k__BackingField: 24
   <Trigger>k__BackingField: 0
   <VisualPrefab>k__BackingField: {fileID: 1192356905103725302, guid: 0327f0399eed7454fbddc245c1d2a941, type: 3}
-  <Amount>k__BackingField: 1
+  <Amount>k__BackingField: 100

@@ -48,10 +48,6 @@ MonoBehaviour:
   maxPlayers: 2
   moveManager: {fileID: 2963884451855807945}
   turnManager: {fileID: 11400000, guid: e0a137fa641acb64fafc8baac28caf4f, type: 2}
-  tickDuration: 2
-  shootDuration: 0.1
-  aimDuration: 0.1
-  moveDuration: 1
   turnStartDelay: 1
 --- !u!114 &2963884451855807945
 MonoBehaviour:
@@ -65,4 +61,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ba32c7453a84c0b896f8a108d66261f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Managers.MovementManager
-  moveDurationSec: 0
+  moveDurationSec: 2

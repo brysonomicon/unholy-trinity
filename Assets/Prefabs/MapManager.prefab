@@ -44,7 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56173f6f9fe620c4fbe8aa4c17d0bf55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnholyTrinity.HexMap::UnholyTrinity.Hex.MapManager
-  definition: {fileID: 11400000, guid: 0fd798c54ece71347b7375578c641f71, type: 2}
+  definition: {fileID: 11400000, guid: 8fe272a757001d74d9cd405d954074d8, type: 2}
   style: {fileID: 11400000, guid: 0d1b3c132ebe8664f90839ab09ca7743, type: 2}
   orientation: 0
   hexSize: 1

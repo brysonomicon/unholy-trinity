@@ -1,7 +1,6 @@
 using Nrjwolf.Tools.AttachAttributes;
 using Unity.Cinemachine;
 using UnholyTrinity.Players;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -13,7 +12,7 @@ namespace UnholyTrinity.Camera
     /// Resolution phase -> the impartial center camera
     public class CameraManager : MonoBehaviour
     {
-        [SerializeField] private GameManager gm;
+        private GameManager gm;
         [SerializeField][GetComponent] private CinemachineCamera resolutionCamera;
 
         // Lets the player toggle top-down <-> close third. Delete if you handle input elsewhere.
@@ -43,6 +42,7 @@ namespace UnholyTrinity.Camera
         private void Awake()
         {
             resolutionCamera.Priority = OverviewPriority;
+            gm = GameManager.Instance;
         }
 
         public void RegisterPlayerTracked(Transform p, float weight, float radius)

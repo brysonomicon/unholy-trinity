@@ -1,4 +1,6 @@
+using System;
 using UnholyTrinity.Hex;
+using UnholyTrinity.Weapons;
 using UnityEngine;
 
 namespace UnholyTrinity.Players
@@ -8,20 +10,30 @@ namespace UnholyTrinity.Players
     [DefaultExecutionOrder(-50)]
     public class PlayerSpawner : MonoBehaviour
     {
+        [Serializable]
+        private struct SpawnPoint
+        {
+            [field: SerializeField] public HexCoord Coord { get; private set; }
+
+            [field: SerializeField]
+            [field: Tooltip("A0 = east, each step is 30 degree CCW. A3 = north, A6 = west, A9 = south")]
+            public AimDirection Aim { get; private set; }
+        }
+
         [SerializeField] private MapManager mapManager;
         [SerializeField] private Player playerPrefab;
-        [SerializeField] private HexCoord[] spawnCoords;
+        [SerializeField] private SpawnPoint[] spawnPoints;
 
         private void Start()
         {
             GameManager manager = GameManager.Instance;
             manager.ResetGame();
             
-            for (int i = 0; i < spawnCoords.Length; i++)
+            for (int i = 0; i < spawnPoints.Length; i++)
             {
                 Player spawnedPlayer = Instantiate(playerPrefab);
                 spawnedPlayer.name = $"Player {i + 1}";
-                spawnedPlayer.Initialize(mapManager, spawnCoords[i]);
+                spawnedPlayer.Initialize(mapManager, spawnPoints[i].Coord, spawnPoints[i].Aim);
                 manager.RegisterPlayer(spawnedPlayer);
             }
         }

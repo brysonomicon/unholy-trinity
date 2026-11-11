@@ -19621,3 +19621,118 @@ MonoBehaviour:
       Amount: 0
       Trigger: 0
       Lethal: 0
+  - Coord:
+      <Q>k__BackingField: -6
+      <R>k__BackingField: 0
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      Pickup: {fileID: 0}
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+    Health:
+      Amount: 0
+      Trigger: 0
+      Lethal: 0
+  - Coord:
+      <Q>k__BackingField: -4
+      <R>k__BackingField: 2
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      Pickup: {fileID: 0}
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+    Health:
+      Amount: 0
+      Trigger: 0
+      Lethal: 0
+  - Coord:
+      <Q>k__BackingField: -2
+      <R>k__BackingField: 3
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      Pickup: {fileID: 0}
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+    Health:
+      Amount: 0
+      Trigger: 0
+      Lethal: 0
+  - Coord:
+      <Q>k__BackingField: -1
+      <R>k__BackingField: -3
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      Pickup: {fileID: 0}
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+    Health:
+      Amount: 0
+      Trigger: 0
+      Lethal: 0
+  - Coord:
+      <Q>k__BackingField: 5
+      <R>k__BackingField: -10
+    Type: 0
+    Boost:
+      Strength: 0
+      Mode: 0
+      Direction: 0
+    Portal:
+      Target:
+        <Q>k__BackingField: 0
+        <R>k__BackingField: 0
+      RotationSteps: 0
+    Pickup:
+      Pickup: {fileID: 0}
+    Wall:
+      Kind: 0
+      Damage: 0
+      DamageMode: 0
+    Health:
+      Amount: 0
+      Trigger: 0
+      Lethal: 0
