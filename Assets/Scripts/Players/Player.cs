@@ -159,7 +159,6 @@ namespace UnholyTrinity.Players
         private void OnDrawGizmos()
         {
             if (mapManager == null ||
-                mapManager.Map == null ||
                 CurrentWeapon == null ||
                 CurrentWeapon.Data == null)
             {
@@ -199,8 +198,7 @@ namespace UnholyTrinity.Players
             Pose pose = GetPose(coord, CurrentAimDirection);
             transform.SetPositionAndRotation(pose.position, pose.rotation);
 
-            if (mapManager.Map != null &&
-                !mapManager.Map.IsWalkable(Coord))
+            if (!mapManager.Map.IsWalkable(Coord))
             {
                 Debug.LogWarning($"{name} is on non walkable coord {Coord}");
             }
@@ -756,17 +754,13 @@ namespace UnholyTrinity.Players
         // the move ends, including when the player didn't move
         public void ApplyHealthTile(HealthTrigger reached)
         {
-            if (mapManager != null)
-            {
-                ApplyHealthTile(mapManager.Map, Coord, reached, this);
-            }
+            ApplyHealthTile(mapManager.Map, Coord, reached, this);
         }
 
         // the health tile rule itself. static so the plan forecast runs exactly the same rule
         private static void ApplyHealthTile(HexMap map, HexCoord coord, HealthTrigger reached, IVitals target)
         {
             if (target.IsDead ||
-                map == null ||
                 !map.TryGetTile(coord, out HexTile tile) ||
                 tile.Type != TileType.Health ||
                 tile.Health.Trigger != reached)

@@ -39,7 +39,7 @@ namespace UnholyTrinity.Players
             CurrentForecast = BuildForecast();
 
             PickupManager pickupManager = gm.Pickups;
-            if (pickupManager != null && CurrentForecast.Pickups != null)
+            if (pickupManager != null)
             {
                 pickupManager.ShowPlannedState(CurrentForecast.Pickups, this);
             }
@@ -63,9 +63,7 @@ namespace UnholyTrinity.Players
         private PlanForecast BuildForecast()
         {
             PickupManager pickupManager = gm.Pickups;
-            PickupField pickups = pickupManager != null && pickupManager.Field != null
-                ? pickupManager.Field.Clone()
-                : null;
+            PickupField pickups = pickupManager != null ? pickupManager.Field.Clone() : null;
 
             HexMap map = mapManager.Map;
             PlannedVitals vitals = new(this);
@@ -98,12 +96,15 @@ namespace UnholyTrinity.Players
 
                     // a portal entrance moves the player on, then the target's OnEnter runs too,
                     // the same as the game manager does at resolution
-                    HexCoord exit = ThroughPortal(coord);
+                    HexCoord exit = map.ThroughPortal(coord);
                     if (!vitals.IsDead && exit != coord)
                     {
                         coord = exit;
-                        ApplyHealthTile(map, coord, HealthTrigger.OnEnter, vitals);
-                        pickups?.TryCollect(coord, PickupTrigger.OnEnter, vitals);
+                        // checks below here run because portal movement doesn't use Step()
+                        // GameManager should match, since it sets the actual position through the portal.
+                        // commented out because portals only lead to portals for now.
+                        // ApplyHealthTile(map, coord, HealthTrigger.OnEnter, vitals);
+                        // pickups?.TryCollect(coord, PickupTrigger.OnEnter, vitals);
                     }
                 }
 

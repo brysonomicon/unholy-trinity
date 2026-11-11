@@ -304,14 +304,16 @@ public class GameManager : MonoBehaviour
             if (player.ApplyPortal())
             {
                 entered = player.Coord;
-                player.ApplyHealthTile(HealthTrigger.OnEnter);
-                Pickups?.TryCollect(entered, PickupTrigger.OnEnter, player);
+                // If portals every lead to non-portals (and we still rely on Step() to read tile effects), revisit this.
+                // PlayerPlanForecast uses the same logic for planning, so maintain consistency if we change it here.
+                // player.ApplyHealthTile(HealthTrigger.OnEnter);
+                // Pickups?.TryCollect(entered, PickupTrigger.OnEnter, player);
 
-                if (player.IsDead)
-                {
-                    yield return (0, entered);
-                    yield break;
-                }
+                // if (player.IsDead)
+                // {
+                //     yield return (0, entered);
+                //     yield break;
+                // }
             }
 
             yield return (remainingMoves, entered);

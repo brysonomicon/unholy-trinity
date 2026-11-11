@@ -57,7 +57,7 @@ namespace UnholyTrinity.Players
             {
                 HexCoord next = GetStepDestination(current, steps[i]);
                 blocked = next == current;
-                current = blocked ? next : ThroughPortal(next);
+                current = blocked ? next : mapManager.Map.ThroughPortal(next);
             }
 
             return current;

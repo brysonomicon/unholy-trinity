@@ -16,11 +16,6 @@ namespace UnholyTrinity.Players
         // from the target
         public bool ApplyPortal()
         {
-            if (IsDead)
-            {
-                return false;
-            }
-
             HexCoord exit = mapManager.Map.ThroughPortal(Coord);
             if (exit == Coord)
             {
