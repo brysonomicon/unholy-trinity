@@ -49,8 +49,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnholyTrinity.HexMap::UnholyTrinity.Hex.PortalVisual
   glyphRenderer: {fileID: 0}
   glyphs:
-  - {fileID: 21300000, guid: 88da910d97e2fdc4ca0c4c40df300883, type: 3}
   - {fileID: 21300000, guid: 2fc5ce6c64030c94e80d9ba346abc596, type: 3}
+  - {fileID: 21300000, guid: 88da910d97e2fdc4ca0c4c40df300883, type: 3}
   - {fileID: 21300000, guid: 4b8499c0e42dbc34d80cf1d760db9ad6, type: 3}
   - {fileID: 21300000, guid: 040907370698c2f49b32a424725c3c0d, type: 3}
   - {fileID: 21300000, guid: 2f9af71f29fb3844ba37464244b234f6, type: 3}
