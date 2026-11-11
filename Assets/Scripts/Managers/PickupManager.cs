@@ -104,8 +104,15 @@ public class PickupManager : MonoBehaviour
             }
             Debug.Log($"Spawning visual for {spawn.Definition.name} at {coord}");
 
-            var visual = Instantiate(prefab, transform);
-            visual.name = $"{spawn.Definition.name} {coord}";
+            // var visual = Instantiate(prefab, transform);
+            var visual = new GameObject($"{spawn.Definition.name} {coord}");
+            visual.transform.SetParent(transform, false);
+            var model = Instantiate(prefab, visual.transform);
+            if (model.GetComponent<PickupSpin>() == null)
+            {
+                model.AddComponent<PickupSpin>();
+            }
+
             visual.SetActive(spawn.IsAvailable);
             _visuals.Add(coord, visual);
         }
