@@ -233,7 +233,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 30, y: 0}
-  m_SizeDelta: {x: 200, y: 50}
+  m_SizeDelta: {x: 300, y: 50}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &493384482
 MonoBehaviour:
@@ -346,6 +346,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56173f6f9fe620c4fbe8aa4c17d0bf55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnholyTrinity.HexMap::UnholyTrinity.Hex.MapManager
+--- !u!114 &710682130 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5741930934989620464, guid: 82668270a1595324f9ecffff88a59fe8, type: 3}
+  m_PrefabInstance: {fileID: 5987722757522701543}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ceea8b0c79a94e41bf1e9426e5ed9d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameManager
 --- !u!1 &920963447
 GameObject:
   m_ObjectHideFlags: 0
@@ -428,7 +439,7 @@ RectTransform:
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: -30, y: 0}
-  m_SizeDelta: {x: 200, y: 50}
+  m_SizeDelta: {x: 300, y: 50}
   m_Pivot: {x: 1, y: 1}
 --- !u!114 &1042083467
 MonoBehaviour:
@@ -620,7 +631,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62a04cc01d32d5649981f875f24863c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PickupManager
-  gameManager: {fileID: 5987722757522701544}
+  gameManager: {fileID: 710682130}
   mapManager: {fileID: 495801503}
   visualHeightOffset: 0.5
 --- !u!4 &1399727955

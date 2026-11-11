@@ -89,7 +89,7 @@ public class MapManager : MonoBehaviour
     /// <summary>Rebuilds the logical map from the definition and respawns the visuals.</summary>
     private void Rebuild()
     {
-        if (definition is null)
+        if (definition == null)
         {
             Debug.LogWarning(
                 $"{nameof(MapManager)} on '{name}' has no map definition assigned.",
@@ -123,7 +123,7 @@ public class MapManager : MonoBehaviour
 
     private void SpawnVisuals()
     {
-        if (_visualRoot is not null)
+        if (_visualRoot != null)
             Destroy(_visualRoot.gameObject);
 
         _visualRoot = new GameObject(VisualRootName).transform;
@@ -209,7 +209,7 @@ public class MapManager : MonoBehaviour
 
     private HexTileStyle ResolveStyle()
     {
-        if (style is not null)
+        if (style != null)
             return style;
         _runtimeDefaultStyle ??= HexTileStyle.CreateDefault();
         return _runtimeDefaultStyle;
@@ -217,7 +217,7 @@ public class MapManager : MonoBehaviour
 
     private Material ResolveMaterial(HexTileStyle activeStyle)
     {
-        if (activeStyle.TileMaterial is not null)
+        if (activeStyle.TileMaterial != null)
         {
             return activeStyle.TileMaterial;
         }

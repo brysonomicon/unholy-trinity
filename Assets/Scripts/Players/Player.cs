@@ -9,7 +9,7 @@ using UnityEngine.Serialization;
 
 namespace UnholyTrinity.Players
 {
-    public partial class Player : MonoBehaviour, IHealable, IArmourable, IWeaponCollector
+    public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
     {
         #region Fields
 
@@ -234,6 +234,28 @@ namespace UnholyTrinity.Players
             );
         }
 
+        // the cone of the shot planned on tick tickIndex, fired from where the player starts that
+        // tick. null when that tick doesn't fire
+        private List<AimTile> GetPlannedShotCone(int tickIndex)
+        {
+            Weapon shot = tickIndex < plannedActions.Count
+                ? plannedActions[tickIndex].PlannedShot
+                : null;
+
+            return shot?.Data.GetAimTiles(
+                mapManager.Map, GetPlannedCoord(tickIndex), GetPlannedAim(tickIndex)
+            );
+        }
+
+        // during resolution the aim preview follows where the player really is and aims
+        private void ShowLiveAim()
+        {
+            aimPreview.Show(
+                CurrentWeapon.Data.GetAimTiles(mapManager.Map, Coord, CurrentAimDirection),
+                mapManager.Layout
+            );
+        }
+
         public bool IsInShotCone(HexCoord coord)
         {
             return GetPlannedShotTiles().Any(aimTile => aimTile.Coord == coord);
@@ -255,19 +277,24 @@ namespace UnholyTrinity.Players
         {
             int tickCount = plannedActions.Count;
 
-            List<Pose> ghostPoses = new();
+            // ghost i stands where tick i + 1 starts, which is where that tick's shot fires from.
+            // the tick being planned already has the main aim preview, so its ghost skips the cone
+            List<PlanGhost> ghosts = new();
 
             for (int i = 0; i < tickCount; i++)
             {
-                ghostPoses.Add(GetPlannedPose(i));
+                List<AimTile> cone = i < tickCount - 1 ? GetPlannedShotCone(i) : null;
+                ghosts.Add(new PlanGhost(GetPlannedPose(i), cone));
             }
-            planGhosts.Show(ghostPoses);
+            planGhosts.Show(ghosts, mapManager.Layout, aimPreview);
 
             Pose plannedPose = GetPlannedPose(tickCount);
             transform.SetPositionAndRotation(plannedPose.position, plannedPose.rotation);
 
             aimPreview.Show(GetPlannedShotTiles(), mapManager.Layout);
             plannedBlastPreview.Show(GetPlannedBlastTiles(), mapManager.Layout);
+
+            UpdateForecast();
         }
 
         private void StopProjecting()
@@ -277,23 +304,28 @@ namespace UnholyTrinity.Players
             plannedBlastPreview.Hide();
             ClearSelectedTile();
             SnapToCoord();
+            ClearForecast();
         }
 
+        // resolution plays out for real from here, so the forecast and planned pickups are cleared
         private void RevealPlan()
         {
-            aimPreview.Hide();
             plannedBlastPreview.Hide();
             ClearSelectedTile();
             SnapToCoord();
+            ClearForecast();
+            ShowLiveAim();
 
-            List<Pose> ghostPoses = new();
+            // ghost i stands where the player ends tick i, which is where tick i + 1's shot fires
+            // from. each is picked up as its tick resolves, taking its cone with it
+            List<PlanGhost> ghosts = new();
 
             for (int i = 1; i <= plannedActions.Count; i++)
             {
-                ghostPoses.Add(GetPlannedPose(i));
+                ghosts.Add(new PlanGhost(GetPlannedPose(i), GetPlannedShotCone(i)));
             }
 
-            planGhosts.Show(ghostPoses);
+            planGhosts.Show(ghosts, mapManager.Layout, aimPreview);
         }
 
         private Pose GetPose(HexCoord coord, AimDirection aim)
@@ -538,9 +570,11 @@ namespace UnholyTrinity.Players
         }
 
         // called by game manager once this ticks move has resolved
+        // also moves the live aim preview to where the player ended up
         public void PickUpGhost()
         {
             planGhosts.PickUpNext();
+            ShowLiveAim();
         }
 
         // for rail and LG
@@ -607,6 +641,7 @@ namespace UnholyTrinity.Players
         {
             CurrentAimDirection = aim;
             SnapToCoord();
+            ShowLiveAim();
             Debug.Log($"{name} is now aiming {CurrentAimDirection}");
         }
         public void BeginMovePhase()
@@ -652,7 +687,7 @@ namespace UnholyTrinity.Players
                 return;
             }
 
-            int absorbed = GetArmourAbsorbed(damageAmount);
+            int absorbed = GetArmourAbsorbed(damageAmount, CurrentArmour, armourAbsorbPercent, roundAbsorbUp);
             CurrentArmour -= absorbed;
             damageAmount -= absorbed;
 
@@ -697,17 +732,18 @@ namespace UnholyTrinity.Players
             return true;
         }
 
-        // whole-number math so results don't drift. never absorbs more armour than the player has
-        private int GetArmourAbsorbed(int damageAmount)
+        // whole-number math so results don't drift. never absorbs more armour than there is.
+        // static so the plan forecast absorbs damage exactly the same way
+        private static int GetArmourAbsorbed(int damageAmount, int armour, int absorbPercent, bool roundUp)
         {
-            if (CurrentArmour <= 0)
+            if (armour <= 0)
             {
                 return 0;
             }
 
-            int rounding = roundAbsorbUp ? 99 : 0;
-            int share = (damageAmount * armourAbsorbPercent + rounding) / 100;
-            return Mathf.Min(share, CurrentArmour);
+            int rounding = roundUp ? 99 : 0;
+            int share = (damageAmount * absorbPercent + rounding) / 100;
+            return Mathf.Min(share, armour);
         }
 
         // kills outright, e.g. lava or a fall into the void
@@ -728,10 +764,18 @@ namespace UnholyTrinity.Players
         // the move ends, including when the player didn't move
         public void ApplyHealthTile(HealthTrigger reached)
         {
-            if (IsDead ||
-                mapManager == null ||
-                mapManager.Map == null ||
-                !mapManager.Map.TryGetTile(Coord, out HexTile tile) ||
+            if (mapManager != null)
+            {
+                ApplyHealthTile(mapManager.Map, Coord, reached, this);
+            }
+        }
+
+        // the health tile rule itself. static so the plan forecast runs exactly the same rule
+        private static void ApplyHealthTile(HexMap map, HexCoord coord, HealthTrigger reached, IVitals target)
+        {
+            if (target.IsDead ||
+                map == null ||
+                !map.TryGetTile(coord, out HexTile tile) ||
                 tile.Type != TileType.Health ||
                 tile.Health.Trigger != reached)
             {
@@ -742,15 +786,15 @@ namespace UnholyTrinity.Players
 
             if (health.Lethal)
             {
-                Kill();
+                target.Kill();
             }
             else if (health.Amount > 0)
             {
-                TryHeal(health.Amount);
+                target.TryHeal(health.Amount);
             }
             else if (health.Amount < 0)
             {
-                TakeDamage(-health.Amount);
+                target.TakeDamage(-health.Amount);
             }
         }
 
@@ -779,6 +823,34 @@ namespace UnholyTrinity.Players
             heldWeapon.AddAmmo(data.PickupAmmo);
             Debug.Log($"{name} picked up {data.DisplayName} ammo, now at {heldWeapon.Ammo}/{data.MaxAmmo}");
             return true;
+        }
+
+        // ammo only goes into a weapon the player already holds. the ammo pickup decides whether
+        // it's still taken when the weapon isn't held or is already full
+        public AmmoGiven TryGiveAmmo(WeaponData data, int amount)
+        {
+            if (IsDead || amount <= 0)
+            {
+                return AmmoGiven.Refused;
+            }
+
+            Weapon heldWeapon = weapons.Find(weapon => weapon.Data == data);
+
+            if (heldWeapon == null)
+            {
+                Debug.Log($"{name} can't use {data.DisplayName} ammo without the weapon");
+                return AmmoGiven.WeaponNotHeld;
+            }
+
+            if (heldWeapon.Ammo >= data.MaxAmmo)
+            {
+                Debug.Log($"{name} can't take {data.DisplayName} ammo, already full at {heldWeapon.Ammo}/{data.MaxAmmo}");
+                return AmmoGiven.AmmoFull;
+            }
+
+            heldWeapon.AddAmmo(amount);
+            Debug.Log($"{name} picked up {amount} {data.DisplayName} ammo, now at {heldWeapon.Ammo}/{data.MaxAmmo}");
+            return AmmoGiven.Added;
         }
 
         #endregion

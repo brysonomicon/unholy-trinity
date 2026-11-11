@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 460754082198462321}
   - component: {fileID: 8124171226447212234}
   - component: {fileID: 2598202006518828418}
+  - component: {fileID: 9119330596303374386}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -195,6 +196,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnholyTrinity.Players.PlanGhosts
   ghostPrefab: {fileID: 399705995008798299, guid: 376ff8b2f204bc74fbca65cf75d23ce6, type: 3}
+  coneStyle: {fileID: 9119330596303374386}
 --- !u!114 &8124171226447212234
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -231,6 +233,24 @@ MonoBehaviour:
   tintAlpha: 0.45
   weakFalloffColor: {r: 0.015686274, g: 0.91397995, b: 1, a: 1}
   strongFalloffColor: {r: 0.26301894, g: 0.003921577, b: 0.49019608, a: 1}
+--- !u!114 &9119330596303374386
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1522190664592441805}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 987b1a09b13352a4db7c3c4323e5b2c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnholyTrinity.Weapons::UnholyTrinity.Weapons.AimPreview
+  highlightMaterial: {fileID: 2100000, guid: 2b766dd1c688ae74da03fbcf1cab63a5, type: 2}
+  highlightHeight: 0.12
+  highlightScale: 0.85
+  tintAlpha: 0.2
+  weakFalloffColor: {r: 0.5943396, g: 0.5943396, b: 0.5943396, a: 1}
+  strongFalloffColor: {r: 0.3301887, g: 0.3301887, b: 0.3301887, a: 1}
 --- !u!1 &7320590844018821224
 GameObject:
   m_ObjectHideFlags: 0
