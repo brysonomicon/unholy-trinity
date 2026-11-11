@@ -277,6 +277,12 @@ namespace UnholyTrinity.Hex.Editing
                     e.shift
                         ? HexTileStyle.WongVermilion
                         : HexTileStyle.WongYellow);
+
+                // labels the hovered hex with the same Q and R the inspector uses, so spawn
+                // points and other coords can be read straight off the map
+                HexCoord hoveredCoord = _hovered.Value;
+                Handles.Label(layout.HexToWorld(hoveredCoord) + Vector3.up * 0.5f,
+                    $"Q {hoveredCoord.Q}  R {hoveredCoord.R}", EditorStyles.whiteBoldLabel);
             }
             if (_pendingPortal.HasValue)
             {
