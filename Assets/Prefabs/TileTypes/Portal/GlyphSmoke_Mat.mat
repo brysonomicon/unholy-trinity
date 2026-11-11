@@ -55,17 +55,17 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _GlyphScale: 0.8
+    - _GlyphScale: 0.7
     - _NoiseScale: 6
     - _NoiseScale2: 11
     - _QueueControl: 0
     - _QueueOffset: 0
     - _SmokeBlur: 3.5
-    - _SmokeDistortion: 0.06
-    - _SmokeOpacity: 0.85
+    - _SmokeDistortion: 0.07
+    - _SmokeOpacity: 1
     - _SmokeSpeed: 0.3
     m_Colors:
-    - _GlyphColor: {r: 2.188659, g: 1.636239, b: 2.775061, a: 1}
+    - _GlyphColor: {r: 0.8476101, g: 0.47407925, b: 1.2408, a: 1}
     - _InkColor: {r: 0.03921569, g: 0.02352941, b: 0.06274508, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
