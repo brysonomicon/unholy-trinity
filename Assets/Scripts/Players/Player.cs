@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Collections.Generic;
 using JetBrains.Annotations;
+using Nrjwolf.Tools.AttachAttributes;
 using UnholyTrinity.Hex;
 using UnholyTrinity.Pickups;
 using UnholyTrinity.Weapons;
@@ -14,6 +15,8 @@ namespace UnholyTrinity.Players
         #region Fields
 
         [SerializeField] private GameManager gm;
+
+        [SerializeField][GetComponent] private PlayerAnimationDriver driver;
 
         // unserialized, passed to player by spawner instead
         private MapManager mapManager;
@@ -646,8 +649,15 @@ namespace UnholyTrinity.Players
         }
         public void BeginMovePhase()
         {
+            Debug.Log(driver);
+            driver.TargetSpeed = 1;
             MoveStartCoord = Coord;
             tickMovePath.Clear();
+        }
+
+        public void EndMovePhase()
+        {
+            driver.TargetSpeed = 0;
         }
 
         // the fired aim's cone from where the player stands now, so a beam follows its shooter

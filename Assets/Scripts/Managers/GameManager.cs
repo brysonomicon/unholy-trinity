@@ -260,6 +260,7 @@ public class GameManager : MonoBehaviour
         // OnStop tile effects fire where each player ends up, including players who didn't move
         foreach (Player player in _players)
         {
+            player.EndMovePhase();
             TileEffects.OnStop(player.Map, LivePickups, player.Coord, player);
         }
 
