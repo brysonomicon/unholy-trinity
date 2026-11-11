@@ -7,6 +7,7 @@ using JetBrains.Annotations;
 using Managers;
 using NaughtyAttributes;
 using Nrjwolf.Tools.AttachAttributes;
+using UnholyTrinity.Pickups;
 using UnholyTrinity.Players;
 using UnholyTrinity.Weapons;
 using UnholyTrinity.Hex;
@@ -56,8 +57,9 @@ public class GameManager : MonoBehaviour
     // in registration order, so index 0 is player 1
     public IReadOnlyList<Player> Players => _players;
 
-    // scene object, so it registers itself instead of being serialized on this asset
-    [CanBeNull] private PickupManager _pickupManager;
+    // scene object, so it registers itself instead of being serialized on this asset.
+    // null when the scene has no pickups
+    [CanBeNull] public PickupManager Pickups { get; private set; }
 
     private readonly List<(Player shooter, Rocket rocket)> _rockets = new();
     private readonly List<(
@@ -157,14 +159,14 @@ public class GameManager : MonoBehaviour
 
     public void RegisterPickupManager(PickupManager pickupManager)
     {
-        _pickupManager = pickupManager;
+        Pickups = pickupManager;
     }
 
     public void UnregisterPickupManager(PickupManager pickupManager)
     {
-        if (_pickupManager == pickupManager)
+        if (Pickups == pickupManager)
         {
-            _pickupManager = null;
+            Pickups = null;
         }
     }
 
@@ -222,8 +224,13 @@ public class GameManager : MonoBehaviour
 
         #region move phase
 
+        // respawns come before anyone moves, so a pickup that comes back this tick can be
+        // collected this tick. RespawnTicks = 1 means a pickup collected on tick N is
+        // available again on tick N + 1
+        Pickups?.AdvanceTicks(1);
+
         HashSet<MoveData> movingObjects = new();
-        
+
         // [CB] TODO: Make a common interface for movement.
         foreach (Player player in _players)
         {
@@ -231,7 +238,7 @@ public class GameManager : MonoBehaviour
             IEnumerator<(int, HexCoord)> playerMove =
                 player.GetPlannedAction(tickIndex)?.Move.Invoke();
             if (playerMove == null) continue;
-            movingObjects.Add(new MoveData(playerMove));
+            movingObjects.Add(new MoveData(WithTileEffects(player, playerMove)));
         }
         
         _rockets.ForEach(rocket =>
@@ -245,6 +252,14 @@ public class GameManager : MonoBehaviour
             yield return moveManager.HandleTick(movingObjects);
         }
 
+        // OnStop health tiles and pickups fire where each player ends up, including players
+        // who didn't move
+        foreach (Player player in _players)
+        {
+            player.ApplyHealthTile(HealthTrigger.OnStop);
+            Pickups?.TryCollect(player.Coord, PickupTrigger.OnStop, player);
+        }
+
         // AdvanceRockets();
 
         // LG needs both players end position, so it resolves after everyone moves
@@ -253,27 +268,43 @@ public class GameManager : MonoBehaviour
         #endregion
 
         // absorb ghosts after each turn
-        // respawns tick first so a pickup that comes back this tick can be collected
-        // this tick, even by a player who doesn't move. so RespawnTicks = 1 means a pickup
-        // collected on tick N is available again on tick N + 1
-        bool hasPickups = _pickupManager != null;
-        if (hasPickups)
-        {
-            _pickupManager.AdvanceTicks(1);
-        }
-
         foreach (Player player in _players)
         {
             player.PickUpGhost();
         }
+    }
 
-        if (hasPickups)
+    // runs OnEnter health tiles and pickups on each hex the player enters, on the subtick they
+    // enter it, so pickups vanish as the player reaches them. the first yield is where the player
+    // starts. ends with 0 moves left when the move finishes, is blocked, or the player dies, so the
+    // movement manager knows the player is done
+    private IEnumerator<(int, HexCoord)> WithTileEffects(Player player, IEnumerator<(int, HexCoord)> move)
+    {
+        if (!move.MoveNext())
         {
-            foreach (Player player in _players)
-            {
-                _pickupManager.CollectAlong(player.TickMovePath, player.Coord, player);
-            }
+            yield break;
         }
+
+        yield return move.Current;
+
+        while (move.MoveNext())
+        {
+            (int remainingMoves, HexCoord entered) = move.Current;
+
+            player.ApplyHealthTile(HealthTrigger.OnEnter);
+            Pickups?.TryCollect(entered, PickupTrigger.OnEnter, player);
+
+            if (player.IsDead)
+            {
+                yield return (0, entered);
+                yield break;
+            }
+
+            yield return (remainingMoves, entered);
+        }
+
+        // a blocked move stops without saying it has no moves left
+        yield return (0, player.Coord);
     }
 
     #endregion

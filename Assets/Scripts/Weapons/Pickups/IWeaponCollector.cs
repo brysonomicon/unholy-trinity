@@ -7,5 +7,8 @@ namespace UnholyTrinity.Weapons
     public interface IWeaponCollector : IPickupCollector
     {
         bool TryGiveWeapon(WeaponData data);
+
+        // adds ammo to a weapon the collector already holds
+        AmmoGiven TryGiveAmmo(WeaponData data, int amount);
     }
 }
