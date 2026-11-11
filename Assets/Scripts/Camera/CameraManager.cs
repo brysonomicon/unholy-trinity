@@ -1,3 +1,4 @@
+using System;
 using Unity.Cinemachine;
 using UnholyTrinity.Players;
 using UnityEngine;
@@ -70,20 +71,17 @@ public class CameraManager : MonoBehaviour
             Activate(resolutionCamera);
             return;
         }
-
+        
         PlayerCameraRig rig = current.CameraRig;
-        if (rig == null)
-        {
-            Debug.LogWarning($"{current.name} has no CameraRig assigned.", current);
-            return;
-        }
-
         Activate(_closeView ? rig.CloseThird : rig.TopDown);
     }
 
     private void Activate(CinemachineCamera cam)
     {
-        if (cam == null || cam == _active) return;
+        if (cam == null || cam == _active)
+        {
+            throw new MissingComponentException($"{name} missing a camera.");
+        }
 
         if (_active != null)
         {

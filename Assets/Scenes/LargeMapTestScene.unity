@@ -620,7 +620,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62a04cc01d32d5649981f875f24863c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PickupManager
-  gameManager: {fileID: 11400000, guid: df4deffeedcb94d4bb67ddca6e302f96, type: 2}
+  gameManager: {fileID: 5987722757522701544}
   mapManager: {fileID: 495801503}
   visualHeightOffset: 0.5
 --- !u!4 &1399727955

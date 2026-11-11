@@ -136,6 +136,12 @@ namespace UnholyTrinity.Players
 
         private void Awake()
         {
+            if (CameraRig == null)
+            {
+                throw new MissingComponentException($"{name} has no CameraRig assigned.");
+            }
+            CameraRig.SetTarget(transform);
+            
             CurrentHealth = maxHealth;
             CurrentArmour = 0;
             CurrentWeapon = new Weapon(startingWeapon);
