@@ -72,6 +72,16 @@ namespace UnholyTrinity.Hex
         }
 
         /// <summary>
+        /// Where a unit standing on <paramref name="coord"/> ends up: the portal's target on an entrance,
+        /// otherwise <paramref name="coord"/>.
+        /// </summary>
+        public HexCoord ThroughPortal(HexCoord coord)
+        {
+            TryGetPortalExit(coord, out var exit, out _);
+            return exit;
+        }
+
+        /// <summary>
         /// Walks <paramref name="steps"/> from <paramref name="start"/> the way a mover does: stops at the first
         /// unwalkable hex, and on stepping onto a portal entrance jumps to its target and rotates every remaining
         /// step by the portal's rotation, in place. Returns where the walk ends.
