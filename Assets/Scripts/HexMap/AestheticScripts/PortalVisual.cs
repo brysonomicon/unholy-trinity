@@ -3,42 +3,67 @@ using UnityEngine;
 namespace UnholyTrinity.Hex
 {
     /// <summary>
-    /// Shows the same seal on both portals of a pair, so players can see which portals connect.
+    /// Shows the same seal on every portal in a linked network, so players can see which portals connect,
+    /// and swaps the swirl floor for a plain exit floor on receive-only exits.
     /// MapManager calls Configure when the tile is spawned.
     /// </summary>
     public class PortalVisual : MonoBehaviour, ITileVisual
     {
-        [SerializeField] private Renderer glyphRenderer;
-        [SerializeField] private Sprite[] glyphs;
+        [SerializeField, Tooltip("The billboarded glyph quad using the GlyphSmoke material.")]
+        private Renderer glyphRenderer;
+
+        [SerializeField, Tooltip("Each network gets the next seal in this order; seals only repeat once all are used.")]
+        private Sprite[] glyphs;
+
+        [SerializeField, Tooltip("The swirl floor. Shown on entrances, hidden on exit-only portals.")]
+        private Renderer swirlSurface;
+
+        [SerializeField, Tooltip("Optional floor and effects shown only on exit-only portals.")]
+        private GameObject exitFloor;
 
         private static readonly int GlyphTexId = Shader.PropertyToID("_GlyphTex");
         private static MaterialPropertyBlock _block;
 
         public void Configure(HexTile tile, HexLayout layout)
         {
-            if (tile.Type != TileType.Portal || glyphRenderer == null || glyphs == null || glyphs.Length == 0)
+            if (tile.Type != TileType.Portal)
+            {
                 return;
+            }
 
+            if (swirlSurface != null)
+            {
+                swirlSurface.enabled = tile.Portal.IsEntrance;
+            }
 
-            var glyph = glyphs[PairIndex(tile.Coord, tile.Portal.Target) % glyphs.Length];
+            if (exitFloor != null)
+            {
+                exitFloor.SetActive(tile.Portal.ExitOnly);
+            }
+
+            if (glyphRenderer == null || glyphs == null || glyphs.Length == 0)
+            {
+                return;
+            }
+
+            // Tile prefabs are spawned under the MapManager, which numbers the portal networks.
+            var mapManager = GetComponentInParent<MapManager>();
+            int group = mapManager != null ? mapManager.PortalGroupIndex(tile.Coord) : -1;
+            if (group < 0)
+            {
+                return;
+            }
+
+            var glyph = glyphs[group % glyphs.Length];
+            if (glyph == null)
+            {
+                return;
+            }
 
             _block ??= new MaterialPropertyBlock();
             glyphRenderer.GetPropertyBlock(_block);
             _block.SetTexture(GlyphTexId, glyph.texture);
             glyphRenderer.SetPropertyBlock(_block);
-        }
-
-        // Same result from either end of the pair, and the same every run.
-        private static int PairIndex(HexCoord a, HexCoord b)
-        {
-            // Sort so A→B and B→A give the same answer.
-            if (a.Q > b.Q || (a.Q == b.Q && a.R > b.R))
-                (a, b) = (b, a);
-            unchecked
-            {
-                int h = a.Q * 73856093 ^ a.R * 19349663 ^ b.Q * 83492791 ^ b.R * 2971215;
-                return h & int.MaxValue;
-            }
         }
     }
 }
