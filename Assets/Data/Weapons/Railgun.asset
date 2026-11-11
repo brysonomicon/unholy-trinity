@@ -12,7 +12,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0f0e39f5f0b92ac40960aa7ffd9c536a, type: 3}
   m_Name: Railgun
   m_EditorClassIdentifier: Assembly-CSharp::RailgunData
-  displayName: Railgun
-  maxAmmo: 10
-  pickupAmmo: 5
-  cooldown: 0
+  <DisplayName>k__BackingField: Railgun
+  <Icon>k__BackingField: {fileID: -5148076047408803544, guid: 67155d112dfd2d64296d9d6983f6c5b5, type: 3}
+  <MaxAmmo>k__BackingField: 10
+  <PickupAmmo>k__BackingField: 5
+  <TickCost>k__BackingField: 1
+  <Cooldown>k__BackingField: 2
+  tierMaxAngles:
+  - 1
+  - 3
+  - 10
+  tierFalloff:
+  - 1
+  - 0.66
+  - 0.33
+  damage: 80

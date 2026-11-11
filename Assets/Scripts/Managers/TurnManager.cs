@@ -10,7 +10,6 @@ public enum TurnPhase
     Resolution
 }
 
-/// P1 plans -> P2 plans -> resolution (just a pause for now) -> repeat.
 [CreateAssetMenu(fileName = "NewTurnManager",
     menuName = "Managers/TurnManager")]
 public class TurnManager : ScriptableObject
@@ -18,6 +17,10 @@ public class TurnManager : ScriptableObject
     public static TurnManager Instance { get; private set; }
     
     public static event Action<TurnPhase> NewPhaseEvent;
+
+    [field: SerializeField][Min(0.1f)] public int TicksPerTurn { get; private set; } = 3;
+    [field:SerializeField]
+    public float TickDuration { get; private set; } = 2;
     
     public TurnPhase CurrentPhase => _turnPhase.Peek();
     public bool IsPlayerTurn => CurrentPhase != TurnPhase.Resolution;
@@ -28,9 +31,6 @@ public class TurnManager : ScriptableObject
         TurnPhase.PlayerTwo,
         TurnPhase.Resolution,
     });
-
-    /// The player currently planning, or null during resolution.
-    
 
     private void OnEnable()
     {
@@ -64,5 +64,11 @@ public class TurnManager : ScriptableObject
         EndTurn();
     }
 
-
+    public void ResetPhases()
+    {
+        _turnPhase.Clear();
+        _turnPhase.Enqueue(TurnPhase.PlayerOne);
+        _turnPhase.Enqueue(TurnPhase.PlayerTwo);
+        _turnPhase.Enqueue(TurnPhase.Resolution);
+    }
 }

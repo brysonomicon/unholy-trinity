@@ -43,20 +43,21 @@ namespace UnholyTrinity.Hex
         /// Velocity after passing over this tile. Speed never drops below zero.
         /// Along-movement tiles do nothing to a stationary unit (it has no direction);
         /// a positive fixed tile will push a stationary unit, conveyor-style.
+        /// Old code: needs refactor
         /// </summary>
-        public readonly HexVelocity Apply(HexVelocity velocity)
-        {
-            if (Mode != BoostMode.AlongMovement)
-            {
-                return new HexVelocity(Direction,
-                    Math.Max(0, velocity.Speed + Strength));
-            }
+        // public readonly HexVelocity Apply(HexVelocity velocity)
+        // {
+        //     if (Mode != BoostMode.AlongMovement)
+        //     {
+        //         return new HexVelocity(Direction,
+        //             Math.Max(0, velocity.Speed + Strength));
+        //     }
 
-            return !velocity.IsMoving
-                ? velocity
-                : new HexVelocity(velocity.Direction,
-                    Math.Max(0, velocity.Speed + Strength));
-        }
+        //     return !velocity.IsMoving
+        //         ? velocity
+        //         : new HexVelocity(velocity.Direction,
+        //             Math.Max(0, velocity.Speed + Strength));
+        // }
 
         public bool Equals(BoostSettings other)
         {
