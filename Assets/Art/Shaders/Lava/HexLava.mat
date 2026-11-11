@@ -20,7 +20,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Lava
+  m_Name: HexLava
   m_Shader: {fileID: -6465566751694194690, guid: e7b35264a8a190246a122855fb626cfc, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -72,7 +72,7 @@ Material:
     - _Frenselpower: 0.6
     - _LavaNormalSpeed: 0.05
     - _Metallic: 0
-    - _NoiseAmount: 1
+    - _NoiseAmount: 1.01
     - _NoiseScale: 30
     - _Normal_Strength: 20
     - _Power: 2
@@ -84,14 +84,14 @@ Material:
     - _VoronoiAmount: -0.05
     - _VoronoiScale: 15
     m_Colors:
-    - _BottomRemap: {r: 0.5, g: 1, b: 0, a: 0}
+    - _BottomRemap: {r: 1, g: 1, b: 0, a: 0}
     - _FresnelColor: {r: 5.960785, g: 2.6527052, b: 1.46679, a: 0}
     - _LavaBackground: {r: 7.958114, g: 7.958114, b: 7.958114, a: 0}
     - _LavaColor: {r: 8.744725, g: 2.291721, b: 0, a: 1}
     - _LavaNormalSpeed: {r: 0.15, g: 0, b: 0, a: 0}
-    - _LavaScale: {r: 1, g: 1, b: 0, a: 0}
+    - _LavaScale: {r: 0.75, g: 0.75, b: 0, a: 0}
     - _LavaScaleNormal: {r: 3, g: 3, b: 0, a: 0}
-    - _LavaSpeed: {r: 0.1, g: 0, b: 0, a: 0}
+    - _LavaSpeed: {r: 0.075, g: 0, b: 0, a: 0}
     - _Lavaremap: {r: 0, g: 1.5, b: 0, a: 0}
     - _NoiseSpeed: {r: 0, g: 0.05, b: 0, a: 0}
     - _VoronoiSpeed: {r: 0, g: 0.01, b: 0, a: 0}
