@@ -72,10 +72,10 @@ namespace UnholyTrinity.Hex.Tests
             map.SetTile(HexTile.PortalExit(new HexCoord(6, 0)));                               // exit nobody uses
 
             var problems = map.Validate();
-            Assert.That(problems.Any(p => p.Contains("(0, 0)") && p.Contains("off the map")));
-            Assert.That(problems.Any(p => p.Contains("(1, 0)") && p.Contains("not a portal")));
-            Assert.That(problems.Any(p => p.Contains("(3, 0)") && p.Contains("itself")));
-            Assert.That(problems.Any(p => p.Contains("(6, 0)") && p.Contains("no entrances")));
+            Assert.That(problems.Any(p => p.Contains(new HexCoord(0, 0).ToString()) && p.Contains("off the map")));
+            Assert.That(problems.Any(p => p.Contains(new HexCoord(1, 0).ToString()) && p.Contains("not a portal")));
+            Assert.That(problems.Any(p => p.Contains(new HexCoord(3, 0).ToString()) && p.Contains("itself")));
+            Assert.That(problems.Any(p => p.Contains(new HexCoord(6, 0).ToString()) && p.Contains("no entrances")));
             Assert.IsFalse(map.TryGetPortalExit(new HexCoord(0, 0), out _, out _));
         }
 
