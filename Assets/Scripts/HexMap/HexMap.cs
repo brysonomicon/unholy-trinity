@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace UnholyTrinity.Hex
 {
@@ -57,8 +58,8 @@ namespace UnholyTrinity.Hex
         public bool TryGetPortalExit(HexCoord coord, out HexCoord exit, out int rotationSteps)
         {
             if (tiles.TryGetValue(coord, out var tile) && tile.Type == TileType.Portal && tile.Portal.IsEntrance
-                && tiles.TryGetValue(tile.Portal.Target, out var target) && target.Type == TileType.Portal
-                && tile.Portal.Target != coord)
+                && tile.Portal.Target != coord && tiles.TryGetValue(tile.Portal.Target, out var target) 
+                && target.Type == TileType.Portal)
             {
                 exit = tile.Portal.Target;
                 rotationSteps = tile.Portal.RotationSteps;
@@ -134,8 +135,7 @@ namespace UnholyTrinity.Hex
         {
             if (tile.Portal.ExitOnly)
             {
-                using var entrances = EntrancesTo(tile.Coord).GetEnumerator();
-                if (!entrances.MoveNext())
+                if (!EntrancesTo(tile.Coord).Any())
                     problems.Add($"Portal exit {tile.Coord} has no entrances.");
                 return;
             }
