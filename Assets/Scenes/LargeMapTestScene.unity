@@ -592,7 +592,7 @@ PrefabInstance:
     - target: {fileID: 7730307120146724165, guid: 1e4065b725db00e4ba08936e27064abf, type: 3}
       propertyPath: definition
       value: 
-      objectReference: {fileID: 11400000, guid: a520b943cfd0c8d4f9729855ddf5a5e4, type: 2}
+      objectReference: {fileID: 11400000, guid: 8fe272a757001d74d9cd405d954074d8, type: 2}
     - target: {fileID: 7894865683037652111, guid: 1e4065b725db00e4ba08936e27064abf, type: 3}
       propertyPath: m_Name
       value: MapManager
@@ -685,11 +685,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UnholyTrinity.Players.PlayerSpawner
   mapManager: {fileID: 495801503}
   playerPrefab: {fileID: 9068410019634648079, guid: c560c3193c1df7f488f308a030123633, type: 3}
-  spawnCoords:
-  - <Q>k__BackingField: -10
-    <R>k__BackingField: 0
-  - <Q>k__BackingField: 10
-    <R>k__BackingField: 1
+  spawnPoints:
+  - <Coord>k__BackingField:
+      <Q>k__BackingField: -20
+      <R>k__BackingField: 17
+    <Aim>k__BackingField: 2
+  - <Coord>k__BackingField:
+      <Q>k__BackingField: 2
+      <R>k__BackingField: -20
+    <Aim>k__BackingField: 10
 --- !u!4 &1440695144
 Transform:
   m_ObjectHideFlags: 0

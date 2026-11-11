@@ -190,10 +190,11 @@ namespace UnholyTrinity.Players
         #region Setup
 
         // called by the spawner 
-        public void Initialize(MapManager mapManager, HexCoord spawnCoord)
+        public void Initialize(MapManager mapManager, HexCoord spawnCoord, AimDirection spawnAim)
         {
             this.mapManager = mapManager;
             Coord = spawnCoord;
+            CurrentAimDirection = spawnAim;
             momentum = HexCoord.Zero;
             mapManager.LayoutChanged += SnapToCoord;
             SnapToCoord(Coord);
