@@ -22,8 +22,10 @@ namespace UnholyTrinity.Hex
         public PickupField(HexMap map)
         {
             foreach (var tile in map.PickupPoints)
+            {
                 if (tile.Pickup.HasPickup)
                     spawns.Add(tile.Coord, new PickupSpawn(tile.Pickup.Pickup));
+            }
         }
 
         PickupField()
@@ -50,7 +52,9 @@ namespace UnholyTrinity.Hex
             if (!spawns.TryGetValue(coord, out var spawn)
                 || spawn.Definition.Trigger != reached
                 || !spawn.TryCollect(collector))
+            {
                 return false;
+            }
 
             Collected?.Invoke(coord, spawn);
             return true;
@@ -71,8 +75,10 @@ namespace UnholyTrinity.Hex
         public void AdvanceTicks(int ticks)
         {
             foreach (var pair in spawns)
+            {
                 if (pair.Value.AdvanceTicks(ticks))
                     Respawned?.Invoke(pair.Key, pair.Value);
+            }
         }
     }
 }

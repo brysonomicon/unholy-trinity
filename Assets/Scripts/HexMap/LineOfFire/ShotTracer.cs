@@ -88,8 +88,10 @@ namespace UnholyTrinity.Hex
         {
             var line = from.LineTo(to);
             for (int i = 1; i < line.Count - 1; i++)
+            {
                 if (map.BlocksLineOfFire(line[i]))
                     return false;
+            }
             return true;
         }
     }
