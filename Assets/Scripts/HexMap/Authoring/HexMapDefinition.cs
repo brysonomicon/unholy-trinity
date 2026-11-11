@@ -91,8 +91,10 @@ namespace UnholyTrinity.Hex
             var problems = new List<string>();
             var seen = new HashSet<HexCoord>();
             foreach (var entry in tiles)
+            {
                 if (!seen.Add(entry.Coord))
                     problems.Add($"Duplicate tile at {entry.Coord}; the last one wins.");
+            }
             problems.AddRange(Build().Validate());
             return problems;
         }
@@ -100,8 +102,10 @@ namespace UnholyTrinity.Hex
         int IndexOf(HexCoord coord)
         {
             for (int i = 0; i < tiles.Count; i++)
+            {
                 if (tiles[i].Coord == coord)
                     return i;
+            }
             return -1;
         }
     }
