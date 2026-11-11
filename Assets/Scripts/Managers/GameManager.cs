@@ -11,6 +11,8 @@ using UnholyTrinity.Players;
 using UnholyTrinity.Weapons;
 using UnholyTrinity.Hex;
 using UnholyTrinity.Tiles;
+using UnholyTrinity.Camera;
+
 using UnityEngine;
 
 [RequireComponent(typeof(MovementManager))]
@@ -152,6 +154,7 @@ public class GameManager : MonoBehaviour
 
         _players.Add(player);
         Debug.Log($"Registering {player.gameObject.name}");
+        CameraManager.Instance.RegisterPlayerTracked(player.transform, 1, 1);
         //Start the game when we get enough players.
         if(_players.Count == maxPlayers)
         {
