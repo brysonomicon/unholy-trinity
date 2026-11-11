@@ -172,8 +172,10 @@ namespace UnholyTrinity.Hex.Editing
                             (BoostMode)EditorGUILayout.EnumPopup("Mode",
                                 _boost.Mode);
                         if (_boost.Mode == BoostMode.Fixed)
+                        {
                             _boost.Direction = DirectionPopup("Direction",
                                 _boost.Direction, manager.Orientation);
+                        }
                         break;
                     case TileType.PickupPoint:
                         _pickup = (PickupDefinition)EditorGUILayout.ObjectField(
@@ -198,6 +200,7 @@ namespace UnholyTrinity.Hex.Editing
                         }
 
                         if (_portalMode != PortalPaintMode.Exit)
+                        {
                             _portalRotation = EditorGUILayout.IntSlider(
                                 _portalMode == PortalPaintMode.TwoWay
                                     ? new GUIContent("Rotation (A to B)",
@@ -205,6 +208,7 @@ namespace UnholyTrinity.Hex.Editing
                                     : new GUIContent("Rotation",
                                         "60 degree CCW steps applied when exiting at the target."),
                                 _portalRotation, 0, 5);
+                        }
                         EditorGUILayout.LabelField(PortalHint(), EditorStyles.miniLabel);
                         break;
                     // [CB] This causes exceptions to be thrown. Sketch.
@@ -230,13 +234,17 @@ namespace UnholyTrinity.Hex.Editing
             using (new EditorGUILayout.HorizontalScope())
             {
                 if (GUILayout.Button("Fill Hexagon"))
+                {
                     FillHexagon(definition, Mathf.Max(0, _fillRadius),
                         _fillWithWallBorder);
+                }
                 if (GUILayout.Button("Clear") &&
                     EditorUtility.DisplayDialog("Clear map",
                         $"Remove all tiles from '{definition.name}'?", "Clear",
                         "Cancel"))
+                {
                     Modify(definition, "Clear Hex Map", d => d.Clear());
+                }
             }
 
             var problems = definition.Validate();
@@ -264,17 +272,23 @@ namespace UnholyTrinity.Hex.Editing
                 e.mousePosition);
 
             if (_hovered.HasValue)
+            {
                 HexMapGizmos.OutlineHex(layout, _hovered.Value,
                     e.shift
                         ? HexTileStyle.WongVermilion
                         : HexTileStyle.WongYellow);
+            }
             if (_pendingPortal.HasValue)
+            {
                 HexMapGizmos.OutlineHex(layout, _pendingPortal.Value,
                     HexTileStyle.WongReddishPurple, 5f);
+            }
             if (_paintType == TileType.Boost && _boost.Mode == BoostMode.Fixed &&
                 _hovered.HasValue)
+            {
                 HexMapGizmos.DrawArrow(layout, layout.HexToWorld(_hovered.Value),
                     _boost.Direction, HexTileStyle.WongYellow);
+            }
 
             switch (e.type)
             {
@@ -352,7 +366,10 @@ namespace UnholyTrinity.Hex.Editing
 
             if (definition.TryGetTile(coord, out var existing) &&
                 SameTile(existing, tile))
+            {
                 return;
+            }
+
             Modify(definition, "Paint Hex", d => d.SetTile(tile));
         }
 
@@ -385,7 +402,10 @@ namespace UnholyTrinity.Hex.Editing
                     {
                         if (!d.TryGetTile(portalTarget, out var targetTile) ||
                             targetTile.Type != TileType.Portal)
+                        {
                             d.SetTile(HexTile.PortalExit(portalTarget));
+                        }
+
                         d.SetTile(HexTile.PortalTile(coord, portalTarget, _portalRotation));
                     });
                     break;
@@ -447,13 +467,17 @@ namespace UnholyTrinity.Hex.Editing
             Modify(definition, "Fill Hexagon", d =>
             {
                 foreach (var coord in HexCoord.Range(HexCoord.Zero, radius))
+                {
                     if (!d.TryGetTile(coord, out _))
                         d.SetTile(HexTile.Floor(coord));
+                }
                 if (wallBorder)
                 {
                     foreach (var coord in HexCoord.Ring(HexCoord.Zero,
                                  radius + 1))
+                    {
                         d.SetTile(HexTile.Wall(coord));
+                    }
                 }
                     
             });

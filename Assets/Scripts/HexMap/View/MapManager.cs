@@ -99,8 +99,10 @@ public class MapManager : MonoBehaviour
         }
 
         foreach (var problem in definition.Validate())
+        {
             Debug.LogWarning($"Hex map '{definition.name}': {problem}",
                 definition);
+        }
 
         Map = definition.Build();
         SpawnVisuals();
@@ -158,7 +160,10 @@ public class MapManager : MonoBehaviour
         go.transform.localScale = prefab.transform.localScale * hexSize;
         foreach (var visual in
                  go.GetComponentsInChildren<ITileVisual>(true))
+        {
             visual.Configure(tile, layout);
+        }
+
         return go;
     }
 

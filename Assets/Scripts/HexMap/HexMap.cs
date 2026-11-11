@@ -103,16 +103,22 @@ namespace UnholyTrinity.Hex
         public IEnumerable<HexCoord> EntrancesTo(HexCoord target)
         {
             foreach (var tile in tiles.Values)
+            {
                 if (tile.Type == TileType.Portal && tile.Portal.IsEntrance && tile.Portal.Target == target
                     && tile.Coord != target)
+                {
                     yield return tile.Coord;
+                }
+            }
         }
 
         public IEnumerable<HexTile> TilesOfType(TileType type)
         {
             foreach (var tile in tiles.Values)
+            {
                 if (tile.Type == type)
                     yield return tile;
+            }
         }
 
         public IEnumerable<HexTile> PickupPoints => TilesOfType(TileType.PickupPoint);
