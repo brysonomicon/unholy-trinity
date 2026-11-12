@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
-
-namespace Managers
+namespace UnholyTrinity.Managers.Interfaces
 {
     public interface ITickManager<out T, in TU> where T : Enum
     {

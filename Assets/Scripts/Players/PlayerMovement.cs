@@ -189,8 +189,7 @@ namespace UnholyTrinity.Players
                 {
                     break;
                 }
-
-                Debug.Log($"Moving from {Coord} to {current}");
+                
                 Coord = current;
                 tickMovePath.Add(Coord);
                 SnapToCoord(Coord);
@@ -210,7 +209,6 @@ namespace UnholyTrinity.Players
                 return false;
             }
             
-            Debug.Log($"{name} moved to {Coord}");
             return true;
         }
 

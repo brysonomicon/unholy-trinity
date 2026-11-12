@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnholyTrinity.Hex;
+using UnholyTrinity.Managers;
 using UnholyTrinity.Tiles;
 using UnholyTrinity.Weapons;
 using UnityEngine;
@@ -38,7 +39,7 @@ namespace UnholyTrinity.Players
         {
             CurrentForecast = BuildForecast();
 
-            PickupManager pickupManager = gm.Pickups;
+            PickupManager pickupManager = gm.PickupManager;
             if (pickupManager != null)
             {
                 pickupManager.ShowPlannedState(CurrentForecast.Pickups, this);
@@ -51,7 +52,7 @@ namespace UnholyTrinity.Players
         {
             CurrentForecast = null;
 
-            PickupManager pickupManager = gm.Pickups;
+            PickupManager pickupManager = gm.PickupManager;
             if (pickupManager != null)
             {
                 pickupManager.ShowLiveState(this);
@@ -62,7 +63,7 @@ namespace UnholyTrinity.Players
 
         private PlanForecast BuildForecast()
         {
-            PickupManager pickupManager = gm.Pickups;
+            PickupManager pickupManager = gm.PickupManager;
             PickupField pickups = pickupManager != null ? pickupManager.Field.Clone() : null;
 
             HexMap map = mapManager.Map;

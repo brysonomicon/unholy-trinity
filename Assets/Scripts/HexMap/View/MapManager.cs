@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnholyTrinity.Helpers;
 using UnholyTrinity.Hex;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -11,7 +12,7 @@ using UnityEngine.InputSystem;
 /// The grid lies on the XZ plane at this transform's position (rotation and scale are ignored).
 /// </summary>
 [DefaultExecutionOrder(-100)]
-public class MapManager : MonoBehaviour
+public class MapManager : Singleton<MapManager>
 {
     const string VisualRootName = "Tiles";
 
@@ -49,7 +50,7 @@ public class MapManager : MonoBehaviour
         new HexLayout(orientation, hexSize, transform.position);
 
     /// <summary>Raised after the layout changes (e.g. orientation toggled), so units can re-position.</summary>
-    public event Action LayoutChanged;
+    public static event Action LayoutChanged;
 
     /// <summary>
     /// Number of the portal network <paramref name="coord"/> belongs to, or -1 if it isn't a portal.
@@ -57,9 +58,13 @@ public class MapManager : MonoBehaviour
     /// Networks are numbered 0, 1, 2... in a fixed order, so the same map always gives the same numbers.
     /// </summary>
     public int PortalGroupIndex(HexCoord coord) =>
-        _portalGroups.TryGetValue(coord, out var index) ? index : -1;
+        _portalGroups.GetValueOrDefault(coord, -1);
 
-    private void Awake() => Rebuild();
+    protected override void Awake()
+    {
+        base.Awake();
+        Rebuild();
+    }
 
     private void Update()
     {
