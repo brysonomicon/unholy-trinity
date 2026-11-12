@@ -378,12 +378,13 @@ public class GameManager : MonoBehaviour
         {
             rocket.StepForward();
             shouldDetonate = rocket.HasArrived || IsDirectHit(shooter, rocket);
-            yield return (shouldDetonate ? 0 : rocket.Data.Speed, rocket.Coord);
-        }
 
-        if (shouldDetonate)
-        {
-            DetonateRocket(shooter, rocket);
+            if (shouldDetonate)
+            {
+                DetonateRocket(shooter, rocket);
+            }
+
+            yield return (shouldDetonate ? 0 : rocket.Data.Speed - step - 1, rocket.Coord);
         }
     }
 
