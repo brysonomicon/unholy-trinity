@@ -639,6 +639,8 @@ MonoBehaviour:
   gameManager: {fileID: 710682130}
   mapManager: {fileID: 495801503}
   visualHeightOffset: 0.5
+  respawnRingPrefab: {fileID: 6733510855538581423, guid: a3154a87c6969a140bb50b7766bf39d0, type: 3}
+  pickupGhostMaterial: {fileID: 2100000, guid: bc295b66361017d46a25d2e224c5d222, type: 2}
 --- !u!4 &1399727955
 Transform:
   m_ObjectHideFlags: 0
