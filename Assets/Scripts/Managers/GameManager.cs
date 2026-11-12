@@ -354,16 +354,18 @@ namespace UnholyTrinity.Managers
                  step++)
             {
                 rocket.StepForward();
-                shouldDetonate =
-                    rocket.HasArrived || IsDirectHit(shooter, rocket);
-                yield return (shouldDetonate ? 0 : rocket.Data.Speed,
+                shouldDetonate = rocket.HasArrived || IsDirectHit(shooter, rocket);
+                
+                if (shouldDetonate)
+                {
+                    DetonateRocket(shooter, rocket);
+                }
+
+                yield return (shouldDetonate ? 0 : rocket.Data.Speed - (step + 1),
                     rocket.Coord);
             }
 
-            if (shouldDetonate)
-            {
-                DetonateRocket(shooter, rocket);
-            }
+           
         }
 
         private bool IsDirectHit(Player shooter, Rocket rocket)

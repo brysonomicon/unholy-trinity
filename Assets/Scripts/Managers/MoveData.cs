@@ -51,7 +51,9 @@ namespace UnholyTrinity.Managers
         public bool MoveNext()
         {
             _currentRatio = 0;
+            Debug.Log($"{BaseObject.name} has {RemainingMoves} before move");
             _moveEnumerator.MoveNext();
+            Debug.Log($"{BaseObject.name} has {RemainingMoves} after move");
             return CanMove;
         }
 
