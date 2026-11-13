@@ -8,12 +8,17 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: TrinityMat
-    second: {fileID: 2724533532133794584, guid: b4e2a7cc930b97f44abb315bf6420247, type: 3}
+    second: {fileID: 2100000, guid: e45f7628de595764eaf5cb6b84c276b0, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: UnholyMat
-    second: {fileID: 2100000, guid: 639d3fcf9a11937438d0cda27edd2eb2, type: 2}
+    second: {fileID: 2100000, guid: 767502414d9b8fe4cba2088fd7ad1754, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: UnholySide
+    second: {fileID: 2100000, guid: d318cb3f0e962c44db9c99599d28899b, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
