@@ -49,7 +49,7 @@ MonoBehaviour:
     HarmPrefab: {fileID: 0}
     KillPrefab: {fileID: 0}
   TileMaterial: {fileID: 0}
-  TileScale: 1
+  TileScale: 0.99
   FloorHeight: 0.1
   WallHeight: 1.2
   PitHeight: 0.01

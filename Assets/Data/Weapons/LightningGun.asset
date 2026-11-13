@@ -20,11 +20,11 @@ MonoBehaviour:
   <Cooldown>k__BackingField: 0
   tierMaxAngles:
   - 1
-  - 10
+  - 15
   - 30
   tierFalloff:
   - 1
   - 0.66
   - 0.33
-  range: 10
+  range: 15
   damage: 21
