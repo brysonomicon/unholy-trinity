@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using Nrjwolf.Tools.AttachAttributes;
+using UnholyTrinity.Helpers;
 using UnholyTrinity.Hex;
 using UnholyTrinity.Managers;
 using UnholyTrinity.Weapons;
@@ -97,8 +98,14 @@ namespace UnholyTrinity.Players
 
         public int PlanningTickOfTurn => plannedActions.Count;
 
+        // the current action being planned this tick, tracked to SAM order can be enforced
+        public SAMType PlanningStep { get; private set; } = SAMType.Shoot;
+
         public bool CanPlanNextTick =>
             plannedActions.Count < TurnManager.Instance.TicksPerTurn;
+        
+        public bool CanAdvancePlanningStep =>
+            PlanningStep != SAMType.Move || CanPlanNextTick;
 
         private UnholyAction PlanningAction => plannedActions[^1];
 
@@ -373,7 +380,7 @@ namespace UnholyTrinity.Players
         // is planned
         public void SelectWeapon(Weapon weapon)
         {
-            if (weapon == CurrentWeapon)
+            if (weapon == CurrentWeapon || PlanningStep != SAMType.Shoot)
             {
                 return;
             }
@@ -389,9 +396,10 @@ namespace UnholyTrinity.Players
         // and the planned cooldown has expired by that tick
         public bool CanPlanShot(Weapon weapon)
         {
-            return GetUnplannedAmmo(weapon) > 0 &&
-                    PlanningTick >= GetPlannedNextFireTick() &&
-                    (!weapon.Data.RequiresTarget || HasTargetInShotCone);
+            return PlanningStep == SAMType.Shoot &&
+                   GetUnplannedAmmo(weapon) > 0 &&
+                   PlanningTick >= GetPlannedNextFireTick() &&
+                   (!weapon.Data.RequiresTarget || HasTargetInShotCone);
         }
 
         public void PlanShot(Weapon weapon)
@@ -427,6 +435,11 @@ namespace UnholyTrinity.Players
         // fills the next tick of the shoot lane without firing
         public void PlanHoldFire()
         {
+            if (PlanningStep != SAMType.Shoot)
+            {
+                return;
+            }
+
             Debug.Log($"{name} holds fire on tick {PlanningTick}");
             PlanningAction.PlannedShot = null;
             PlanningAction.PlannedTarget = null;
@@ -436,6 +449,11 @@ namespace UnholyTrinity.Players
 
         public void SelectTile(HexCoord coord)
         {
+            if (PlanningStep != SAMType.Shoot)
+            {
+                return;
+            }
+
             SelectedTile = coord;
             selectionPreview.Show(new List<AimTile> { new AimTile(coord, 1f) }, mapManager.Layout);
         }
@@ -449,7 +467,9 @@ namespace UnholyTrinity.Players
         public bool CanPlanRotation(bool clockwise)
         {
             int stepsAfterRotation = PlannedAimSteps + (clockwise ? -1 : 1);
-            return Mathf.Abs(stepsAfterRotation) <= aimStepsPerTick;
+
+            return PlanningStep == SAMType.Aim &&
+                   Mathf.Abs(stepsAfterRotation) <= aimStepsPerTick;
         }
 
         public void PlanRotation(bool clockwise)
@@ -467,6 +487,11 @@ namespace UnholyTrinity.Players
 
         public void PlanHoldAim()
         {
+            if (PlanningStep != SAMType.Aim)
+            {
+                return;
+            }
+
             SetPlannedAim(PreviousPlannedAim);
         }
 
@@ -487,14 +512,32 @@ namespace UnholyTrinity.Players
             return PlanningAction.PlannedDirection == direction;
         }
 
-        public void PlanNextTick()
+        // confirming a move starts the next tick's plan. next tick button is confirm for now
+        public void AdvancePlanningStep()
         {
-            if (!CanPlanNextTick)
+            if (!CanAdvancePlanningStep)
             {
                 return;
             }
 
+            switch (PlanningStep)
+            {
+                case SAMType.Shoot:
+                    PlanningStep = SAMType.Aim;
+                    break;
+                case SAMType.Aim:
+                    PlanningStep = SAMType.Move;
+                    break;
+                case SAMType.Move:
+                    PlanNextTick();
+                    break;
+            }
+        }
+
+        private void PlanNextTick()
+        {
             plannedActions.Add(CreateNewDefaultAction(PlanningAction.PlannedAim));
+            PlanningStep = SAMType.Shoot;
             ProjectPlan();
         }
 
@@ -507,12 +550,15 @@ namespace UnholyTrinity.Players
         // clears the tick being planned currently. if already clear, clears previous tick
         public void ClearTick()
         {
-            if (!HasTickChanges && plannedActions.Count > 1)
-            {
+            if (!HasTickChanges && 
+                PlanningStep == SAMType.Shoot &&
+                plannedActions.Count > 1
+            ){
                 plannedActions.RemoveAt(plannedActions.Count - 1);
             }
 
             plannedActions[^1] = CreateNewDefaultAction(PreviousPlannedAim);
+            PlanningStep = SAMType.Shoot;
             ProjectPlan();
         }
 
@@ -521,6 +567,7 @@ namespace UnholyTrinity.Players
         {
             plannedActions.Clear();
             plannedActions.Add(CreateNewDefaultAction(CurrentAimDirection));
+            PlanningStep = SAMType.Shoot;
             ProjectPlan();
         }
 

@@ -1,4 +1,5 @@
 using System;
+using UnholyTrinity.Helpers;
 using UnholyTrinity.Players;
 using UnholyTrinity.Hex;
 using UnholyTrinity.Managers;
@@ -62,6 +63,7 @@ public class UIManager : MonoBehaviour
                 current.IsPlanningShot(weapon))
             .AddRow()
             .AddOption("Hold", () => PlanAndRefresh(current.PlanHoldFire),
+                current.PlanningStep == SAMType.Shoot,
                 selected: current.IsHoldingFire);
 
         CreateLaneCard("Aim")
@@ -73,6 +75,7 @@ public class UIManager : MonoBehaviour
                 selected: current.IsPlanningRotation(true))
             .AddRow()
             .AddOption("Hold", () => PlanAndRefresh(current.PlanHoldAim),
+                current.PlanningStep == SAMType.Aim,
                 selected: current.IsHoldingAim);
 
         LaneCard moveCard = CreateLaneCard("Move");
@@ -87,7 +90,7 @@ public class UIManager : MonoBehaviour
         AddMoveOption(moveCard, "SE", HexDirection.D5);
 
         CreateLaneCard($"Tick {current.PlanningTickOfTurn}/{TurnManager.Instance.TicksPerTurn}")
-            .AddOption("Next Tick", () => PlanAndRefresh(current.PlanNextTick), current.CanPlanNextTick)
+            .AddOption("Next Tick", () => PlanAndRefresh(current.AdvancePlanningStep), current.CanAdvancePlanningStep)
             .AddRow()
             .AddOption("Clear Tick", () => PlanAndRefresh(current.ClearTick))
             .AddRow()
@@ -108,6 +111,7 @@ public class UIManager : MonoBehaviour
             card.AddOption(
                 label, 
                 () => PlanAndRefresh(() => current.PlanMove(direction)),
+                current.PlanningStep == SAMType.Move,
                 selected: current.IsPlanningMove(direction));
         }
     }
