@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5500670672120234796}
   m_Layer: 0
-  m_Name: Pickup_Armour
+  m_Name: Pickup_Armour_Red
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -88,6 +88,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -3187241865431343008, guid: 9bafd425fd680614fa25d8e03573b44d, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 64825594253d1a249b43bfb42e035dad, type: 2}
     - target: {fileID: 919132149155446097, guid: 9bafd425fd680614fa25d8e03573b44d, type: 3}
       propertyPath: m_Name
       value: PickupArmour
