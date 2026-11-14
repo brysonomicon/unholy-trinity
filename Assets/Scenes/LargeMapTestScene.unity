@@ -214,6 +214,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9ceea8b0c79a94e41bf1e9426e5ed9d6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
+--- !u!114 &1117763129 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8121760666038929693, guid: 1e4065b725db00e4ba08936e27064abf, type: 3}
+  m_PrefabInstance: {fileID: 1142547247}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62a04cc01d32d5649981f875f24863c9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PickupManager
 --- !u!1001 &1142547247
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -262,10 +273,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 7730307120146724165, guid: 1e4065b725db00e4ba08936e27064abf, type: 3}
-      propertyPath: definition
-      value: 
-      objectReference: {fileID: 11400000, guid: 8fe272a757001d74d9cd405d954074d8, type: 2}
     - target: {fileID: 2658597681120904646, guid: 1e4065b725db00e4ba08936e27064abf, type: 3}
       propertyPath: cam
       value: 
@@ -274,10 +281,22 @@ PrefabInstance:
       propertyPath: uiManager
       value: 
       objectReference: {fileID: 7453945252367422757}
+    - target: {fileID: 7730307120146724165, guid: 1e4065b725db00e4ba08936e27064abf, type: 3}
+      propertyPath: definition
+      value: 
+      objectReference: {fileID: 11400000, guid: 8fe272a757001d74d9cd405d954074d8, type: 2}
     - target: {fileID: 7894865683037652111, guid: 1e4065b725db00e4ba08936e27064abf, type: 3}
       propertyPath: m_Name
       value: MapManager
       objectReference: {fileID: 0}
+    - target: {fileID: 8121760666038929693, guid: 1e4065b725db00e4ba08936e27064abf, type: 3}
+      propertyPath: respawnRingPrefab
+      value: 
+      objectReference: {fileID: 6733510855538581423, guid: a3154a87c6969a140bb50b7766bf39d0, type: 3}
+    - target: {fileID: 8121760666038929693, guid: 1e4065b725db00e4ba08936e27064abf, type: 3}
+      propertyPath: pickupGhostMaterial
+      value: 
+      objectReference: {fileID: 2100000, guid: bc295b66361017d46a25d2e224c5d222, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -540,6 +559,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: GameManager
       objectReference: {fileID: 0}
+    - target: {fileID: 5741930934989620464, guid: 82668270a1595324f9ecffff88a59fe8, type: 3}
+      propertyPath: <PickupManager>k__BackingField
+      value: 
+      objectReference: {fileID: 1117763129}
     - target: {fileID: 8283930086807354043, guid: 82668270a1595324f9ecffff88a59fe8, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
