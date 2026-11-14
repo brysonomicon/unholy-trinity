@@ -366,9 +366,7 @@ namespace UnholyTrinity.Managers
 
                 yield return (shouldDetonate ? 0 : rocket.Data.Speed - (step + 1),
                     rocket.Coord);
-            }
-
-           
+            }           
         }
 
         private bool IsDirectHit(Player shooter, Rocket rocket)
