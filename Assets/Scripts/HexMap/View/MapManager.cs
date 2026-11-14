@@ -53,12 +53,12 @@ public class MapManager : Singleton<MapManager>
     public static event Action LayoutChanged;
 
     /// <summary>
-    /// Number of the portal network <paramref name="coord"/> belongs to, or -1 if it isn't a portal.
+    /// Finds the portal network <paramref name="coord"/> belongs to. Returns false if it isn't a portal.
     /// Portals linked to each other (directly or through other portals, in either direction) share a number.
     /// Networks are numbered 0, 1, 2... in a fixed order, so the same map always gives the same numbers.
     /// </summary>
-    public int PortalGroupIndex(HexCoord coord) =>
-        _portalGroups.GetValueOrDefault(coord, -1);
+    public bool TryGetPortalGroup(HexCoord coord, out int group) =>
+        _portalGroups.TryGetValue(coord, out group);
 
     protected override void Awake()
     {
@@ -324,7 +324,7 @@ public class MapManager : Singleton<MapManager>
                      Shader.Find("Standard");
 
         _runtimeMaterial = new Material(shader)
-            { name = "HexTile (Runtime)" };
+        { name = "HexTile (Runtime)" };
 
         return _runtimeMaterial;
     }
