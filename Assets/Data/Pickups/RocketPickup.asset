@@ -15,5 +15,5 @@ MonoBehaviour:
   <DisplayName>k__BackingField: Rocket Launcher
   <RespawnTicks>k__BackingField: 6
   <Trigger>k__BackingField: 0
-  <VisualPrefab>k__BackingField: {fileID: 5025744654690543034, guid: 0fc2c6915f5c64b48af2e49c81e8e298, type: 3}
+  <VisualPrefab>k__BackingField: {fileID: 3806878982270104868, guid: 0c3d368a02b664d43bc17a84dce92174, type: 3}
   <Weapon>k__BackingField: {fileID: 11400000, guid: f97c8bffbf965d3448f34065ed101336, type: 2}

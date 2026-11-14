@@ -1,4 +1,4 @@
-namespace Helpers
+namespace UnholyTrinity.Helpers
 {
     public enum SAMType
     {

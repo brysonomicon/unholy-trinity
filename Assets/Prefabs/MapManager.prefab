@@ -10,6 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1540755217613567755}
   - component: {fileID: 7730307120146724165}
+  - component: {fileID: 2658597681120904646}
+  - component: {fileID: 8121760666038929693}
   m_Layer: 0
   m_Name: MapManager
   m_TagString: Untagged
@@ -44,8 +46,39 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56173f6f9fe620c4fbe8aa4c17d0bf55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnholyTrinity.HexMap::UnholyTrinity.Hex.MapManager
-  definition: {fileID: 11400000, guid: 0fd798c54ece71347b7375578c641f71, type: 2}
+  definition: {fileID: 11400000, guid: 8fe272a757001d74d9cd405d954074d8, type: 2}
   style: {fileID: 11400000, guid: 0d1b3c132ebe8664f90839ab09ca7743, type: 2}
   orientation: 0
   hexSize: 1
   orientationToggleKey: 95
+--- !u!114 &2658597681120904646
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7894865683037652111}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74e01cb9717c6d346a6db4b58838f629, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TilePicker
+  mapManager: {fileID: 7730307120146724165}
+  cam: {fileID: 0}
+  uiManager: {fileID: 0}
+--- !u!114 &8121760666038929693
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7894865683037652111}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62a04cc01d32d5649981f875f24863c9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PickupManager
+  mapManager: {fileID: 7730307120146724165}
+  visualHeightOffset: 0.5
+  respawnRingPrefab: {fileID: 0}
+  pickupGhostMaterial: {fileID: 0}

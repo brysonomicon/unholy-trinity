@@ -1,15 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Helpers;
 using NaughtyAttributes;
+using UnholyTrinity.Helpers;
+using UnholyTrinity.Managers.Interfaces;
 using UnityEngine;
 
-namespace Managers
+namespace UnholyTrinity.Managers
 {
     [RequireComponent(typeof(GameManager))]
-    public class MovementManager : MonoBehaviour,
-        ITickManager<SAMType, HashSet<MoveData>>
+    public class MovementManager : Singleton<MovementManager>,
+        ITickManager<SAMType, List<MoveData>>
     {
         public SAMType SAMType => SAMType.Move;
 
@@ -20,25 +21,33 @@ namespace Managers
 
         public float ActionDuration => moveDurationSec;
 
-        public IEnumerator HandleTick(HashSet<MoveData> movingObjects)
+        public IEnumerator HandleTick(List<MoveData> movingObjects)
         {
             float maxSpeed = movingObjects.Max(mover => mover.RemainingMoves);
-            foreach (MoveData mover in movingObjects)
+
+            for (int i = 0; i < movingObjects.Count; i++)
             {
+                MoveData mover = movingObjects[i];
                 mover.SetBaseRatio(mover.RemainingMoves / maxSpeed);
+                movingObjects[i] = mover;
             }
 
             var delay = new WaitForSeconds(ActionDuration / maxSpeed);
             for (int i = 0; i < maxSpeed; i++)
             {
-                foreach (MoveData mover in movingObjects)
+                foreach (var mover in movingObjects)
                 {
                     mover.IncrementRatio();
-                    if (!mover.ShouldMove) continue;
+                    if (!mover.ShouldMove)
+                    {
+                        Debug.Log($"{mover.Name} is waiting to move: {mover._currentRatio}");
+                        continue;
+                    }
+                    Debug.Log($"{mover.Name} is moving.");
                     mover.MoveNext();
                 }
 
-                movingObjects.RemoveWhere(mover => !mover.CanMove);
+                movingObjects.RemoveAll(mover => !mover.CanMove);
                 yield return delay;
             }
 
@@ -49,6 +58,7 @@ namespace Managers
                 foreach (var mover in
                          movingObjects.Where(mover => mover.CanMove))
                 {
+                    Debug.Log($"{mover.Name} had leftover moves!");
                     mover.MoveNext();
                 }
 

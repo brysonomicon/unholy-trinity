@@ -3,7 +3,8 @@
     "rootNamespace": "UnholyTrinity.Hex",
     "references": [
         "Unity.InputSystem",
-        "UnholyTrinity.Pickups"
+        "UnholyTrinity.Pickups",
+        "UnholyTrinity.Helpers"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
