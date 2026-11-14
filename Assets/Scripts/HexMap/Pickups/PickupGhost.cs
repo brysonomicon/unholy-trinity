@@ -26,7 +26,9 @@ namespace UnholyTrinity.Hex
 
                 _ghosts[i] = new Material[_originals[i].Length];
                 for (int m = 0; m < _ghosts[i].Length; m++)
+                {
                     _ghosts[i][m] = ghostMaterial;
+                }
             }
 
             _spin = GetComponent<PickupSpin>();
@@ -41,7 +43,9 @@ namespace UnholyTrinity.Hex
             }
 
             if (_spin != null)
+            {
                 _spin.enabled = !ghosted;
+            }
         }
     }
 }
