@@ -133,76 +133,89 @@ public class MapManager : Singleton<MapManager>
     {
         _portalGroups.Clear();
 
-        var networks = new List<(HexCoord key, List<HexCoord> members)>();
+        var networks = new List<List<HexCoord>>();
         var visited = new HashSet<HexCoord>();
 
         foreach (var portal in Map.TilesOfType(TileType.Portal))
         {
-            if (!visited.Add(portal.Coord))
+            if (visited.Add(portal.Coord))
             {
-                continue;
+                networks.Add(CollectNetwork(portal.Coord, visited));
             }
-
-            var members = new List<HexCoord>();
-            var queue = new Queue<HexCoord>();
-            queue.Enqueue(portal.Coord);
-            var lowest = portal.Coord;
-
-            while (queue.Count > 0)
-            {
-                var coord = queue.Dequeue();
-                members.Add(coord);
-                if (coord.Q < lowest.Q || (coord.Q == lowest.Q && coord.R < lowest.R))
-                {
-                    lowest = coord;
-                }
-
-                if (!Map.TryGetTile(coord, out var tile))
-                {
-                    continue;
-                }
-
-                // Where this portal leads...
-                if (tile.Portal.IsEntrance
-                    && Map.TryGetTile(tile.Portal.Target, out var target)
-                    && target.Type == TileType.Portal
-                    && visited.Add(tile.Portal.Target))
-                {
-                    queue.Enqueue(tile.Portal.Target);
-                }
-
-                // ...and everything that leads here.
-                foreach (var entrance in Map.EntrancesTo(coord))
-                {
-                    if (visited.Add(entrance))
-                    {
-                        queue.Enqueue(entrance);
-                    }
-                }
-            }
-
-            networks.Add((lowest, members));
         }
 
         // Fixed order, independent of the order tiles happen to be stored in.
-        networks.Sort((a, b) => a.key.Q != b.key.Q ? a.key.Q.CompareTo(b.key.Q) : a.key.R.CompareTo(b.key.R));
+        // Each network is sorted, so its first member is its lowest coordinate.
+        networks.Sort((a, b) => CompareCoords(a[0], b[0]));
 
         for (int i = 0; i < networks.Count; i++)
         {
-            foreach (var member in networks[i].members)
+            foreach (var member in networks[i])
             {
                 _portalGroups[member] = i;
             }
         }
     }
 
+    /// <summary>
+    /// Flood-fills from <paramref name="start"/> (already marked visited) along portal links in both directions.
+    /// Returns every portal in the network, lowest coordinate first.
+    /// </summary>
+    private List<HexCoord> CollectNetwork(HexCoord start, HashSet<HexCoord> visited)
+    {
+        var members = new List<HexCoord>();
+        var queue = new Queue<HexCoord>();
+        queue.Enqueue(start);
+
+        while (queue.Count > 0)
+        {
+            var coord = queue.Dequeue();
+            members.Add(coord);
+
+            if (!Map.TryGetTile(coord, out var tile))
+            {
+                continue;
+            }
+
+            // Where this portal leads...
+            var destination = tile.Portal.Target;
+            if (tile.Portal.IsEntrance
+                && Map.TryGetTile(destination, out var target)
+                && target.Type == TileType.Portal
+                && visited.Add(destination))
+            {
+                queue.Enqueue(destination);
+            }
+
+            // ...and everything that leads here.
+            foreach (var entrance in Map.EntrancesTo(coord))
+            {
+                if (visited.Add(entrance))
+                {
+                    queue.Enqueue(entrance);
+                }
+            }
+        }
+
+        members.Sort(CompareCoords);
+        return members;
+    }
+
+    private static int CompareCoords(HexCoord a, HexCoord b) =>
+        a.Q != b.Q ? a.Q.CompareTo(b.Q) : a.R.CompareTo(b.R);
+
     private void SetOrientation(HexOrientation value)
     {
         if (orientation == value)
+        {
             return;
+        }
+            
         orientation = value;
         if (Application.isPlaying)
+        {
             _visualsDirty = true;
+        }
     }
 
     [ContextMenu("Toggle Orientation")]
