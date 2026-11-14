@@ -134,10 +134,11 @@ public class MapManager : Singleton<MapManager>
         _portalGroups.Clear();
 
         var networks = new List<(HexCoord key, List<HexCoord> members)>();
+        var visited = new HashSet<HexCoord>();
 
         foreach (var portal in Map.TilesOfType(TileType.Portal))
         {
-            if (_portalGroups.ContainsKey(portal.Coord))
+            if (!visited.Add(portal.Coord))
             {
                 continue;
             }
@@ -145,7 +146,6 @@ public class MapManager : Singleton<MapManager>
             var members = new List<HexCoord>();
             var queue = new Queue<HexCoord>();
             queue.Enqueue(portal.Coord);
-            _portalGroups[portal.Coord] = -1;
             var lowest = portal.Coord;
 
             while (queue.Count > 0)
@@ -166,7 +166,7 @@ public class MapManager : Singleton<MapManager>
                 if (tile.Portal.IsEntrance
                     && Map.TryGetTile(tile.Portal.Target, out var target)
                     && target.Type == TileType.Portal
-                    && _portalGroups.TryAdd(tile.Portal.Target, -1))
+                    && visited.Add(tile.Portal.Target))
                 {
                     queue.Enqueue(tile.Portal.Target);
                 }
@@ -174,7 +174,7 @@ public class MapManager : Singleton<MapManager>
                 // ...and everything that leads here.
                 foreach (var entrance in Map.EntrancesTo(coord))
                 {
-                    if (_portalGroups.TryAdd(entrance, -1))
+                    if (visited.Add(entrance))
                     {
                         queue.Enqueue(entrance);
                     }
