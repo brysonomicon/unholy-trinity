@@ -201,7 +201,10 @@ namespace UnholyTrinity.Managers
             // respawns come before anyone moves, so a pickup that comes back this tick can be
             // collected this tick. RespawnTicks = 1 means a pickup collected on tick N is
             // available again on tick N + 1
-            PickupManager?.AdvanceTicks(1);
+            if (PickupManager != null)
+            {
+                PickupManager.AdvanceTicks(1);
+            }
 
             HashSet<MoveData> movingObjects = new();
 
@@ -354,16 +357,16 @@ namespace UnholyTrinity.Managers
                  step++)
             {
                 rocket.StepForward();
-                shouldDetonate =
-                    rocket.HasArrived || IsDirectHit(shooter, rocket);
-                yield return (shouldDetonate ? 0 : rocket.Data.Speed,
-                    rocket.Coord);
-            }
+                shouldDetonate = rocket.HasArrived || IsDirectHit(shooter, rocket);
+                
+                if (shouldDetonate)
+                {
+                    DetonateRocket(shooter, rocket);
+                }
 
-            if (shouldDetonate)
-            {
-                DetonateRocket(shooter, rocket);
-            }
+                yield return (shouldDetonate ? 0 : rocket.Data.Speed - (step + 1),
+                    rocket.Coord);
+            }           
         }
 
         private bool IsDirectHit(Player shooter, Rocket rocket)

@@ -9,15 +9,18 @@ namespace UnholyTrinity.Managers
 {
     /// <summary>
     /// Scene entry point for pickups: builds a <see cref="PickupField"/> from the map and shows each pickup's
-    /// visual while it is available. Registers with the <see cref="GameManager"/>, whose move phase drives it
+    /// visual while it is available. Registers with the <see cref="GameManager"/> through the <see cref="MapManager"/>
+    /// whose move phase drives it
     /// through <see cref="CollectAlong"/> and <see cref="AdvanceTicks"/>.
     /// </summary>
     public class PickupManager : Singleton<PickupManager>
     {
         [SerializeField][GetComponent] private MapManager mapManager;
         [SerializeField] private float visualHeightOffset = 0.5f;
-        [SerializeField] private PickupRespawnRing respawnRingPrefab;
-        [SerializeField] private Material pickupGhostMaterial;
+        [SerializeField, Tooltip("Required. Shows how long until a collected pickup respawns.")]
+        private PickupRespawnRing respawnRingPrefab;
+        [SerializeField, Tooltip("Required. Applied to a pickup's model while it is collected.")]
+        private Material pickupGhostMaterial;
 
         private readonly struct PickupVisual
         {
@@ -45,12 +48,32 @@ namespace UnholyTrinity.Managers
         protected override void Awake()
         {
             base.Awake();
+            ValidateReferences();
             Field = new PickupField(mapManager.Map);
             Field.Collected += OnCollected;
             Field.Respawned += OnRespawned;
             MapManager.LayoutChanged += PositionVisuals;
 
             SpawnVisuals();
+        }
+
+        // these are only cosmetic, but easy to forget about
+        private void ValidateReferences()
+        {
+            RequireAssigned(respawnRingPrefab, nameof(respawnRingPrefab),
+                "pickups will show no respawn timer");
+            RequireAssigned(pickupGhostMaterial, nameof(pickupGhostMaterial),
+                "collected pickups won't look ghosted");
+        }
+
+        private void RequireAssigned(Object reference, string fieldName, string consequence)
+        {
+            if (reference == null)
+            {
+                Debug.LogError(
+                    $"{nameof(PickupManager)} on '{name}' has no {fieldName} assigned, so {consequence}.",
+                    this);
+            }
         }
 
         private void OnDestroy()

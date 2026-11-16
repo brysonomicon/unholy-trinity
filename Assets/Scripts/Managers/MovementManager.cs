@@ -14,9 +14,9 @@ public class MovementManager : Singleton<MovementManager>,
 {
     public SAMType SAMType => SAMType.Move;
 
-    private float _tickDuration => TurnManager.Instance.TickDuration;
+    private float TickDuration => TurnManager.Instance.TickDuration;
 
-    [SerializeField] [Min(0.1f)] [MaxValue(nameof(_tickDuration))]
+    [SerializeField] [Min(0.1f)] [MaxValue(nameof(TickDuration))]
     private float moveDurationSec;
 
     public float ActionDuration => moveDurationSec;
