@@ -19,6 +19,7 @@ namespace UnholyTrinity.Managers
         public int RemainingMoves => _moveEnumerator.Current.Item1;
         public bool CanMove => RemainingMoves > 0;
         public bool ShouldMove => _currentRatio >= 1;
+        public HexCoord CurrentPos => _moveEnumerator.Current.Item2;
         
         public GameObject BaseObject { get; }
         
