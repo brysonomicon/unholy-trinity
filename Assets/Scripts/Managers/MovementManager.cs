@@ -75,7 +75,7 @@ public class MovementManager : Singleton<MovementManager>,
                 Debug.Log($"{mover.Name} had leftover moves!");
                 mover.MoveNext();
             }
-
+            movingObjects.RemoveAll(mover => !mover.CanMove);
             yield return delay;
         }
     }
