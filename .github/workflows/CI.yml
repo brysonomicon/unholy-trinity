@@ -73,6 +73,7 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           testMode: editmode
+          cliVersion: v0.1.76
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: EditMode Test Results
 
@@ -81,4 +82,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: ${{ steps.tests.outputs.artifactsPath }}
+          path: artifacts
+          if-no-files-found: ignore
+
