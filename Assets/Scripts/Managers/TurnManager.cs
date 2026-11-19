@@ -2,73 +2,72 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
-public enum TurnPhase
+namespace UnholyTrinity.Managers
 {
-    PlayerOne,
-    PlayerTwo,
-    Resolution
-}
-
-[CreateAssetMenu(fileName = "NewTurnManager",
-    menuName = "Managers/TurnManager")]
-public class TurnManager : ScriptableObject
-{
-    public static TurnManager Instance { get; private set; }
-    
-    public static event Action<TurnPhase> NewPhaseEvent;
-
-    [field: SerializeField][Min(0.1f)] public int TicksPerTurn { get; private set; } = 3;
-    [field:SerializeField]
-    public float TickDuration { get; private set; } = 2;
-    
-    public TurnPhase CurrentPhase => _turnPhase.Peek();
-    public bool IsPlayerTurn => CurrentPhase != TurnPhase.Resolution;
-
-    private readonly Queue<TurnPhase> _turnPhase = new(new List<TurnPhase>
+    [CreateAssetMenu(fileName = "NewTurnManager",
+        menuName = "Managers/TurnManager")]
+    public class TurnManager : ScriptableObject
     {
-        TurnPhase.PlayerOne,
-        TurnPhase.PlayerTwo,
-        TurnPhase.Resolution,
-    });
+        public static TurnManager Instance { get; private set; }
 
-    private void OnEnable()
-    {
-        if (Instance == null)
+        public static event Action<TurnPhase> NewPhaseEvent;
+
+        [field: SerializeField]
+        [Min(0.1f)]
+        public int TicksPerTurn { get; private set; } = 3;
+
+        [field: SerializeField]
+        public float TickDuration { get; private set; } = 2;
+
+        public TurnPhase CurrentPhase => _turnPhase.Peek();
+        public bool IsPlayerTurn => CurrentPhase != TurnPhase.Resolution;
+
+        private readonly Queue<TurnPhase> _turnPhase = new(new List<TurnPhase>
         {
-            Instance = this;
+            TurnPhase.PlayerOne,
+            TurnPhase.PlayerTwo,
+            TurnPhase.Resolution,
+        });
+
+        private void OnEnable()
+        {
+            if (Instance == null)
+            {
+                Instance = this;
+            }
+
+            GameManager.NewRoundEvent += OnRoundChanged;
         }
 
-        GameManager.NewRoundEvent += OnRoundChanged;
-    }
-
-    private void OnDisable()
-    {
-        if (Instance == this)
+        private void OnDisable()
         {
-            Instance = null;
+            if (Instance == this)
+            {
+                Instance = null;
+            }
+
+            GameManager.NewRoundEvent -= OnRoundChanged;
         }
-        GameManager.NewRoundEvent -= OnRoundChanged;
-    }
 
-    public void EndTurn()
-    {
-        TurnPhase previous = _turnPhase.Dequeue();
-        _turnPhase.Enqueue(previous);
-        Debug.Log($"Going from {previous} to {CurrentPhase}");
-        NewPhaseEvent?.Invoke(CurrentPhase);
-    }
-    
-    private void OnRoundChanged(int _)
-    {
-        EndTurn();
-    }
+        public void EndTurn()
+        {
+            TurnPhase previous = _turnPhase.Dequeue();
+            _turnPhase.Enqueue(previous);
+            Debug.Log($"Going from {previous} to {CurrentPhase}");
+            NewPhaseEvent?.Invoke(CurrentPhase);
+        }
 
-    public void ResetPhases()
-    {
-        _turnPhase.Clear();
-        _turnPhase.Enqueue(TurnPhase.PlayerOne);
-        _turnPhase.Enqueue(TurnPhase.PlayerTwo);
-        _turnPhase.Enqueue(TurnPhase.Resolution);
+        private void OnRoundChanged(int _)
+        {
+            EndTurn();
+        }
+
+        public void ResetPhases()
+        {
+            _turnPhase.Clear();
+            _turnPhase.Enqueue(TurnPhase.PlayerOne);
+            _turnPhase.Enqueue(TurnPhase.PlayerTwo);
+            _turnPhase.Enqueue(TurnPhase.Resolution);
+        }
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using UnholyTrinity.Players;
 using UnholyTrinity.Hex;
+using UnholyTrinity.Managers;
 using UnholyTrinity.Weapons;
 using UnityEngine;
 
@@ -25,7 +26,7 @@ public class UIManager : MonoBehaviour
 
     private void OnNextTurn(Player player)
     {
-        GenerateDefaultCards(player);
+        GenerateActionCards(player);
     }
 
     private void OnNewPhase(TurnPhase newPhase)
@@ -35,10 +36,10 @@ public class UIManager : MonoBehaviour
         {
             return;
         }
-        GenerateDefaultCards(GameManager.Instance.CurrentPlayer);
+        GenerateActionCards(GameManager.Instance.CurrentPlayer);
     }
 
-    private void GenerateDefaultCards(Player current)
+    private void GenerateActionCards(Player current)
     {
         Weapon weapon = current.CurrentWeapon;
 
@@ -99,7 +100,7 @@ public class UIManager : MonoBehaviour
         {
             planAction();
             ClearCardSection();
-            GenerateDefaultCards(current);
+            GenerateActionCards(current);
         }
 
         void AddMoveOption(LaneCard card, string label, HexDirection? direction)
@@ -115,7 +116,7 @@ public class UIManager : MonoBehaviour
     public void RefreshCards()
     {
         ClearCardSection();
-        GenerateDefaultCards(GameManager.Instance.CurrentPlayer);
+        GenerateActionCards(GameManager.Instance.CurrentPlayer);
     }
 
     private LaneCard CreateLaneCard(string title)

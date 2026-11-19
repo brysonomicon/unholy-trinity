@@ -15,5 +15,5 @@ MonoBehaviour:
   <DisplayName>k__BackingField: Mega Health
   <RespawnTicks>k__BackingField: 18
   <Trigger>k__BackingField: 0
-  <VisualPrefab>k__BackingField: {fileID: 7810473164152590907, guid: 8c2474cdfabeaa1458f57fb4592b2329, type: 3}
+  <VisualPrefab>k__BackingField: {fileID: 919132149155446097, guid: bd63ed56b6ffea04193332eae7d49ffa, type: 3}
   <Amount>k__BackingField: 100

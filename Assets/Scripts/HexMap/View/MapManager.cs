@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using UnholyTrinity.Helpers;
 using UnholyTrinity.Hex;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -10,7 +12,7 @@ using UnityEngine.InputSystem;
 /// The grid lies on the XZ plane at this transform's position (rotation and scale are ignored).
 /// </summary>
 [DefaultExecutionOrder(-100)]
-public class MapManager : MonoBehaviour
+public class MapManager : Singleton<MapManager>
 {
     const string VisualRootName = "Tiles";
 
@@ -32,6 +34,7 @@ public class MapManager : MonoBehaviour
     private Material _runtimeMaterial;
     private MaterialPropertyBlock _propertyBlock;
     private bool _visualsDirty;
+    private readonly Dictionary<HexCoord, int> _portalGroups = new();
 
     private static readonly int BaseColorId =
         Shader.PropertyToID("_BaseColor");
@@ -47,9 +50,21 @@ public class MapManager : MonoBehaviour
         new HexLayout(orientation, hexSize, transform.position);
 
     /// <summary>Raised after the layout changes (e.g. orientation toggled), so units can re-position.</summary>
-    public event Action LayoutChanged;
+    public static event Action LayoutChanged;
 
-    private void Awake() => Rebuild();
+    /// <summary>
+    /// Finds the portal network <paramref name="coord"/> belongs to. Returns false if it isn't a portal.
+    /// Portals linked to each other (directly or through other portals, in either direction) share a number.
+    /// Networks are numbered 0, 1, 2... in a fixed order, so the same map always gives the same numbers.
+    /// </summary>
+    public bool TryGetPortalGroup(HexCoord coord, out int group) =>
+        _portalGroups.TryGetValue(coord, out group);
+
+    protected override void Awake()
+    {
+        base.Awake();
+        Rebuild();
+    }
 
     private void Update()
     {
@@ -95,6 +110,7 @@ public class MapManager : MonoBehaviour
                 $"{nameof(MapManager)} on '{name}' has no map definition assigned.",
                 this);
             Map = new HexMap();
+            _portalGroups.Clear();
             return;
         }
 
@@ -105,16 +121,101 @@ public class MapManager : MonoBehaviour
         }
 
         Map = definition.Build();
+        BuildPortalGroups();
         SpawnVisuals();
     }
+
+    /// <summary>
+    /// Groups every portal with the portals it is linked to, following links both ways, and numbers the groups
+    /// by their lowest coordinate.
+    /// </summary>
+    private void BuildPortalGroups()
+    {
+        _portalGroups.Clear();
+
+        var networks = new List<List<HexCoord>>();
+        var visited = new HashSet<HexCoord>();
+
+        foreach (var portal in Map.TilesOfType(TileType.Portal))
+        {
+            if (visited.Add(portal.Coord))
+            {
+                networks.Add(CollectNetwork(portal.Coord, visited));
+            }
+        }
+
+        // Fixed order, independent of the order tiles happen to be stored in.
+        // Each network is sorted, so its first member is its lowest coordinate.
+        networks.Sort((a, b) => CompareCoords(a[0], b[0]));
+
+        for (int i = 0; i < networks.Count; i++)
+        {
+            foreach (var member in networks[i])
+            {
+                _portalGroups[member] = i;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Flood-fills from <paramref name="start"/> (already marked visited) along portal links in both directions.
+    /// Returns every portal in the network, lowest coordinate first.
+    /// </summary>
+    private List<HexCoord> CollectNetwork(HexCoord start, HashSet<HexCoord> visited)
+    {
+        var members = new List<HexCoord>();
+        var queue = new Queue<HexCoord>();
+        queue.Enqueue(start);
+
+        while (queue.Count > 0)
+        {
+            var coord = queue.Dequeue();
+            members.Add(coord);
+
+            if (!Map.TryGetTile(coord, out var tile))
+            {
+                continue;
+            }
+
+            // Where this portal leads...
+            var destination = tile.Portal.Target;
+            if (tile.Portal.IsEntrance
+                && Map.TryGetTile(destination, out var target)
+                && target.Type == TileType.Portal
+                && visited.Add(destination))
+            {
+                queue.Enqueue(destination);
+            }
+
+            // ...and everything that leads here.
+            foreach (var entrance in Map.EntrancesTo(coord))
+            {
+                if (visited.Add(entrance))
+                {
+                    queue.Enqueue(entrance);
+                }
+            }
+        }
+
+        members.Sort(CompareCoords);
+        return members;
+    }
+
+    private static int CompareCoords(HexCoord a, HexCoord b) =>
+        a.Q != b.Q ? a.Q.CompareTo(b.Q) : a.R.CompareTo(b.R);
 
     private void SetOrientation(HexOrientation value)
     {
         if (orientation == value)
+        {
             return;
+        }
+            
         orientation = value;
         if (Application.isPlaying)
+        {
             _visualsDirty = true;
+        }
     }
 
     [ContextMenu("Toggle Orientation")]
@@ -236,7 +337,7 @@ public class MapManager : MonoBehaviour
                      Shader.Find("Standard");
 
         _runtimeMaterial = new Material(shader)
-            { name = "HexTile (Runtime)" };
+        { name = "HexTile (Runtime)" };
 
         return _runtimeMaterial;
     }

@@ -3,7 +3,8 @@
     "rootNamespace": "UnholyTrinity.Hex.Editing",
     "references": [
         "UnholyTrinity.HexMap",
-        "UnholyTrinity.Pickups"
+        "UnholyTrinity.Pickups",
+        "UnholyTrinity.Helpers"
     ],
     "includePlatforms": [
         "Editor"
