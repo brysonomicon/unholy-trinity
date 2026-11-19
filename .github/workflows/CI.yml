@@ -43,3 +43,45 @@ jobs:
         run: pipx run pre-commit run --all-files --show-diff-on-failure
         env:
           SKIP: no-commit-to-branch
+
+  tests:
+    name: unity tests (editmode)
+    runs-on: ubuntu-latest
+    needs: hygiene
+    permissions:
+      contents: read
+      checks: write
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - name: cache Library
+        uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: Library-
+
+      - name: run editmode tests
+        id: tests
+        uses: game-ci/unity-test-runner@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          testMode: editmode
+          cliVersion: v0.1.76
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          checkName: EditMode Test Results
+
+      - name: upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: artifacts
+          if-no-files-found: ignore
+
