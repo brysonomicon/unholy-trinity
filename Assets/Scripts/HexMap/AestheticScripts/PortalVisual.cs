@@ -48,8 +48,7 @@ namespace UnholyTrinity.Hex
 
             // Tile prefabs are spawned under the MapManager, which numbers the portal networks.
             var mapManager = GetComponentInParent<MapManager>();
-            int group = mapManager != null ? mapManager.PortalGroupIndex(tile.Coord) : -1;
-            if (group < 0)
+            if (mapManager == null || !mapManager.TryGetPortalGroup(tile.Coord, out int group))
             {
                 return;
             }

@@ -1,59 +1,83 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Helpers;
 using NaughtyAttributes;
+using UnholyTrinity.Helpers;
+using UnholyTrinity.Managers.Interfaces;
 using UnityEngine;
 
-namespace Managers
+namespace UnholyTrinity.Managers
 {
-    [RequireComponent(typeof(GameManager))]
-    public class MovementManager : MonoBehaviour,
-        ITickManager<SAMType, HashSet<MoveData>>
+[RequireComponent(typeof(GameManager))]
+public class MovementManager : Singleton<MovementManager>,
+    ITickManager<SAMType, List<MoveData>>
+{
+    public SAMType SAMType => SAMType.Move;
+
+    private float TickDuration => TurnManager.Instance.TickDuration;
+
+    [SerializeField] [Min(0.1f)] [MaxValue(nameof(TickDuration))]
+    private float moveDurationSec;
+
+    public float ActionDuration => moveDurationSec;
+
+    public IEnumerator HandleTick(List<MoveData> movingObjects)
     {
-        public SAMType SAMType => SAMType.Move;
+        float maxSpeed = movingObjects.Max(mover => mover.RemainingMoves);
 
-        private float _tickDuration => TurnManager.Instance.TickDuration;
-
-        [SerializeField] [Min(0.1f)] [MaxValue(nameof(_tickDuration))]
-        private float moveDurationSec;
-
-        public float ActionDuration => moveDurationSec;
-
-        public IEnumerator HandleTick(HashSet<MoveData> movingObjects)
+        for (int i = 0; i < movingObjects.Count; i++)
         {
-            float maxSpeed = movingObjects.Max(mover => mover.RemainingMoves);
-            foreach (MoveData mover in movingObjects)
-            {
-                mover.SetBaseRatio(mover.RemainingMoves / maxSpeed);
-            }
+            MoveData mover = movingObjects[i];
+            mover.SetBaseRatio(mover.RemainingMoves / maxSpeed);
+            movingObjects[i] = mover;
+        }
 
-            var delay = new WaitForSeconds(ActionDuration / maxSpeed);
-            for (int i = 0; i < maxSpeed; i++)
+        var delay = new WaitForSeconds(ActionDuration / maxSpeed);
+        for (int i = 0; i < maxSpeed; i++)
+        {
+            foreach (var mover in movingObjects)
             {
-                foreach (MoveData mover in movingObjects)
+                mover.IncrementRatio();
+                if (!mover.ShouldMove)
                 {
-                    mover.IncrementRatio();
-                    if (!mover.ShouldMove) continue;
-                    mover.MoveNext();
+                    Debug.Log(
+                        $"{mover.Name} is waiting to move: {mover._currentRatio}");
+                    continue;
                 }
 
-                movingObjects.RemoveWhere(mover => !mover.CanMove);
-                yield return delay;
+                Debug.Log($"{mover.Name} is moving.");
+                mover.MoveNext();
             }
 
-            //Due to the ratio math, sometimes we have stragglers. Catch them here.
-            // [CB] I find it amusing that the slow ones get caught here :)
-            while (movingObjects.Any(mover => mover.CanMove))
+            movingObjects.RemoveAll(mover => !mover.CanMove);
+            var sharedTiles = movingObjects
+                .GroupBy(mover => mover.CurrentPos)
+                .Where(group => group.Count() > 1)
+                .Select(group => new
+                    { Element = group.Key, Counter = group.Count() })
+                .ToList();
+
+            sharedTiles.ForEach(group =>
+                Debug.Log(
+                    $"{group.Counter} items at coordinate {group.Element}")
+            );
+
+            yield return delay;
+        }
+
+        //Due to the ratio math, sometimes we have stragglers. Catch them here.
+        // [CB] I find it amusing that the slow ones get caught here :)
+        while (movingObjects.Any(mover => mover.CanMove))
+        {
+            foreach (var mover in
+                     movingObjects.Where(mover => mover.CanMove))
             {
-                foreach (var mover in
-                         movingObjects.Where(mover => mover.CanMove))
-                {
-                    mover.MoveNext();
-                }
-
-                yield return delay;
+                Debug.Log($"{mover.Name} had leftover moves!");
+                mover.MoveNext();
             }
+            movingObjects.RemoveAll(mover => !mover.CanMove);
+            yield return delay;
         }
     }
+}
 }

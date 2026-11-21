@@ -1,5 +1,6 @@
 using System;
 using UnholyTrinity.Hex;
+using UnholyTrinity.Managers;
 using UnholyTrinity.Weapons;
 using UnityEngine;
 
@@ -19,14 +20,14 @@ namespace UnholyTrinity.Players
             [field: Tooltip("A0 = east, each step is 30 degree CCW. A3 = north, A6 = west, A9 = south")]
             public AimDirection Aim { get; private set; }
         }
-
-        [SerializeField] private MapManager mapManager;
+        
         [SerializeField] private Player playerPrefab;
         [SerializeField] private SpawnPoint[] spawnPoints;
 
         private void Start()
         {
             GameManager manager = GameManager.Instance;
+            MapManager mapManager = MapManager.Instance;
             manager.ResetGame();
             
             for (int i = 0; i < spawnPoints.Length; i++)

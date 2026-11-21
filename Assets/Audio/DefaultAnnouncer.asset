@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 130ff8be27ba205448f55ce3030b7fcb, type: 3}
+  m_Name: DefaultAnnouncer
+  m_EditorClassIdentifier: Pulsar.Audio::Pulsar.Audio.AnnouncerPack
+  <LevelStart>k__BackingField:
+    Guid:
+      Data1: -113438299
+      Data2: 1179205677
+      Data3: 62590384
+      Data4: 1843704309
+    Path: event:/Announcer/LevelStart
+  <MultiKill>k__BackingField:
+    Guid:
+      Data1: 682938180
+      Data2: 1273964599
+      Data3: -394248039
+      Data4: 1421443050
+    Path: event:/Announcer/Multikill
+  <RageQuit>k__BackingField:
+    Guid:
+      Data1: -760824674
+      Data2: 1202110075
+      Data3: -10059074
+      Data4: 1140535309
+    Path: event:/Announcer/RageQuit
+  <StopWatch>k__BackingField:
+    Guid:
+      Data1: 2054523275
+      Data2: 1273197858
+      Data3: -1691946876
+      Data4: -471933910
+    Path: event:/Announcer/StopWatch
+  <Victory>k__BackingField:
+    Guid:
+      Data1: -437627151
+      Data2: 1172388640
+      Data3: 2021664140
+      Data4: -1799003741
+    Path: event:/Announcer/Victory
+  <DoubleRail>k__BackingField:
+    Guid:
+      Data1: 1180763626
+      Data2: 1318408924
+      Data3: -1698109032
+      Data4: -1748065321
+    Path: event:/Announcer/Achievement/DoubleRail
+  <NewPhase>k__BackingField:
+    Guid:
+      Data1: -1215129909
+      Data2: 1110493070
+      Data3: 716486036
+      Data4: -183795239
+    Path: event:/Level/Phase/NewPhase
+  <NewTurn>k__BackingField:
+    Guid:
+      Data1: -2043702771
+      Data2: 1311600529
+      Data3: -1377040476
+      Data4: -411455864
+    Path: event:/Level/Phase/NewTurn
