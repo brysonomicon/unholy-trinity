@@ -6,7 +6,7 @@ namespace UnholyTrinity.Hex
     {
         [SerializeField] private Renderer waterRenderer;
 
-        static readonly int EdgeMaskId = Shader.PropertyToID("_EdgeMask");
+        private static readonly int EdgeMaskId = Shader.PropertyToID("_EdgeMask");
         private static MaterialPropertyBlock _block;
 
         private const int tileSideCount = HexDirectionExtensions.Count;

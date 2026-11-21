@@ -17,9 +17,9 @@ namespace UnholyTrinity.Hex
         [SerializeField] private Renderer chevronRenderer;
         [SerializeField] private TMP_Text strengthLabel;
 
-        static readonly int StrengthId = Shader.PropertyToID("_Strength");
+        private static readonly int StrengthId = Shader.PropertyToID("_Strength");
         // 1 = Unidirectional, 0 = Omnidirectional
-        static readonly int UnidirectionalId = Shader.PropertyToID("_Unidirectional"); 
+        private static readonly int UnidirectionalId = Shader.PropertyToID("_Unidirectional"); 
 
         // Easier than bool in this case in hlsl
         private static readonly int unidirectionalInt = 1;
