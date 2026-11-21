@@ -10,8 +10,8 @@ namespace UnholyTrinity.Hex
     {
         private Transform _camera;
 
-        private float xAngle = 0;        
-        private float zAngle = 0;
+        private static readonly float XAngle = 90;        
+        private static readonly float ZAngle = 0;
 
 
         private void LateUpdate()
@@ -26,7 +26,7 @@ namespace UnholyTrinity.Hex
                 _camera = cam.transform;
             }
 
-            transform.rotation = Quaternion.Euler(xAngle, _camera.eulerAngles.y, zAngle);
+            transform.rotation = Quaternion.Euler(XAngle, _camera.eulerAngles.y, ZAngle);
         }
     }
 }

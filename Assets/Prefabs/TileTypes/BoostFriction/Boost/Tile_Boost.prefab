@@ -183,6 +183,7 @@ GameObject:
   - component: {fileID: 749954982627337732}
   - component: {fileID: 6288931010538893150}
   - component: {fileID: 6753795256939522549}
+  - component: {fileID: 2611293829609153613}
   m_Layer: 0
   m_Name: StrengthLabel
   m_TagString: Untagged
@@ -198,7 +199,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7191316949382006503}
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0, z: -0.104}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -206,7 +207,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0.055}
+  m_AnchoredPosition: {x: 0, y: 0.054999985}
   m_SizeDelta: {x: 2.5, y: 2.5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!23 &6288931010538893150
@@ -312,8 +313,8 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
-  m_HorizontalAlignment: 2
-  m_VerticalAlignment: 512
+  m_HorizontalAlignment: 32
+  m_VerticalAlignment: 4096
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_characterHorizontalScale: 1
@@ -353,6 +354,18 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_renderer: {fileID: 6288931010538893150}
   m_maskType: 0
+--- !u!114 &2611293829609153613
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7191316949382006503}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ad0b0921f7175040a36a83cbc079ef6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnholyTrinity.HexMap::UnholyTrinity.Hex.FaceCameraYaw
 --- !u!1001 &8292421874687669079
 PrefabInstance:
   m_ObjectHideFlags: 0
