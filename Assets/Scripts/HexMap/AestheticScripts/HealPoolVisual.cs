@@ -15,7 +15,7 @@ namespace UnholyTrinity.Hex
         public void Configure(HexTile tile, HexLayout layout)
         {
             var mapManager = GetComponentInParent<MapManager>();
-            if (mapManager == null || waterRenderer == null)
+            if (waterRenderer == null)
             {
                 return;
             }
