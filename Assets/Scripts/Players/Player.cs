@@ -1,11 +1,12 @@
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using JetBrains.Annotations;
+using Nrjwolf.Tools.AttachAttributes;
 using UnholyTrinity.Hex;
-using UnholyTrinity.Pickups;
+using UnholyTrinity.Managers;
 using UnholyTrinity.Weapons;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace UnholyTrinity.Players
 {
@@ -14,6 +15,8 @@ namespace UnholyTrinity.Players
         #region Fields
 
         [SerializeField] private GameManager gm;
+
+        [SerializeField][GetComponent] private PlayerAnimationDriver driver;
 
         // unserialized, passed to player by spawner instead
         private MapManager mapManager;
@@ -62,7 +65,7 @@ namespace UnholyTrinity.Players
         public AimDirection CurrentAimDirection { get; private set; }
 
         [Header("Health")]
-        [SerializeField, Min(1), FormerlySerializedAs("startingHealth")]
+        [SerializeField, Min(1)]
         private int maxHealth = 100;
 
         [field: SerializeField] public int CurrentHealth { get; private set; }
@@ -88,7 +91,7 @@ namespace UnholyTrinity.Players
         public int MaxHealth => maxHealth;
 
         // raised whenever a player's health or armour changes, so UI can update
-        public static event System.Action<Player> HealthChangedEvent;
+        public static event Action<Player> HealthChangedEvent;
 
         public IReadOnlyList<HexCoord> TickMovePath => tickMovePath;
 
@@ -105,7 +108,7 @@ namespace UnholyTrinity.Players
         // aim from the end of the previous tick, which this tick starts from
         private AimDirection PreviousPlannedAim => GetPlannedAim(plannedActions.Count - 1);
         
-        private static readonly int AimDirectionCount = System.Enum.GetValues(typeof(AimDirection)).Length;
+        private static readonly int AimDirectionCount = Enum.GetValues(typeof(AimDirection)).Length;
 
         private int PlannedAimSteps
         {
@@ -151,20 +154,16 @@ namespace UnholyTrinity.Players
             weapons.Insert(0, CurrentWeapon);
             GameManager.NewTurnEvent += OnNewTurn;
             TurnManager.NewPhaseEvent += OnNewPhase;
-
-            gm ??= GameManager.Instance;
-            
+            gm = GameManager.Instance;
+            MapManager.LayoutChanged += SnapToCoord;
         }
 
         private void OnDestroy()
         {
             GameManager.NewTurnEvent -= OnNewTurn;
             TurnManager.NewPhaseEvent -= OnNewPhase;
-
-            if (mapManager != null)
-            {
-                mapManager.LayoutChanged -= SnapToCoord;
-            }
+            MapManager.LayoutChanged -= SnapToCoord;
+            
         }
 
         private void OnDrawGizmos()
@@ -192,13 +191,12 @@ namespace UnholyTrinity.Players
         #region Setup
 
         // called by the spawner 
-        public void Initialize(MapManager mapManager, HexCoord spawnCoord, AimDirection spawnAim)
+        public void Initialize(MapManager mm, HexCoord spawnCoord, AimDirection spawnAim)
         {
-            this.mapManager = mapManager;
             Coord = spawnCoord;
             CurrentAimDirection = spawnAim;
             momentum = HexCoord.Zero;
-            mapManager.LayoutChanged += SnapToCoord;
+            mapManager = mm;
             SnapToCoord(Coord);
             ClearPlan();
         }
@@ -370,7 +368,7 @@ namespace UnholyTrinity.Players
         // actions gets queued into lanes during the players turn and only take
         // effect during resolution. nothing in planning changes ammo, aim, or position
 
-        // only changes which weapon the shoot card fires and which weapons aim cone is whoen
+        // only changes which weapon the shoot card fires and which weapons aim cone is when
         // selecting a weapon doesn't have an action cost. ammo/cooldown are checked when a shot
         // is planned
         public void SelectWeapon(Weapon weapon)
@@ -497,7 +495,6 @@ namespace UnholyTrinity.Players
             }
 
             plannedActions.Add(CreateNewDefaultAction(PlanningAction.PlannedAim));
-            Debug.Log($"{name} is planning tick {PlanningTick}");
             ProjectPlan();
         }
 
@@ -650,8 +647,14 @@ namespace UnholyTrinity.Players
         }
         public void BeginMovePhase()
         {
+            driver.TargetSpeed = 1;
             MoveStartCoord = Coord;
             tickMovePath.Clear();
+        }
+
+        public void EndMovePhase()
+        {
+            driver.TargetSpeed = 0;
         }
 
         // the fired aim's cone from where the player stands now, so a beam follows its shooter
@@ -659,23 +662,6 @@ namespace UnholyTrinity.Players
         public List<AimTile> GetBeamTilesFromCurrentCoord(WeaponData weaponData, AimDirection firedAim)
         {
             return weaponData.GetAimTiles(mapManager.Map, Coord, firedAim);
-        }
-        
-
-        private void Step(HexDirection direction)
-        {
-            HexCoord destination = GetStepDestination(Coord, direction);
-
-            if (destination == Coord)
-            {
-                Debug.Log($"{name} is blocked moving {direction}");
-                return;
-            }
-
-            Coord = destination;
-            tickMovePath.Add(Coord);
-            SnapToCoord();
-            Debug.Log($"{name} moved to {Coord}");
         }
 
         #endregion

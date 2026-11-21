@@ -1,4 +1,6 @@
+using Nrjwolf.Tools.AttachAttributes;
 using UnholyTrinity.Hex;
+using UnholyTrinity.Managers;
 using UnholyTrinity.Players;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -6,7 +8,7 @@ using UnityEngine.InputSystem;
 
 public class TilePicker : MonoBehaviour
 {
-    [SerializeField] private MapManager mapManager;
+    [SerializeField][GetComponent] private MapManager mapManager;
     [SerializeField] private Camera cam;
     [SerializeField] private UIManager uiManager;
 
