@@ -59,6 +59,9 @@ public class MapManager : MonoBehaviour
     public int PortalGroupIndex(HexCoord coord) =>
         _portalGroups.TryGetValue(coord, out var index) ? index : -1;
 
+    /// <summary>Returns the active style for a tile.</summary>
+    public HexTileStyle ActiveStyle => ResolveStyle();
+
     private void Awake() => Rebuild();
 
     private void Update()

@@ -21,7 +21,7 @@ MonoBehaviour:
     HarmPrefab: {fileID: 0}
     KillPrefab: {fileID: 0}
   - Type: 5
-    Prefab: {fileID: 0}
+    Prefab: {fileID: 3383222381437710300, guid: 692ad24dafdedf7488376f375d669220, type: 3}
     FrictionPrefab: {fileID: 0}
     BouncyPrefab: {fileID: 0}
     SpikedPrefab: {fileID: 0}
