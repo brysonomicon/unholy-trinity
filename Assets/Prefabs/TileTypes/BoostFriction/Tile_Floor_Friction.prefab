@@ -87,7 +87,7 @@ PrefabInstance:
     - target: {fileID: -7511558181221131132, guid: 7af1c10051ccda24faf312ba9577b3f2, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: d1801d2c8f9d5c948ae17e7fc19a4179, type: 2}
+      objectReference: {fileID: 2100000, guid: c465ae189f9831c4581368a55c28ab1a, type: 2}
     - target: {fileID: 919132149155446097, guid: 7af1c10051ccda24faf312ba9577b3f2, type: 3}
       propertyPath: m_Name
       value: FlatFloor
