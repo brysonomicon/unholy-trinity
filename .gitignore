@@ -68,8 +68,9 @@ desktop.ini
 !/[Aa]ssets/Gizmos/FMOD/*
 !/[Aa]ssets/Editor Default Resources/FMOD/*
 
-# Ignore the Cache folder since it is updated locally.
+# Ignore the Cache folder and its meta file since it is updated locally.
 /[Aa]ssets/Plugins/FMOD/Cache/*
+/[Aa]ssets/Plugins/FMOD/Cache.meta
 
 # Ignore bank files in the StreamingAssets folder.
 /[Aa]ssets/StreamingAssets/**/*.bank
