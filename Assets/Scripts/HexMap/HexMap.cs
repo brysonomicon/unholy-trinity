@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace UnholyTrinity.Hex
 {
@@ -9,7 +10,14 @@ namespace UnholyTrinity.Hex
     /// </summary>
     public class HexMap
     {
-        readonly Dictionary<HexCoord, HexTile> tiles = new Dictionary<HexCoord, HexTile>();
+        public readonly Dictionary<HexCoord, HexTile> tiles =
+            new Dictionary<HexCoord, HexTile>();
+
+        public HashSet<HexTile> Collisions
+        {
+            get;
+            private set;
+        } = new();
 
         public IReadOnlyCollection<HexTile> Tiles => tiles.Values;
         public int Count => tiles.Count;
@@ -18,11 +26,36 @@ namespace UnholyTrinity.Hex
 
         public bool Contains(HexCoord coord) => tiles.ContainsKey(coord);
 
-        public bool TryGetTile(HexCoord coord, out HexTile tile) => tiles.TryGetValue(coord, out tile);
+        public bool TryGetTile(HexCoord coord, out HexTile tile) =>
+            tiles.TryGetValue(coord, out tile);
 
-        public bool IsWalkable(HexCoord coord) => tiles.TryGetValue(coord, out var tile) && tile.IsWalkable;
+        public bool IsWalkable(HexCoord coord) =>
+            tiles.TryGetValue(coord, out var tile) && tile.IsWalkable;
 
-        public bool BlocksLineOfFire(HexCoord coord) => !tiles.TryGetValue(coord, out var tile) || tile.BlocksLineOfFire;
+        public bool BlocksLineOfFire(HexCoord coord) =>
+            !tiles.TryGetValue(coord, out var tile) || tile.BlocksLineOfFire;
+
+        public HexMap()
+        {
+            HexTile.TrackCollision += OnTrackCollision;
+            HexTile.ClearCollision += OnClearCollision;
+        }
+
+        ~HexMap()
+        {
+            HexTile.TrackCollision -= OnTrackCollision;
+            HexTile.ClearCollision -= OnClearCollision;
+        }
+
+        private void OnTrackCollision(HexTile tile)
+        {
+            Collisions.Add(tile);
+        }
+
+        private void OnClearCollision(HexTile tile)
+        {
+            Collisions.Remove(tile);
+        }
 
         /// <summary>
         /// The wall variant at <paramref name="coord"/>. False for non-wall tiles and for off-map hexes,
@@ -30,11 +63,13 @@ namespace UnholyTrinity.Hex
         /// </summary>
         public bool TryGetWall(HexCoord coord, out WallSettings wall)
         {
-            if (tiles.TryGetValue(coord, out var tile) && tile.Type == TileType.Wall)
+            if (tiles.TryGetValue(coord, out var tile) &&
+                tile.Type == TileType.Wall)
             {
                 wall = tile.WallSettings;
                 return true;
             }
+
             wall = default;
             return false;
         }
@@ -45,7 +80,8 @@ namespace UnholyTrinity.Hex
 
         public void Clear() => tiles.Clear();
 
-        public IEnumerable<HexCoord> Neighbors(HexCoord coord, bool walkableOnly = false)
+        public IEnumerable<HexCoord> Neighbors(HexCoord coord,
+            bool walkableOnly = false)
         {
             for (int i = 0; i < HexDirectionExtensions.Count; i++)
             {
@@ -55,10 +91,42 @@ namespace UnholyTrinity.Hex
             }
         }
 
-        public bool TryGetPortalExit(HexCoord coord, out HexCoord exit, out int rotationSteps)
+        public IEnumerable<HexTile> TilesOfType(TileType type)
         {
-            if (tiles.TryGetValue(coord, out var tile) && tile.Type == TileType.Portal && tile.Portal.IsEntrance
-                && tile.Portal.Target != coord && tiles.TryGetValue(tile.Portal.Target, out var target) 
+            foreach (var tile in tiles.Values)
+            {
+                if (tile.Type == type)
+                    yield return tile;
+            }
+        }
+
+        public IEnumerable<HexTile> PickupPoints =>
+            TilesOfType(TileType.PickupPoint);
+
+        /// <summary>Returns human-readable problems with the map; empty when valid.</summary>
+        public List<string> Validate()
+        {
+            var problems = new List<string>();
+            foreach (var tile in tiles.Values)
+            {
+                if (tile.Type == TileType.Portal)
+                    ValidatePortal(tile, problems);
+                else if (tile.Type == TileType.PickupPoint)
+                    ValidatePickupPoint(tile, problems);
+            }
+
+            return problems;
+        }
+
+        #region Portals
+
+        public bool TryGetPortalExit(HexCoord coord, out HexCoord exit,
+            out int rotationSteps)
+        {
+            if (tiles.TryGetValue(coord, out var tile) &&
+                tile.Type == TileType.Portal && tile.Portal.IsEntrance
+                && tile.Portal.Target != coord &&
+                tiles.TryGetValue(tile.Portal.Target, out var target)
                 && target.Type == TileType.Portal)
             {
                 exit = tile.Portal.Target;
@@ -86,8 +154,11 @@ namespace UnholyTrinity.Hex
         /// unwalkable hex, and on stepping onto a portal entrance jumps to its target and rotates every remaining
         /// step by the portal's rotation, in place. Returns where the walk ends.
         /// </summary>
+        /// <param name="start">The tile to start at.</param>
+        /// <param name="steps">A list of steps you intend to take.</param>
         /// <param name="totalRotation">Sum of the rotations of every portal crossed, for turning momentum to match.</param>
-        public HexCoord RedirectThroughPortals(HexCoord start, IList<HexDirection> steps, out int totalRotation)
+        public HexCoord RedirectThroughPortals(HexCoord start,
+            IList<HexDirection> steps, out int totalRotation)
         {
             totalRotation = 0;
             var current = start;
@@ -106,6 +177,7 @@ namespace UnholyTrinity.Hex
                         steps[j] = steps[j].Rotate(rotation);
                 }
             }
+
             return current;
         }
 
@@ -114,37 +186,13 @@ namespace UnholyTrinity.Hex
         {
             foreach (var tile in tiles.Values)
             {
-                if (tile.Type == TileType.Portal && tile.Portal.IsEntrance && tile.Portal.Target == target
+                if (tile.Type == TileType.Portal && tile.Portal.IsEntrance &&
+                    tile.Portal.Target == target
                     && tile.Coord != target)
                 {
                     yield return tile.Coord;
                 }
             }
-        }
-
-        public IEnumerable<HexTile> TilesOfType(TileType type)
-        {
-            foreach (var tile in tiles.Values)
-            {
-                if (tile.Type == type)
-                    yield return tile;
-            }
-        }
-
-        public IEnumerable<HexTile> PickupPoints => TilesOfType(TileType.PickupPoint);
-
-        /// <summary>Returns human-readable problems with the map; empty when valid.</summary>
-        public List<string> Validate()
-        {
-            var problems = new List<string>();
-            foreach (var tile in tiles.Values)
-            {
-                if (tile.Type == TileType.Portal)
-                    ValidatePortal(tile, problems);
-                else if (tile.Type == TileType.PickupPoint)
-                    ValidatePickupPoint(tile, problems);
-            }
-            return problems;
         }
 
         void ValidatePortal(HexTile tile, List<string> problems)
@@ -160,15 +208,27 @@ namespace UnholyTrinity.Hex
             if (target == tile.Coord)
                 problems.Add($"Portal {tile.Coord} links to itself.");
             else if (!tiles.TryGetValue(target, out var other))
-                problems.Add($"Portal {tile.Coord} links to {target}, which is off the map.");
+                problems.Add(
+                    $"Portal {tile.Coord} links to {target}, which is off the map.");
             else if (other.Type != TileType.Portal)
-                problems.Add($"Portal {tile.Coord} links to {target}, which is a {other.Type}, not a portal.");
+                problems.Add(
+                    $"Portal {tile.Coord} links to {target}, which is a {other.Type}, not a portal.");
         }
 
-        static void ValidatePickupPoint(HexTile tile, List<string> problems)
+        #endregion
+
+        private static void ValidatePickupPoint(HexTile tile,
+            List<string> problems)
         {
             if (!tile.Pickup.HasPickup)
-                problems.Add($"Pickup point {tile.Coord} has no pickup assigned.");
+                problems.Add(
+                    $"Pickup point {tile.Coord} has no pickup assigned.");
+        }
+
+        public void Step(HexCoord start, HexCoord end, in GameObject mover)
+        {
+            tiles[start].Exit(mover);
+            tiles[end].Exit(mover);
         }
     }
 }

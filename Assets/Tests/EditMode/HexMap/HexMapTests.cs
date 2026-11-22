@@ -3,6 +3,7 @@ using System.Linq;
 using NUnit.Framework;
 using UnholyTrinity.Pickups;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace UnholyTrinity.Hex.Tests
 {
@@ -29,7 +30,8 @@ namespace UnholyTrinity.Hex.Tests
             var map = new HexMap();
             map.SetTile(HexTile.Floor(HexCoord.Zero));
             map.SetTile(HexTile.BouncyWall(new HexCoord(1, 0)));
-            map.SetTile(HexTile.SpikedWall(new HexCoord(2, 0), 3, SpikeDamageMode.ScaledBySpeed));
+            map.SetTile(HexTile.SpikedWall(new HexCoord(2, 0), 3,
+                SpikeDamageMode.ScaledBySpeed));
 
             Assert.IsFalse(map.IsWalkable(new HexCoord(1, 0)));
             Assert.IsTrue(map.BlocksLineOfFire(new HexCoord(2, 0)));
@@ -37,7 +39,8 @@ namespace UnholyTrinity.Hex.Tests
             Assert.IsTrue(map.TryGetWall(new HexCoord(1, 0), out var bouncy));
             Assert.AreEqual(WallKind.Bouncy, bouncy.Kind);
             Assert.IsTrue(map.TryGetWall(new HexCoord(2, 0), out var spiked));
-            Assert.AreEqual(WallSettings.Spiked(3, SpikeDamageMode.ScaledBySpeed), spiked);
+            Assert.AreEqual(
+                WallSettings.Spiked(3, SpikeDamageMode.ScaledBySpeed), spiked);
 
             Assert.IsFalse(map.TryGetWall(HexCoord.Zero, out _));
             Assert.IsFalse(map.TryGetWall(new HexCoord(5, 5), out var offMap));
@@ -48,7 +51,9 @@ namespace UnholyTrinity.Hex.Tests
         public void SpikeDamage_FixedOrScaledBySpeed()
         {
             Assert.AreEqual(3, WallSettings.Spiked(3).DamageFor(4));
-            Assert.AreEqual(12, WallSettings.Spiked(3, SpikeDamageMode.ScaledBySpeed).DamageFor(4));
+            Assert.AreEqual(12,
+                WallSettings.Spiked(3, SpikeDamageMode.ScaledBySpeed)
+                    .DamageFor(4));
             Assert.AreEqual(0, WallSettings.Bouncy.DamageFor(4));
         }
 
@@ -56,8 +61,10 @@ namespace UnholyTrinity.Hex.Tests
         public void Validate_AcceptsReciprocalPortals()
         {
             var map = new HexMap();
-            map.SetTile(HexTile.PortalTile(new HexCoord(0, 0), new HexCoord(3, 0), 1));
-            map.SetTile(HexTile.PortalTile(new HexCoord(3, 0), new HexCoord(0, 0), 5));
+            map.SetTile(HexTile.PortalTile(new HexCoord(0, 0),
+                new HexCoord(3, 0), 1));
+            map.SetTile(HexTile.PortalTile(new HexCoord(3, 0),
+                new HexCoord(0, 0), 5));
             Assert.IsEmpty(map.Validate());
         }
 
@@ -65,18 +72,31 @@ namespace UnholyTrinity.Hex.Tests
         public void Validate_FlagsBrokenPortals()
         {
             var map = new HexMap();
-            map.SetTile(HexTile.PortalTile(new HexCoord(0, 0), new HexCoord(9, 9)));           // off map
-            map.SetTile(HexTile.PortalTile(new HexCoord(1, 0), new HexCoord(2, 0)));           // target not a portal
+            map.SetTile(HexTile.PortalTile(new HexCoord(0, 0),
+                new HexCoord(9, 9))); // off map
+            map.SetTile(HexTile.PortalTile(new HexCoord(1, 0),
+                new HexCoord(2, 0))); // target not a portal
             map.SetTile(HexTile.Floor(new HexCoord(2, 0)));
-            map.SetTile(HexTile.PortalTile(new HexCoord(3, 0), new HexCoord(3, 0)));           // self
-            map.SetTile(HexTile.PortalExit(new HexCoord(6, 0)));                               // exit nobody uses
+            map.SetTile(HexTile.PortalTile(new HexCoord(3, 0),
+                new HexCoord(3, 0))); // self
+            map.SetTile(
+                HexTile.PortalExit(new HexCoord(6, 0))); // exit nobody uses
 
             var problems = map.Validate();
-            Assert.That(problems.Any(p => p.Contains(new HexCoord(0, 0).ToString()) && p.Contains("off the map")));
-            Assert.That(problems.Any(p => p.Contains(new HexCoord(1, 0).ToString()) && p.Contains("not a portal")));
-            Assert.That(problems.Any(p => p.Contains(new HexCoord(3, 0).ToString()) && p.Contains("itself")));
-            Assert.That(problems.Any(p => p.Contains(new HexCoord(6, 0).ToString()) && p.Contains("no entrances")));
-            Assert.IsFalse(map.TryGetPortalExit(new HexCoord(0, 0), out _, out _));
+            Assert.That(problems.Any(p =>
+                p.Contains(new HexCoord(0, 0).ToString()) &&
+                p.Contains("off the map")));
+            Assert.That(problems.Any(p =>
+                p.Contains(new HexCoord(1, 0).ToString()) &&
+                p.Contains("not a portal")));
+            Assert.That(problems.Any(p =>
+                p.Contains(new HexCoord(3, 0).ToString()) &&
+                p.Contains("itself")));
+            Assert.That(problems.Any(p =>
+                p.Contains(new HexCoord(6, 0).ToString()) &&
+                p.Contains("no entrances")));
+            Assert.IsFalse(map.TryGetPortalExit(new HexCoord(0, 0), out _,
+                out _));
         }
 
         [Test]
@@ -94,8 +114,12 @@ namespace UnholyTrinity.Hex.Tests
             map.SetTile(HexTile.PortalTile(new HexCoord(2, 2), pairEnd));
 
             Assert.IsEmpty(map.Validate());
-            CollectionAssert.AreEquivalent(new[] { new HexCoord(0, 0), new HexCoord(1, 0) }, map.EntrancesTo(exit));
-            CollectionAssert.AreEquivalent(new[] { new HexCoord(0, 2), new HexCoord(2, 2) }, map.EntrancesTo(pairEnd));
+            CollectionAssert.AreEquivalent(
+                new[] { new HexCoord(0, 0), new HexCoord(1, 0) },
+                map.EntrancesTo(exit));
+            CollectionAssert.AreEquivalent(
+                new[] { new HexCoord(0, 2), new HexCoord(2, 2) },
+                map.EntrancesTo(pairEnd));
         }
 
         [Test]
@@ -108,8 +132,10 @@ namespace UnholyTrinity.Hex.Tests
             map.SetTile(HexTile.PortalTile(new HexCoord(1, 0), exit, 4));
 
             Assert.IsFalse(map.TryGetPortalExit(exit, out _, out _));
-            Assert.IsTrue(map.TryGetPortalExit(new HexCoord(0, 0), out var a, out int rotA));
-            Assert.IsTrue(map.TryGetPortalExit(new HexCoord(1, 0), out var b, out int rotB));
+            Assert.IsTrue(map.TryGetPortalExit(new HexCoord(0, 0), out var a,
+                out int rotA));
+            Assert.IsTrue(map.TryGetPortalExit(new HexCoord(1, 0), out var b,
+                out int rotB));
             Assert.AreEqual(exit, a);
             Assert.AreEqual(exit, b);
             Assert.AreEqual(2, rotA);
@@ -133,12 +159,18 @@ namespace UnholyTrinity.Hex.Tests
             map.SetTile(HexTile.PortalExit(exit));
             map.SetTile(HexTile.PortalTile(entrance, exit, 2));
 
-            var steps = new List<HexDirection> { HexDirection.D0, HexDirection.D0, HexDirection.D0 };
-            var end = map.RedirectThroughPortals(HexCoord.Zero, steps, out int rotation);
+            var steps = new List<HexDirection>
+                { HexDirection.D0, HexDirection.D0, HexDirection.D0 };
+            var end =
+                map.RedirectThroughPortals(HexCoord.Zero, steps,
+                    out int rotation);
 
             Assert.AreEqual(2, rotation);
-            CollectionAssert.AreEqual(new[] { HexDirection.D0, HexDirection.D2, HexDirection.D2 }, steps);
-            Assert.AreEqual(exit.Neighbor(HexDirection.D2).Neighbor(HexDirection.D2), end);
+            CollectionAssert.AreEqual(
+                new[] { HexDirection.D0, HexDirection.D2, HexDirection.D2 },
+                steps);
+            Assert.AreEqual(
+                exit.Neighbor(HexDirection.D2).Neighbor(HexDirection.D2), end);
         }
 
         [Test]
@@ -151,12 +183,15 @@ namespace UnholyTrinity.Hex.Tests
             map.SetTile(HexTile.Wall(exit.Neighbor(HexDirection.D1)));
 
             // the turned step after the jump runs into a wall, so the walk ends on the exit
-            var steps = new List<HexDirection> { HexDirection.D0, HexDirection.D0 };
-            Assert.AreEqual(exit, map.RedirectThroughPortals(HexCoord.Zero, steps, out _));
+            var steps = new List<HexDirection>
+                { HexDirection.D0, HexDirection.D0 };
+            Assert.AreEqual(exit,
+                map.RedirectThroughPortals(HexCoord.Zero, steps, out _));
 
             // walking over an exit does nothing
             var overExit = new List<HexDirection> { HexDirection.D0 };
-            var end = map.RedirectThroughPortals(exit.Neighbor(HexDirection.D3), overExit, out int rotation);
+            var end = map.RedirectThroughPortals(exit.Neighbor(HexDirection.D3),
+                overExit, out int rotation);
             Assert.AreEqual(exit, end);
             Assert.AreEqual(0, rotation);
             CollectionAssert.AreEqual(new[] { HexDirection.D0 }, overExit);
@@ -165,7 +200,8 @@ namespace UnholyTrinity.Hex.Tests
         [Test]
         public void Definition_RoundTripsThroughHexMap()
         {
-            var definition = ScriptableObject.CreateInstance<HexMapDefinition>();
+            var definition =
+                ScriptableObject.CreateInstance<HexMapDefinition>();
             var heal = ScriptableObject.CreateInstance<HealPickup>();
             try
             {
@@ -174,15 +210,21 @@ namespace UnholyTrinity.Hex.Tests
                 map.SetTile(HexTile.Wall(new HexCoord(1, 0)));
                 map.SetTile(HexTile.PickupPoint(new HexCoord(2, 0), heal));
                 map.SetTile(HexTile.BouncyWall(new HexCoord(3, 0)));
-                map.SetTile(HexTile.SpikedWall(new HexCoord(4, 0), 2, SpikeDamageMode.ScaledBySpeed));
-                map.SetTile(HexTile.BoostTile(new HexCoord(0, 1), BoostSettings.Fixed(-2, HexDirection.D4)));
-                map.SetTile(HexTile.PortalTile(new HexCoord(1, 1), new HexCoord(2, 1), 2));
-                map.SetTile(HexTile.PortalTile(new HexCoord(2, 1), new HexCoord(1, 1), 4));
+                map.SetTile(HexTile.SpikedWall(new HexCoord(4, 0), 2,
+                    SpikeDamageMode.ScaledBySpeed));
+                map.SetTile(HexTile.BoostTile(new HexCoord(0, 1),
+                    BoostSettings.Fixed(-2, HexDirection.D4)));
+                map.SetTile(HexTile.PortalTile(new HexCoord(1, 1),
+                    new HexCoord(2, 1), 2));
+                map.SetTile(HexTile.PortalTile(new HexCoord(2, 1),
+                    new HexCoord(1, 1), 4));
                 map.SetTile(HexTile.HealTile(new HexCoord(3, 1), 2));
-                map.SetTile(HexTile.HarmTile(new HexCoord(4, 1), 3, HealthTrigger.OnStop));
+                map.SetTile(HexTile.HarmTile(new HexCoord(4, 1), 3,
+                    HealthTrigger.OnStop));
                 map.SetTile(HexTile.KillTile(new HexCoord(0, 2)));
                 map.SetTile(HexTile.PortalExit(new HexCoord(1, 2)));
-                map.SetTile(HexTile.PortalTile(new HexCoord(2, 2), new HexCoord(1, 2), 3));
+                map.SetTile(HexTile.PortalTile(new HexCoord(2, 2),
+                    new HexCoord(1, 2), 3));
 
                 definition.Write(map);
                 var rebuilt = definition.Build();
@@ -190,7 +232,8 @@ namespace UnholyTrinity.Hex.Tests
                 Assert.AreEqual(map.Count, rebuilt.Count);
                 foreach (var tile in map.Tiles)
                 {
-                    Assert.IsTrue(rebuilt.TryGetTile(tile.Coord, out var other));
+                    Assert.IsTrue(rebuilt.TryGetTile(tile.Coord,
+                        out var other));
                     Assert.AreEqual(tile.Type, other.Type);
                     Assert.AreEqual(tile.Boost, other.Boost);
                     Assert.AreEqual(tile.Portal, other.Portal);
@@ -198,6 +241,7 @@ namespace UnholyTrinity.Hex.Tests
                     Assert.AreEqual(tile.WallSettings, other.WallSettings);
                     Assert.AreEqual(tile.Health, other.Health);
                 }
+
                 Assert.IsEmpty(definition.Validate());
             }
             finally
@@ -205,6 +249,41 @@ namespace UnholyTrinity.Hex.Tests
                 Object.DestroyImmediate(definition);
                 Object.DestroyImmediate(heal);
             }
+        }
+
+        [Test]
+        public void CanDetectCollision()
+        {
+            var map = new HexMap();
+            HexTile startTile = HexTile.Floor(HexCoord.Zero);
+            HexTile endTile = HexTile.Floor(new HexCoord(1, 0));
+            map.SetTile(startTile);
+            map.SetTile(endTile);
+
+            GameObject p1 = new GameObject();
+            GameObject p2 = new GameObject();
+
+            // Check no collisions on no item in tile
+            Assert.IsFalse(startTile.HasCollision);
+            // Check no collisions on single item in tile
+            startTile.Enter(p1);
+            Assert.IsFalse(startTile.HasCollision);
+            // Check collisions on 2 item in tile
+            startTile.Enter(p2);
+            Assert.IsTrue(startTile.HasCollision);
+
+            Assert.IsTrue(map.Collisions.Contains(startTile));
+            var collidedObjects = map.Collisions
+                .Where(tile => tile == startTile)
+                .SelectMany(tile => tile.Contains).ToList();
+
+            Assert.IsTrue(collidedObjects.Contains(p1) &&
+                          collidedObjects.Contains(p2));
+
+            map.Step(startTile.Coord, endTile.Coord, p1);
+
+            Assert.IsFalse(startTile.HasCollision);
+            Assert.IsFalse(map.Collisions.Contains(startTile));
         }
     }
 }
