@@ -1,23 +1,37 @@
 using System;
+using TMPro;
 using UnholyTrinity.Helpers;
 using UnholyTrinity.Players;
 using UnholyTrinity.Hex;
 using UnholyTrinity.Managers;
 using UnholyTrinity.Weapons;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
     [SerializeField] private GameObject cardSection;
     [SerializeField] private LaneCard laneCardPrefab;
-    [SerializeField] private RectTransform weaponColumnPrefab;
-    [SerializeField] private WeaponButton weaponButtonPrefab;
     [SerializeField] private SamGrid samGrid;
+
+    [SerializeField] private Vector2 deckOffset = new Vector2(25f, 25f);
+
+    [SerializeField] private GameObject deckControls;
+    [SerializeField] private Button backButton;
+    [SerializeField] private Button confirmButton;
+    [SerializeField] TextMeshProUGUI confirmLabel;
+    [SerializeField] private Button endTurnButton;
+
+    private static readonly SAMType[] SamSteps = (SAMType[])Enum.GetValues(typeof(SAMType));
 
     private void Awake()
     {
         GameManager.NewTurnEvent += OnNextTurn;
         TurnManager.NewPhaseEvent += OnNewPhase;
+
+        backButton.onClick.AddListener(OnBackClicked);
+        confirmButton.onClick.AddListener(OnConfirmClicked);
+        endTurnButton.onClick.AddListener(() => TurnManager.Instance.EndTurn());
     }
 
     private void OnDestroy()
@@ -37,71 +51,115 @@ public class UIManager : MonoBehaviour
         if (newPhase == TurnPhase.Resolution)
         {
             samGrid.Hide();
+            deckControls.SetActive(false);
             return;
         }
         GenerateActionCards(GameManager.Instance.CurrentPlayer);
     }
 
-    private void GenerateActionCards(Player current)
+    private void OnBackClicked()
     {
-        Weapon weapon = current.CurrentWeapon;
+        GameManager.Instance.CurrentPlayer.StepBackPlanning();
+        RefreshCards();
+    }
 
-        RectTransform weaponColumn = Instantiate(weaponColumnPrefab, cardSection.transform);
+    private void OnConfirmClicked()
+    {
+        Player current = GameManager.Instance.CurrentPlayer;
 
-        foreach (Weapon heldWeapon in current.Weapons)
+        if (!current.CanAdvancePlanningStep)
         {
-            Instantiate(weaponButtonPrefab, weaponColumn).Setup(
-                () => PlanAndRefresh(() => current.SelectWeapon(heldWeapon)),
-                heldWeapon.Data.Icon,
-                heldWeapon == current.CurrentWeapon
-            );
+            TurnManager.Instance.EndTurn();
+            return;
         }
 
-        CreateLaneCard("Shoot")
-            .AddOption($"{current.GetUnplannedAmmo(weapon)}/{weapon.Data.MaxAmmo}",
-                () => PlanAndRefresh(() => current.PlanShot(weapon)),
-                current.CanPlanShot(weapon),
-                weapon.Data.Icon,
-                current.IsPlanningShot(weapon))
-            .AddRow()
-            .AddOption("Hold", () => PlanAndRefresh(current.PlanHoldFire),
-                current.PlanningStep == SAMType.Shoot,
-                selected: current.IsHoldingFire);
+        current.AdvancePlanningStep();
+        RefreshCards();
+    }
 
-        CreateLaneCard("Aim")
-            .AddOption("CCW", () => PlanAndRefresh(() => current.PlanRotation(false)),
-                current.CanPlanRotation(false),
-                selected: current.IsPlanningRotation(false))
-            .AddOption("CW", () => PlanAndRefresh(() => current.PlanRotation(true)),
-                current.CanPlanRotation(true),
-                selected: current.IsPlanningRotation(true))
-            .AddRow()
-            .AddOption("Hold", () => PlanAndRefresh(current.PlanHoldAim),
-                current.PlanningStep == SAMType.Aim,
-                selected: current.IsHoldingAim);
+    private void GenerateActionCards(Player current)
+    {
+        // only the steps not yet confirmed this tick are in the deck
+        for (int stepIndex = SamSteps.Length - 1; stepIndex >= (int)current.PlanningStep; stepIndex --)
+        {
+            LaneCard card = SamSteps[stepIndex] switch
+            {
+                SAMType.Shoot => CreateShootCard(),
+                SAMType.Aim => CreateAimCard(),
+                _ => CreateMoveCard(), 
+            };
 
-        LaneCard moveCard = CreateLaneCard("Move");
-        AddMoveOption(moveCard, "NW", HexDirection.D2);
-        AddMoveOption(moveCard, "NE", HexDirection.D1);
-        moveCard.AddRow();
-        AddMoveOption(moveCard, "W", HexDirection.D3);
-        AddMoveOption(moveCard, "Brake", null);
-        AddMoveOption(moveCard, "E", HexDirection.D0);
-        moveCard.AddRow();
-        AddMoveOption(moveCard, "SW", HexDirection.D4);
-        AddMoveOption(moveCard, "SE", HexDirection.D5);
-
-        CreateLaneCard($"Tick {current.PlanningTickOfTurn}/{TurnManager.Instance.TicksPerTurn}")
-            .AddOption("Next Tick", () => PlanAndRefresh(current.AdvancePlanningStep), current.CanAdvancePlanningStep)
-            .AddRow()
-            .AddOption("Back", () => PlanAndRefresh(current.StepBackPlanning))
-            .AddRow()
-            .AddOption("End Turn", () => TurnManager.Instance.EndTurn());
+            int depthInDeck = stepIndex - (int)current.PlanningStep;
+            ((RectTransform)card.transform).anchoredPosition = deckOffset * depthInDeck;
+        }
 
         samGrid.Show(current, (tickIndex, step) =>
             PlanAndRefresh(() => current.RewindPlanningTo(tickIndex, step)));
 
+        deckControls.SetActive(true);
+        backButton.interactable = 
+            current.PlanningTickOfTurn > 1 || current.PlanningStep != SAMType.Shoot;
+        confirmLabel.text = current.CanAdvancePlanningStep
+            ? "Next"
+            : "End Turn";
+        
         return;
+
+        LaneCard CreateShootCard()
+        {
+            Weapon weapon = current.CurrentWeapon;
+            LaneCard shootCard = CreateLaneCard("Shoot");
+
+            foreach (Weapon heldWeapon in current.Weapons)
+            {
+                shootCard.AddOption("",
+                    () => PlanAndRefresh(() => current.SelectWeapon(heldWeapon)),
+                    icon: heldWeapon.Data.Icon,
+                    selected: heldWeapon == current.CurrentWeapon);
+            }
+
+            return shootCard
+                .AddRow()
+                .AddOption($"{current.GetUnplannedAmmo(weapon)}/{weapon.Data.MaxAmmo}",
+                    () => PlanAndRefresh(() => current.PlanShot(weapon)),
+                    current.CanPlanShot(weapon),
+                    weapon.Data.Icon,
+                    current.IsPlanningShot(weapon))
+                .AddRow()
+                .AddOption("Hold", () => PlanAndRefresh(current.PlanHoldFire),
+                    current.PlanningStep == SAMType.Shoot,
+                    selected: current.IsHoldingFire);
+        }
+
+        LaneCard CreateAimCard()
+        {
+            return CreateLaneCard("Aim")
+                .AddOption("CCW", () => PlanAndRefresh(() => current.PlanRotation(false)),
+                    current.CanPlanRotation(false),
+                    selected: current.IsPlanningRotation(false))
+                .AddOption("CW", () => PlanAndRefresh(() => current.PlanRotation(true)),
+                    current.CanPlanRotation(true),
+                    selected: current.IsPlanningRotation(true))
+                .AddRow()
+                .AddOption("Hold", () => PlanAndRefresh(current.PlanHoldAim),
+                    current.PlanningStep == SAMType.Aim,
+                    selected: current.IsHoldingAim);
+        }
+
+        LaneCard CreateMoveCard()
+        {
+            LaneCard moveCard = CreateLaneCard("Move");
+            AddMoveOption(moveCard, "NW", HexDirection.D2);
+            AddMoveOption(moveCard, "NE", HexDirection.D1);
+            moveCard.AddRow();
+            AddMoveOption(moveCard, "W", HexDirection.D3);
+            AddMoveOption(moveCard, "Brake", null);
+            AddMoveOption(moveCard, "E", HexDirection.D0);
+            moveCard.AddRow();
+            AddMoveOption(moveCard, "SW", HexDirection.D4);
+            AddMoveOption(moveCard, "SE", HexDirection.D5);
+            return moveCard;
+        }
 
         // does a planning action and then rebuilds every card so they reflect new plan
         void PlanAndRefresh(Action planAction)
