@@ -547,19 +547,48 @@ namespace UnholyTrinity.Players
                    plannedActions.Count(action => action.PlannedShot == weapon);
         }
 
-        // clears the tick being planned currently. if already clear, clears previous tick
-        public void ClearTick()
+        // reopens a step of a tick for editing. keeps its choice but everything planned
+        // after it is discarded. used by the SAM grid and the back button
+        public void RewindPlanningTo(int tickIndex, SAMType step)
         {
-            if (!HasTickChanges && 
-                PlanningStep == SAMType.Shoot &&
-                plannedActions.Count > 1
-            ){
-                plannedActions.RemoveAt(plannedActions.Count - 1);
+            bool isCurrentTick = tickIndex == plannedActions.Count - 1;
+
+            // can only rewind to steps that have been planned already
+            if (tickIndex < 0 || tickIndex >= plannedActions.Count ||
+                (isCurrentTick && step > PlanningStep))
+            {
+                return;
             }
 
-            plannedActions[^1] = CreateNewDefaultAction(PreviousPlannedAim);
-            PlanningStep = SAMType.Shoot;
+            plannedActions.RemoveRange(tickIndex + 1, plannedActions.Count - tickIndex - 1);
+
+            // steps that come after the reopened one are reset to defaults
+            if (step < SAMType.Move)
+            {
+                PlanningAction.PlannedDirection = null;
+            }
+
+            if (step < SAMType.Aim)
+            {
+                PlanningAction.PlannedAim = PreviousPlannedAim;
+                PlanningAction.Aim = null;
+            }
+
+            PlanningStep = step;
+            UpdatePlannedMove();
             ProjectPlan();
+        }
+
+        public void StepBackPlanning()
+        {
+            if (PlanningStep != SAMType.Shoot)
+            {
+                RewindPlanningTo(plannedActions.Count - 1, PlanningStep - 1);
+            }
+            else if (plannedActions.Count > 1)
+            {
+                RewindPlanningTo(plannedActions.Count - 2, SAMType.Move);
+            }
         }
 
         // clears the entire plan, used for turn start
