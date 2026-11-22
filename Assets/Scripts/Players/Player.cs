@@ -43,6 +43,9 @@ namespace UnholyTrinity.Players
         // in subsequent turns
         private int nextFireTick;
 
+        // cooldown of last fired shot so the shoot card can show how much is left
+        private int lastFiredCooldown;
+
         // this turn's plan, one UnholyAction per tick
         private readonly List<UnholyAction> plannedActions = new();
 
@@ -106,6 +109,16 @@ namespace UnholyTrinity.Players
         
         public bool CanAdvancePlanningStep =>
             PlanningStep != SAMType.Move || CanPlanNextTick;
+        
+        public float PlannedFireReadiness
+        {
+            get
+            {
+                int ticksUntilReady = Mathf.Max(0, GetPlannedNextFireTick() - PlanningTick);
+
+                return 1f - (float)ticksUntilReady / (GetPlannedLastCooldown() + 1);
+            }
+        }
 
         private UnholyAction PlanningAction => plannedActions[^1];
 
@@ -639,6 +652,21 @@ namespace UnholyTrinity.Players
             return plannedNextFireTick;
         }
 
+        private int GetPlannedLastCooldown()
+        {
+            for (int i = plannedActions.Count - 2; i >= 0; i--)
+            {
+                Weapon plannedShot = plannedActions[i].PlannedShot;
+
+                if (plannedShot != null)
+                {
+                    return plannedShot.Data.Cooldown;
+                }
+            }
+
+            return lastFiredCooldown;
+        }
+
         #endregion
 
         #region Resolution
@@ -673,6 +701,7 @@ namespace UnholyTrinity.Players
 
             weapon.Fire();
             nextFireTick = gm.CurrentTick + 1 + weapon.Data.Cooldown;
+            lastFiredCooldown = weapon.Data.Cooldown;
 
             List<AimTile> aimTiles = weapon.Data.GetAimTiles(mapManager.Map, Coord, CurrentAimDirection);
             if (weapon.Data.IsContinuous)
@@ -705,6 +734,7 @@ namespace UnholyTrinity.Players
 
             weapon.Fire();
             nextFireTick = gm.CurrentTick + 1 + weapon.Data.Cooldown;
+            lastFiredCooldown = weapon.Data.Cooldown;
 
             HexCoord landingTile = rocketData.GetLandingTile(aimTiles, aimTiles[targetIndex]);
 

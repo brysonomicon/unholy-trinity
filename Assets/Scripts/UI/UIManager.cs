@@ -108,7 +108,9 @@ public class UIManager : MonoBehaviour
         LaneCard CreateShootCard()
         {
             Weapon weapon = current.CurrentWeapon;
-            LaneCard shootCard = CreateLaneCard("Shoot");
+            float fireReadiness = current.PlannedFireReadiness;
+            LaneCard shootCard = CreateLaneCard("Shoot")
+                .SetFill(fireReadiness < 1f ? fireReadiness : 0f);
 
             foreach (Weapon heldWeapon in current.Weapons)
             {
@@ -123,8 +125,7 @@ public class UIManager : MonoBehaviour
                 .AddOption($"{current.GetUnplannedAmmo(weapon)}/{weapon.Data.MaxAmmo}",
                     () => PlanAndRefresh(() => current.PlanShot(weapon)),
                     current.CanPlanShot(weapon),
-                    weapon.Data.Icon,
-                    current.IsPlanningShot(weapon))
+                    selected: current.IsPlanningShot(weapon))
                 .AddRow()
                 .AddOption("Hold", () => PlanAndRefresh(current.PlanHoldFire),
                     current.PlanningStep == SAMType.Shoot,
