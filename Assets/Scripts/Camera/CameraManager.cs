@@ -19,7 +19,6 @@ namespace UnholyTrinity.Camera
         [SerializeField] [GetComponent]
         private CinemachineCamera resolutionCamera;
 
-        // Lets the player toggle top-down <-> close third. Delete if you handle input elsewhere.
         [SerializeField] private InputAction toggleCloseViewAction =
             new("ToggleCloseView", InputActionType.Button, "<Keyboard>/tab");
         
@@ -43,9 +42,7 @@ namespace UnholyTrinity.Camera
 
         private const int IdlePriority = 0;
 
-        private const int
-            OverviewPriority =
-                1; // center cam's resting priority, so something is always live
+        private const int OverviewPriority = 1; // center cam's resting priority, so something is always live
 
         private const int ActivePriority = 10;
 
@@ -103,8 +100,6 @@ namespace UnholyTrinity.Camera
 
         private void OnNewTurn(Player player) => ResetAndRefresh(player);
         
-        private void OnToggleFreeCamInput(InputAction.CallbackContext _) => ToggleFreeCam();
-
         private void OnToggleInput(InputAction.CallbackContext _) => CycleView();
         
         private void CycleView()
@@ -126,11 +121,6 @@ namespace UnholyTrinity.Camera
             {
                 SetFreeCam(true);
             }
-        }
-        public void ToggleFreeCam()
-        {
-            if (_freeCam) ExitFreeCam();
-            else SetFreeCam(true);
         }
 
         private void ExitFreeCam()
