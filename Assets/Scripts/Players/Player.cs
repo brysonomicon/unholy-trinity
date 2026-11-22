@@ -591,6 +591,15 @@ namespace UnholyTrinity.Players
             }
         }
 
+        // whether or not a step of a tick has been confirmed so SAM grid knows which cells are filled
+        public bool IsStepConfirmed(int tickIndex, SAMType step)
+        {
+            int currentTickIndex = plannedActions.Count - 1;
+
+            return tickIndex < currentTickIndex ||
+                   (tickIndex == currentTickIndex && step < PlanningStep);
+        }
+
         // clears the entire plan, used for turn start
         private void ClearPlan()
         {

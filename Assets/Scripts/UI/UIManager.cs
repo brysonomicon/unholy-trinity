@@ -12,6 +12,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private LaneCard laneCardPrefab;
     [SerializeField] private RectTransform weaponColumnPrefab;
     [SerializeField] private WeaponButton weaponButtonPrefab;
+    [SerializeField] private SamGrid samGrid;
 
     private void Awake()
     {
@@ -35,6 +36,7 @@ public class UIManager : MonoBehaviour
         ClearCardSection();
         if (newPhase == TurnPhase.Resolution)
         {
+            samGrid.Hide();
             return;
         }
         GenerateActionCards(GameManager.Instance.CurrentPlayer);
@@ -95,6 +97,9 @@ public class UIManager : MonoBehaviour
             .AddOption("Back", () => PlanAndRefresh(current.StepBackPlanning))
             .AddRow()
             .AddOption("End Turn", () => TurnManager.Instance.EndTurn());
+
+        samGrid.Show(current, (tickIndex, step) =>
+            PlanAndRefresh(() => current.RewindPlanningTo(tickIndex, step)));
 
         return;
 
