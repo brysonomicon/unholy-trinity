@@ -92,11 +92,18 @@ namespace UnholyTrinity.Managers
         private void OnEnable()
         {
             TurnManager.NewPhaseEvent += OnPhaseChanged;
+            Player.PlayerSpawned += RegisterPlayer;
         }
 
         private void OnDisable()
         {
             TurnManager.NewPhaseEvent -= OnPhaseChanged;
+            Player.PlayerSpawned -= RegisterPlayer;
+        }
+
+        private void Start()
+        {
+            ResetGame();
         }
 
         #endregion
@@ -110,9 +117,10 @@ namespace UnholyTrinity.Managers
             _players.Clear();
             _beams.Clear();
             turnManager.ResetPhases();
+            PlayerSpawner.Instance.SpawnPlayers();
         }
 
-        public void RegisterPlayer(Player player)
+        private void RegisterPlayer(Player player)
         {
             if (_players.Contains(player))
             {

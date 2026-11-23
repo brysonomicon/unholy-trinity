@@ -1,4 +1,14 @@
 {
-	"name": "UnholyTrinity.Helpers",
-    "rootNamespace": "UnholyTrinity.Pickups"
+    "name": "UnholyTrinity.Helpers",
+    "rootNamespace": "UnholyTrinity.Helpers",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }

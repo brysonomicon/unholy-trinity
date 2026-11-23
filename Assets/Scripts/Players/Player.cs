@@ -170,10 +170,6 @@ namespace UnholyTrinity.Players
             MapManager.LayoutChanged += SnapToCoord;
             TurnManager.NewPhaseEvent += OnNewPhase;
             (this as IMovable).Register(this);
-        }
-
-        private void Start()
-        {
             PlayerSpawned?.Invoke(this);
         }
 
