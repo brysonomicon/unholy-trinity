@@ -11,7 +11,7 @@ namespace UnholyTrinity.Managers
 {
     /// <summary>
     /// Scene entry point for pickups: builds a <see cref="PickupField"/> from the map and shows each pickup's
-    /// visual while it is available. Registers with the <see cref="GameManager"/> through the <see cref="MapManager"/>
+    /// visual while it is available. Registers with the <see cref="GameController"/> through the <see cref="MapManager"/>
     /// whose move phase drives it
     /// through <see cref="CollectAlong"/> and <see cref="AdvanceTicks"/>.
     /// </summary>

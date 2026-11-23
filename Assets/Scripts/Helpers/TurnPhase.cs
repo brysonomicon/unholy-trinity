@@ -1,7 +1,10 @@
-public enum TurnPhase
+namespace UnholyTrinity.Helpers
 {
-    PlayerOne,
-    PlayerTwo,
-    Resolution
+    public enum TurnPhase
+    {
+        PlayerOne,
+        PlayerTwo,
+        Resolution
+    }
 }
 

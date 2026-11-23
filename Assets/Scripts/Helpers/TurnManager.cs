@@ -12,13 +12,6 @@ namespace UnholyTrinity.Helpers
 
         public static event Action<TurnPhase> NewPhaseEvent;
 
-        [field: SerializeField]
-        [Min(0.1f)]
-        public int TicksPerTurn { get; private set; } = 3;
-
-        [field: SerializeField]
-        public float TickDuration { get; private set; } = 2;
-
         public TurnPhase CurrentPhase => _turnPhase.Peek();
 
         private readonly Queue<TurnPhase> _turnPhase = new(new List<TurnPhase>
@@ -34,8 +27,6 @@ namespace UnholyTrinity.Helpers
             {
                 Instance = this;
             }
-
-            GameManager.NewRoundEvent += OnRoundChanged;
         }
 
         private void OnDisable()
@@ -44,8 +35,6 @@ namespace UnholyTrinity.Helpers
             {
                 Instance = null;
             }
-
-            GameManager.NewRoundEvent -= OnRoundChanged;
         }
 
         public void EndTurn()
@@ -53,11 +42,6 @@ namespace UnholyTrinity.Helpers
             TurnPhase previous = _turnPhase.Dequeue();
             _turnPhase.Enqueue(previous);
             NewPhaseEvent?.Invoke(CurrentPhase);
-        }
-
-        private void OnRoundChanged(int _)
-        {
-            EndTurn();
         }
 
         public void ResetPhases()

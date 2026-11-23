@@ -1,26 +1,29 @@
 
 using System;
 
-public static class EnumExtensions
+namespace UnholyTrinity.Helpers
 {
-    public static T Next<T>(this T src) where T: Enum
+    public static class EnumExtensions
     {
-        T[] arr = (T[])Enum.GetValues(src.GetType());
-        int j = Array.IndexOf(arr, src) + 1;
-        return (arr.Length==j) ? arr[0] : arr[j];
-    }
+        public static T Next<T>(this T src) where T : Enum
+        {
+            T[] arr = (T[])Enum.GetValues(src.GetType());
+            int j = Array.IndexOf(arr, src) + 1;
+            return (arr.Length == j) ? arr[0] : arr[j];
+        }
 
-    public static T Previous<T>(this T src) where T : Enum
-    {
-        T[] arr = (T[])Enum.GetValues(src.GetType());
-        int j = Array.IndexOf(arr, src) - 1;
-        return (j < 0) ? arr[^1] : arr[j];
-    }
+        public static T Previous<T>(this T src) where T : Enum
+        {
+            T[] arr = (T[])Enum.GetValues(src.GetType());
+            int j = Array.IndexOf(arr, src) - 1;
+            return (j < 0) ? arr[^1] : arr[j];
+        }
 
-    public static bool IsPoint<T>(this T src) where T : Enum
-    {
-        T[] arr = (T[])Enum.GetValues(src.GetType());
-        int j = Array.IndexOf(arr, src);
-        return (j % 2) == 0;
+        public static bool IsPoint<T>(this T src) where T : Enum
+        {
+            T[] arr = (T[])Enum.GetValues(src.GetType());
+            int j = Array.IndexOf(arr, src);
+            return (j % 2) == 0;
+        }
     }
 }

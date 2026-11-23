@@ -1,7 +1,6 @@
 using System;
 using UnholyTrinity.Hex;
 using UnholyTrinity.Players;
-using UnholyTrinity.Weapons;
 using UnityEngine;
 
 namespace UnholyTrinity.Managers

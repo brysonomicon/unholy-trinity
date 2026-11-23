@@ -1,4 +1,5 @@
 using System;
+using UnholyTrinity.Helpers;
 using UnholyTrinity.Players;
 using UnholyTrinity.Hex;
 using UnholyTrinity.Managers;
@@ -86,7 +87,7 @@ public class UIManager : MonoBehaviour
         AddMoveOption(moveCard, "SW", HexDirection.D4);
         AddMoveOption(moveCard, "SE", HexDirection.D5);
 
-        CreateLaneCard($"Tick {current.PlanningTickOfTurn}/{TurnManager.Instance.TicksPerTurn}")
+        CreateLaneCard($"Tick {current.PlanningTickOfTurn}/{TickData.TicksPerTurn}")
             .AddOption("Next Tick", () => PlanAndRefresh(current.PlanNextTick), current.CanPlanNextTick)
             .AddRow()
             .AddOption("Clear Tick", () => PlanAndRefresh(current.ClearTick))
@@ -106,7 +107,7 @@ public class UIManager : MonoBehaviour
         void AddMoveOption(LaneCard card, string label, HexDirection? direction)
         {
             card.AddOption(
-                label, 
+                label,
                 () => PlanAndRefresh(() => current.PlanMove(direction)),
                 selected: current.IsPlanningMove(direction));
         }

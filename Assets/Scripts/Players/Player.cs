@@ -103,12 +103,13 @@ namespace UnholyTrinity.Players
         public int PlanningTickOfTurn => plannedActions.Count;
 
         public bool CanPlanNextTick =>
-            plannedActions.Count < turnManager.TicksPerTurn;
+            plannedActions.Count < TickData.TicksPerTurn;
 
         private UnholyAction PlanningAction => plannedActions[^1];
 
         // the game tick the action being planned will resolve on
-        private int PlanningTick => gm.CurrentTick + plannedActions.Count;
+        private int PlanningTick => TickData.CurrentTick + plannedActions.Count;
+        public int CurrentTick { get; set; }
 
         // aim from the end of the previous tick, which this tick starts from
         private AimDirection PreviousPlannedAim =>
@@ -167,16 +168,18 @@ namespace UnholyTrinity.Players
         private void OnEnable()
         {
             MapManager.LayoutChanged += SnapToCoord;
+            TurnManager.NewPhaseEvent += OnNewPhase;
+            (this as IMovable).Register(this);
         }
 
         private void Start()
         {
             PlayerSpawned?.Invoke(this);
-            (this as IMovable).Register(this);
         }
 
-        private void OnDestroy()
+        private void OnDisable()
         {
+            TurnManager.NewPhaseEvent -= OnNewPhase;
             MapManager.LayoutChanged -= SnapToCoord;
             (this as IMovable).Unregister(this);
         }
@@ -567,7 +570,7 @@ namespace UnholyTrinity.Players
 
                 if (plannedShot != null)
                 {
-                    int shotTick = gm.CurrentTick + 1 + i;
+                    int shotTick = TickData.CurrentTick + 1 + i;
                     plannedNextFireTick =
                         shotTick + 1 + plannedShot.Data.Cooldown;
                 }
@@ -610,7 +613,7 @@ namespace UnholyTrinity.Players
             }
 
             weapon.Fire();
-            nextFireTick = gm.CurrentTick + 1 + weapon.Data.Cooldown;
+            nextFireTick = TickData.CurrentTick + 1 + weapon.Data.Cooldown;
 
             List<AimTile> aimTiles = weapon.Data.GetAimTiles(mapManager.Map,
                 Coord, CurrentAimDirection);
@@ -644,7 +647,7 @@ namespace UnholyTrinity.Players
             }
 
             weapon.Fire();
-            nextFireTick = gm.CurrentTick + 1 + weapon.Data.Cooldown;
+            nextFireTick = TickData.CurrentTick + 1 + weapon.Data.Cooldown;
 
             HexCoord landingTile =
                 rocketData.GetLandingTile(aimTiles, aimTiles[targetIndex]);
@@ -655,7 +658,7 @@ namespace UnholyTrinity.Players
         // fired weapon has expired
         private bool CanFire(Weapon weapon)
         {
-            return weapon.HasAmmo && gm.CurrentTick >= nextFireTick;
+            return weapon.HasAmmo && TickData.CurrentTick >= nextFireTick;
         }
 
         private void SetAim(AimDirection aim)

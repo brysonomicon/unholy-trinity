@@ -1,4 +1,5 @@
 using Nrjwolf.Tools.AttachAttributes;
+using UnholyTrinity;
 using UnholyTrinity.Hex;
 using UnholyTrinity.Managers;
 using UnholyTrinity.Players;

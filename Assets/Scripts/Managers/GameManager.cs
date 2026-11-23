@@ -9,6 +9,7 @@ using UnholyTrinity.Players;
 using UnholyTrinity.Weapons;
 using UnholyTrinity.Hex;
 using UnholyTrinity.Helpers;
+using UnholyTrinity.Managers;
 using UnityEngine;
 
 namespace UnholyTrinity.Managers
@@ -28,7 +29,7 @@ namespace UnholyTrinity.Managers
         [SerializeField] private TurnManager turnManager = TurnManager.Instance;
 
         // second between ticks so resolution can be watched
-        private float TickDuration => turnManager.TickDuration;
+        private float TickDuration => TickData.TickDuration;
 
         [MinValue(0.1f)] [MaxValue(nameof(TickDuration))] [SerializeField]
         private float shootDuration;
@@ -58,10 +59,6 @@ namespace UnholyTrinity.Managers
             List<AimTile> firedTiles)> _beams = new();
 
         public int Round { get; private set; }
-
-        // counts every tick of the game and only resets with ResetGame.
-        // cooldowns are stored as the tick they expire on
-        public int CurrentTick { get; private set; }
 
         [CanBeNull]
         public Player CurrentPlayer =>
@@ -109,7 +106,7 @@ namespace UnholyTrinity.Managers
         public void ResetGame()
         {
             Round = 1;
-            CurrentTick = 0;
+            TickData.SetCurrentTick(0);
             _players.Clear();
             _beams.Clear();
             turnManager.ResetPhases();
@@ -143,9 +140,9 @@ namespace UnholyTrinity.Managers
 
         private IEnumerator ResolutionRoutine()
         {
-            for (int i = 0; i < turnManager.TicksPerTurn; i++)
+            for (int i = 0; i < TickData.TicksPerTurn; i++)
             {
-                CurrentTick++;
+                TickData.SetCurrentTick(TickData.CurrentTick + 1);
                 yield return ResolveTick(i);
             }
 
@@ -153,6 +150,7 @@ namespace UnholyTrinity.Managers
 
             Round++;
 
+            TurnManager.Instance.EndTurn();
             NewRoundEvent?.Invoke(Round);
         }
 

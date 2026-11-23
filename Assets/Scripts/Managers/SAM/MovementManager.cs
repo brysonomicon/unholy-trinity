@@ -11,7 +11,7 @@ namespace UnholyTrinity.Managers
     [RequireComponent(typeof(GameManager))]
     public class MovementManager : Singleton<MovementManager>
     {
-        private float TickDuration => TurnManager.Instance.TickDuration;
+        private float TickDuration => TickData.TickDuration;
 
         [SerializeField] [Min(0.1f)] [MaxValue(nameof(TickDuration))]
         private float moveDurationSec;

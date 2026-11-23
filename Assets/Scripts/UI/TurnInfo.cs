@@ -1,5 +1,6 @@
-
 using TMPro;
+using UnholyTrinity;
+using UnholyTrinity.Helpers;
 using UnholyTrinity.Managers;
 using UnityEngine;
 
@@ -25,7 +26,7 @@ public class TurnInfo : MonoBehaviour
         GameManager.NewRoundEvent -= OnNewRound;
         TurnManager.NewPhaseEvent -= OnNewPhase;
     }
-    
+
     private void OnNewPhase(TurnPhase newPhase)
     {
         phaseText.text =

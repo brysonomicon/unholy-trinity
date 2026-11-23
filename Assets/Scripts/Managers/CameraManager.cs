@@ -1,4 +1,3 @@
-using System;
 using UnholyTrinity.Helpers;
 using Nrjwolf.Tools.AttachAttributes;
 using UnholyTrinity.Managers;
