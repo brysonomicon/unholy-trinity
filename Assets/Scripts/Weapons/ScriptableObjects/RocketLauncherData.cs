@@ -1,21 +1,44 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnholyTrinity.Hex;
+using UnholyTrinity.Hex.Interfaces;
+using UnholyTrinity.Interfaces;
 using UnityEngine;
 
 namespace UnholyTrinity.Weapons
 {
-    [CreateAssetMenu(fileName = "RocketLauncherData", menuName = "Unholy Trinity/RocketLauncherData")]
+    [CreateAssetMenu(fileName = "RocketLauncherData",
+        menuName = "Unholy Trinity/RocketLauncherData")]
     public class RocketLauncherData : WeaponData
     {
-        [SerializeField][Min(0)] private int damage = 100;
+        [SerializeField] [Min(0)] private int damage = 100;
+
         [field: SerializeField] public Rocket RocketPrefab { get; private set; }
+
         // hexes per tick, should keep this above max player speed
-        [field: SerializeField][Min(1)] public int Speed { get; private set; } = 2;
+        [field: SerializeField]
+        [Min(1)]
+        public int Speed { get; private set; } = 2;
+
         // falloff by distance from impact tile, 0 is direct hit
         [SerializeField] private float[] blastFalloff = { 1f, 0.66f, 0.33f };
 
+        public override void Fire(IMovable shooter, IAimer aimer)
+        {
+            if (!aimer.SelectedTile.HasValue)
+            {
+                return;
+            }
+            if (shooter is not IVitals)
+            {
+                return;
+            }
+            Rocket rocket = Instantiate(RocketPrefab);
+            rocket.Launch(this, shooter as IVitals, shooter.Coord, aimer.SelectedTile.Value);
+        }
+
         public override bool RequiresTarget => true;
+
 
         public override int GetDamage(AimTile aimTile)
         {
@@ -33,8 +56,10 @@ namespace UnholyTrinity.Weapons
                 {
                     if (!map.BlocksLineOfFire(coord) &&
                         ShotTracer.HasLineOfSight(map, impact, coord)
-                    ){
-                        blastTiles.Add(new AimTile(coord, blastFalloff[distance]));
+                       )
+                    {
+                        blastTiles.Add(new AimTile(coord,
+                            blastFalloff[distance]));
                     }
                 }
             }
@@ -62,4 +87,3 @@ namespace UnholyTrinity.Weapons
         }
     }
 }
-

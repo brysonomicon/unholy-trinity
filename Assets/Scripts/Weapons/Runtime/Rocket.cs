@@ -1,57 +1,126 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnholyTrinity.Hex;
+using UnholyTrinity.Hex.Interfaces;
+using UnholyTrinity.Interfaces;
 using UnityEngine;
 
 namespace UnholyTrinity.Weapons
 {
-    public class Rocket : MonoBehaviour
+public class Rocket : MonoBehaviour, IMovable
+{
+    public static event Action<HexCoord, RocketLauncherData> RocketExplosion;
+
+    [SerializeField] private float heightOffset = 0.5f;
+    [SerializeField] private AimPreview blastPreview;
+
+    // includes the tile fired from and the impact tile
+    private List<HexCoord> path;
+    public int MoveIndex { get; private set; }
+
+    public HexCoord Momentum { get; private set; }
+    public int MomentumGainPerTick { get; }
+
+    public HexTile Tile { get; set; }
+
+    public List<HexDirection> MoveSteps { get; set; }
+
+    public RocketLauncherData Data { get; private set; }
+    public HexCoord Coord => path[MoveIndex];
+
+    private IVitals _shooter;
+
+    private void OnEnable()
     {
-        [SerializeField] private float heightOffset = 0.5f;
-        [SerializeField] private AimPreview blastPreview;
+        (this as IMovable).Register(this);
+    }
 
-        private MapManager mapManager;
-        // includes the tile fired from and the impact tile
-        private List<HexCoord> path;
-        private int pathIndex;
+    private void OnDisable()
+    {
+        (this as IMovable).Unregister(this);
+    }
 
-        public RocketLauncherData Data { get; private set; }
-        public HexCoord Coord => path[pathIndex];
-        public bool HasArrived => pathIndex == path.Count - 1;
+    public void Launch(
+        RocketLauncherData data,
+        IVitals shooter,
+        HexCoord origin,
+        HexCoord target
+    )
+    {
+        Data = data;
+        path = origin.LineTo(target);
+        _shooter = shooter;
+        MoveIndex = 0;
+        //! TODO: Some sort of visualizer abstraction
+        // blastPreview.Show(data.GetBlastTiles(mapManager.Map, target),
+        //     mapManager.Layout);
+    }
 
-        public void Launch(
-            RocketLauncherData data, 
-            MapManager mapManager,
-            HexCoord origin, 
-            HexCoord target
-        ){
-            Data = data;
-            this.mapManager = mapManager;
-            path = origin.LineTo(target);
-            pathIndex = 0;
-            SnapToCoord();
-            blastPreview.Show(data.GetBlastTiles(mapManager.Map, target), mapManager.Layout);
-        }
+    // advances a single rocket forward by the speed defined in the weapon data
+    private IEnumerator<(int, HexCoord)> AdvanceRocket()
+    {
+        bool shouldDetonate = false;
 
-        public void StepForward()
+        yield return (Data.Speed, Coord);
+
+        for (int step = 0;
+             step < Data.Speed && !shouldDetonate;
+             step++)
         {
-            if (HasArrived)
+            Move();
+            shouldDetonate =
+                !(this as IMovable).CanMove || IsDirectHit();
+
+            if (shouldDetonate)
             {
-                return;
+                Detonate();
             }
 
-            pathIndex++;
-            SnapToCoord();
-        }
-
-        public List<AimTile> GetBlastTiles()
-        {
-            return Data.GetBlastTiles(mapManager.Map, Coord);
-        }
-
-        private void SnapToCoord()
-        {
-            transform.position = mapManager.Layout.HexToWorld(Coord) + Vector3.up * heightOffset;
+            yield return (
+                shouldDetonate ? 0 : Data.Speed - (step + 1),
+                Coord);
         }
     }
-}
 
+    private bool IsDirectHit()
+    {
+        if (!Tile.HasCollision)
+        {
+            return false;
+        }
+
+        int validCollisions = Tile.StandingOn.Select(mover =>
+            (Rocket)mover != this
+            && (mover as IVitals) != _shooter
+        ).ToList().Count;
+        return validCollisions != 0;
+    }
+
+    private void Detonate()
+    {
+        RocketExplosion?.Invoke(Coord, Data);
+        Destroy(gameObject);
+    }
+
+    public void BeginMovePhase()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void EndMovePhase()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void Move()
+    {
+        if (!(this as IMovable).CanMove)
+        {
+            return;
+        }
+
+        MoveIndex++;
+    }
+}
+}

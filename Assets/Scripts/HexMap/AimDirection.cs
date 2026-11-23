@@ -1,6 +1,4 @@
-using UnholyTrinity.Hex;
-
-namespace UnholyTrinity.Weapons
+namespace UnholyTrinity.Hex
 {
     public enum AimDirection
     {

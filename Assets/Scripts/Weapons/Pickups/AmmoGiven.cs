@@ -1,4 +1,4 @@
-namespace UnholyTrinity.Weapons
+namespace UnholyTrinity.Weapons.Pickups
 {
     // what happened when a collector was offered ammo, so an ammo pickup can decide whether
     // it was taken

@@ -1,6 +1,4 @@
-using UnholyTrinity.Pickups;
-
-namespace UnholyTrinity.Players
+namespace UnholyTrinity.Interfaces
 {
     // health and armour that damage, heals, armour pickups and health tiles can change. the real
     // player is one, and so is the forecast of a player's plan, so both run the same tile rules

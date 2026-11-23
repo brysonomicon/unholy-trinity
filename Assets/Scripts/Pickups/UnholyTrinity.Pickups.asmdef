@@ -1,7 +1,9 @@
 {
     "name": "UnholyTrinity.Pickups",
     "rootNamespace": "UnholyTrinity.Pickups",
-    "references": [],
+    "references": [
+        "GUID:d07f2c7eeb7646918f2211d61fe3b5f2"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

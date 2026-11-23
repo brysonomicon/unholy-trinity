@@ -1,0 +1,18 @@
+{
+    "name": "UnholyTrinity.Weapons.Pickups",
+    "rootNamespace": "UnholyTrinity.Weapons.Pickups",
+    "references": [
+        "GUID:d07f2c7eeb7646918f2211d61fe3b5f2",
+        "GUID:2ecaabce92ff20a4cb1231b2526fa697",
+        "GUID:7886e9024ba4a6047be09c1cab6e8a4a"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

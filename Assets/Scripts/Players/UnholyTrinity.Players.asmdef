@@ -1,0 +1,24 @@
+{
+    "name": "UnholyTrinity.Players",
+    "rootNamespace": "UnholyTrinity.Players",
+    "references": [
+        "GUID:b3a69d8ca69bf8649b863bfded8fc8ac",
+        "GUID:7886e9024ba4a6047be09c1cab6e8a4a",
+        "GUID:4b4794e38edc74eb8986ad993a5ad5c8",
+        "GUID:d07f2c7eeb7646918f2211d61fe3b5f2",
+        "GUID:776d03a35f1b52c4a9aed9f56d7b4229",
+        "GUID:2ecaabce92ff20a4cb1231b2526fa697",
+        "GUID:2ef584bcc2b263f43b1d2a03455406a2",
+        "GUID:4307f53044263cf4b835bd812fc161a4",
+        "GUID:6055be8ebefd69e48b49212b09b47b2f"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

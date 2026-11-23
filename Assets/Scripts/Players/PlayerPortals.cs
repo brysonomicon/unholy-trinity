@@ -1,5 +1,4 @@
 using UnholyTrinity.Hex;
-using UnityEngine;
 
 namespace UnholyTrinity.Players
 {
@@ -16,8 +15,6 @@ namespace UnholyTrinity.Players
         // it here makes the rest of the (already turned) steps carry on from the target
         public void MoveThroughPortal(HexCoord exit)
         {
-            Debug.Log($"{name} went through the portal at {Coord} to {exit}");
-
             Coord = exit;
             tickMovePath.Add(Coord);
             SnapToCoord(Coord);

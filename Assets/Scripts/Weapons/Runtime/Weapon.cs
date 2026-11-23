@@ -1,18 +1,19 @@
+using System;
 using UnityEngine;
 
 namespace UnholyTrinity.Weapons
 {
-    [System.Serializable]
+    [Serializable]
     public class Weapon
     {
         [field: SerializeField] public WeaponData Data { get; private set; }
         [field: SerializeField] public int Ammo {get; private set;}
-        
+
         public bool HasAmmo => Ammo > 0;
 
         public Weapon (WeaponData data)
         {
-            this.Data = data;
+            Data = data;
             Ammo = data.PickupAmmo;
         }
 
@@ -22,7 +23,7 @@ namespace UnholyTrinity.Weapons
             {
                 return false;
             }
-            Debug.Log($"Firing {Data.DisplayName}");
+
             Ammo--;
             return true;
         }

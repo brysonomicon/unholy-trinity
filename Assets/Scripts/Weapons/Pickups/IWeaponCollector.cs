@@ -1,6 +1,6 @@
-using UnholyTrinity.Pickups;
+using UnholyTrinity.Interfaces;
 
-namespace UnholyTrinity.Weapons
+namespace UnholyTrinity.Weapons.Pickups
 {
     // same pattern as IHealable but lives with weapons because the pickup assembly
     // can't see WeaponData

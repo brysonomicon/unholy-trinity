@@ -1,7 +1,8 @@
+using UnholyTrinity.Interfaces;
 using UnholyTrinity.Pickups;
 using UnityEngine;
 
-namespace UnholyTrinity.Weapons
+namespace UnholyTrinity.Weapons.Pickups
 {
     // ammo for one weapon. only adds ammo to a weapon the collector already holds
     [CreateAssetMenu(menuName = "Unholy Trinity/Pickups/Ammo", fileName = "AmmoPickup")]

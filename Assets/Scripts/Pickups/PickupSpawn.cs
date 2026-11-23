@@ -1,4 +1,5 @@
 using System;
+using UnholyTrinity.Interfaces;
 
 namespace UnholyTrinity.Pickups
 {

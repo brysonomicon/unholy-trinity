@@ -12,21 +12,22 @@ namespace UnholyTrinity.Players
     {
         [SerializeField] private TMP_Text labelPrefab;
 
-        [SerializeField, Min(0.1f), Tooltip("How far out the labels sit, in hexes.")]
+        [SerializeField, Min(0.1f),
+         Tooltip("How far out the labels sit, in hexes.")]
         private float radiusInHexes = 1f;
 
-        [SerializeField, Tooltip("Height of the labels above the player's position.")]
+        [SerializeField,
+         Tooltip("Height of the labels above the player's position.")]
         private float labelHeight;
 
         private readonly List<(TMP_Text label, Vector3 offset)> labels = new();
-        
-        // fully qualified: inside UnholyTrinity.*, plain "Camera" resolves to the UnholyTrinity.Camera namespace
-        private UnityEngine.Camera viewCamera;
+
+        private Camera viewCamera;
 
         public void Show(HexLayout layout)
         {
             Hide();
-            viewCamera = UnityEngine.Camera.main;
+            viewCamera = Camera.main;
 
             float hexDistance = Vector3.Distance(
                 layout.HexToWorld(HexCoord.Zero),
@@ -40,8 +41,10 @@ namespace UnholyTrinity.Players
                 label.name = $"{name} Direction {direction}";
                 label.text = direction.DisplayName(layout.Orientation);
 
-                Vector3 offset = layout.DirectionToWorld(direction) * (hexDistance * radiusInHexes) +
-                                 Vector3.up * labelHeight;
+                Vector3 offset =
+                    layout.DirectionToWorld(direction) *
+                    (hexDistance * radiusInHexes) +
+                    Vector3.up * labelHeight;
                 labels.Add((label, offset));
             }
 
@@ -78,7 +81,8 @@ namespace UnholyTrinity.Players
 
             foreach ((TMP_Text label, Vector3 offset) in labels)
             {
-                label.transform.SetPositionAndRotation(transform.position + offset, facing);
+                label.transform.SetPositionAndRotation(
+                    transform.position + offset, facing);
             }
         }
     }

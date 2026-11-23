@@ -1,11 +1,11 @@
 using System;
 using UnholyTrinity.Hex;
-using UnholyTrinity.Managers;
+using UnholyTrinity.Players;
 using UnholyTrinity.Weapons;
 using UnityEngine;
 
-namespace UnholyTrinity.Players
-{       
+namespace UnholyTrinity.Managers
+{
     // ensures it runs before camera and UI so players exist
     // by the time they ask for them, but after map exists
     [DefaultExecutionOrder(-50)]
@@ -20,7 +20,7 @@ namespace UnholyTrinity.Players
             [field: Tooltip("A0 = east, each step is 30 degree CCW. A3 = north, A6 = west, A9 = south")]
             public AimDirection Aim { get; private set; }
         }
-        
+
         [SerializeField] private Player playerPrefab;
         [SerializeField] private SpawnPoint[] spawnPoints;
 
@@ -29,7 +29,7 @@ namespace UnholyTrinity.Players
             GameManager manager = GameManager.Instance;
             MapManager mapManager = MapManager.Instance;
             manager.ResetGame();
-            
+
             for (int i = 0; i < spawnPoints.Length; i++)
             {
                 Player spawnedPlayer = Instantiate(playerPrefab);

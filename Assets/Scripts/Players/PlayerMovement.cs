@@ -1,12 +1,24 @@
 using System.Collections.Generic;
+using System.Linq;
 using NaughtyAttributes;
 using UnholyTrinity.Hex;
+using UnholyTrinity.Hex.Interfaces;
 using UnityEngine;
 
 namespace UnholyTrinity.Players
 {
-    public partial class Player
+    public partial class Player : IMovable
     {
+        public HexCoord Momentum => momentum;
+
+        public int MomentumGainPerTick => momentumGainPerTick;
+
+        public int MoveIndex { get; set; }
+
+        public HexTile Tile { get; set; }
+        public List<HexDirection> MoveSteps { get; set; }
+        public void Move() => ResolveMove(plannedActions.First());
+
         [Header("Movement")] [SerializeField, Min(1)]
         private int baseMomentumMax = 1;
 
@@ -83,11 +95,13 @@ namespace UnholyTrinity.Players
                 : HexCoord.Zero;
 
             HexCoord start = GetPlannedCoord(plannedActions.Count - 1);
-            List<HexDirection> steps = GetStepListFromMomentum(start, plannedMomentum);
+            List<HexDirection> steps =
+                GetStepListFromMomentum(start, plannedMomentum);
 
             // a portal on the way turns the rest of the move and the momentum. it's baked into the
             // plan here so the preview, the next tick's planning and resolution all agree
-            mapManager.Map.RedirectThroughPortals(start, steps, out int portalRotation);
+            mapManager.Map.RedirectThroughPortals(start, steps,
+                out int portalRotation);
 
             PlanningAction.PlannedMomentum =
                 plannedMomentum.RotateAround(HexCoord.Zero, portalRotation);
@@ -164,7 +178,7 @@ namespace UnholyTrinity.Players
 
         #region Resolution
 
-        // takes the tick's own action because PlanningAction is always the last planned tick by 
+        // takes the tick's own action because PlanningAction is always the last planned tick by
         // the time resolution happens. this is now the only place where Coord and momentum change
         // and it records each hex entered in tickMovePath, which replaces what Step was doing on
         // aiming_weapons
@@ -189,7 +203,7 @@ namespace UnholyTrinity.Players
                 {
                     break;
                 }
-                
+
                 Coord = current;
                 tickMovePath.Add(Coord);
                 SnapToCoord(Coord);
@@ -203,13 +217,7 @@ namespace UnholyTrinity.Players
         {
             next = GetStepDestination(Coord, direction);
 
-            if (next == Coord)
-            {
-                Debug.Log($"{name} is blocked from moving {direction}");
-                return false;
-            }
-            
-            return true;
+            return next != Coord;
         }
 
         private HexCoord GetStepDestination(HexCoord from,

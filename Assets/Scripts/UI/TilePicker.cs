@@ -8,7 +8,7 @@ using UnityEngine.InputSystem;
 
 public class TilePicker : MonoBehaviour
 {
-    [SerializeField][GetComponent] private MapManager mapManager;
+    [SerializeField] [GetComponent] private MapManager mapManager;
     [SerializeField] private Camera cam;
     [SerializeField] private UIManager uiManager;
 
@@ -19,7 +19,8 @@ public class TilePicker : MonoBehaviour
         if (mouse == null ||
             !mouse.leftButton.wasPressedThisFrame ||
             EventSystem.current.IsPointerOverGameObject()
-        ){
+           )
+        {
             return;
         }
 
@@ -27,13 +28,11 @@ public class TilePicker : MonoBehaviour
 
         if (currentPlayer == null ||
             !TryGetClickedCoord(mouse, out HexCoord clickedCoord)
-        ){
+           )
+        {
             return;
         }
 
-        Debug.Log($"{currentPlayer.name} clicked {clickedCoord}, " +
-                  $"in shot cone: {currentPlayer.IsInShotCone(clickedCoord)}");
-        
         currentPlayer.SelectTile(clickedCoord);
         uiManager.RefreshCards();
     }

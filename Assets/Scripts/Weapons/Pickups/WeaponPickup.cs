@@ -1,7 +1,8 @@
+using UnholyTrinity.Interfaces;
 using UnholyTrinity.Pickups;
 using UnityEngine;
 
-namespace UnholyTrinity.Weapons
+namespace UnholyTrinity.Weapons.Pickups
 {
     [CreateAssetMenu(menuName = "Unholy Trinity/Pickups/Weapon", fileName = "WeaponPickup")]
     public class WeaponPickup : PickupDefinition

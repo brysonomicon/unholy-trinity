@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
+using UnholyTrinity.Hex.Interfaces;
 
 namespace UnholyTrinity.Hex
 {
@@ -11,7 +11,7 @@ namespace UnholyTrinity.Hex
     public class HexMap
     {
         public readonly Dictionary<HexCoord, HexTile> tiles =
-            new Dictionary<HexCoord, HexTile>();
+            new();
 
         public HashSet<HexTile> Collisions
         {
@@ -39,12 +39,19 @@ namespace UnholyTrinity.Hex
         {
             HexTile.TrackCollision += OnTrackCollision;
             HexTile.ClearCollision += OnClearCollision;
+            IMovable.RegisterMover += OnRegisterMover;
         }
 
         ~HexMap()
         {
             HexTile.TrackCollision -= OnTrackCollision;
             HexTile.ClearCollision -= OnClearCollision;
+            IMovable.RegisterMover -= OnRegisterMover;
+        }
+
+        private void OnRegisterMover(IMovable obj)
+        {
+            tiles[obj.Coord].Enter(obj);
         }
 
         private void OnTrackCollision(HexTile tile)
@@ -225,7 +232,7 @@ namespace UnholyTrinity.Hex
                     $"Pickup point {tile.Coord} has no pickup assigned.");
         }
 
-        public void Step(HexCoord start, HexCoord end, in GameObject mover)
+        public void Step(HexCoord start, HexCoord end, in IMovable mover)
         {
             tiles[start].Exit(mover);
             tiles[end].Exit(mover);

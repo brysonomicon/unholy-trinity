@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using UnholyTrinity.Interfaces;
 using UnityEngine;
 
 [assembly: InternalsVisibleTo("UnholyTrinity.HexMap.Tests")]

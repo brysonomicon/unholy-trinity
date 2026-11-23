@@ -1,3 +1,4 @@
 {
-	"name": "UnholyTrinity.Helpers"
+	"name": "UnholyTrinity.Helpers",
+    "rootNamespace": "UnholyTrinity.Pickups"
 }

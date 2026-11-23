@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using UnholyTrinity.Hex;
-using UnholyTrinity.Managers;
-using UnholyTrinity.Tiles;
+using UnholyTrinity.Interfaces;
 using UnholyTrinity.Weapons;
+using UnholyTrinity.Weapons.Pickups;
 using UnityEngine;
 
 namespace UnholyTrinity.Players

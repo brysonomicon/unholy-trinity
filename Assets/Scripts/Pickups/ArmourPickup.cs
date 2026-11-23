@@ -1,3 +1,4 @@
+using UnholyTrinity.Interfaces;
 using UnityEngine;
 
 namespace UnholyTrinity.Pickups

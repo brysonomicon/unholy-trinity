@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
+using UnholyTrinity.Hex.Interfaces;
 using UnholyTrinity.Pickups;
-using UnityEngine;
 
 namespace UnholyTrinity.Hex
 {
@@ -21,8 +21,8 @@ namespace UnholyTrinity.Hex
         public readonly PickupPointData Pickup;
         public readonly WallSettings WallSettings;
         public readonly HealthTileSettings Health;
-        public List<GameObject> Contains { get; private set; }
-        public bool HasCollision => Contains.Count > 1;
+        public readonly List<IMovable> StandingOn = new();
+        public bool HasCollision => StandingOn.Count > 1;
 
         public bool IsWalkable => Type != TileType.Wall;
         public bool BlocksLineOfFire => Type == TileType.Wall;
@@ -39,22 +39,22 @@ namespace UnholyTrinity.Hex
             Pickup = pickup;
             WallSettings = wall;
             Health = health;
-            Contains = new List<GameObject>();
         }
 
-        public virtual void Enter(GameObject gameObject)
+        public virtual void Enter(IMovable mover)
         {
-            Contains.Add(gameObject);
+            mover.Tile = this;
+            StandingOn.Add(mover);
             if (HasCollision)
             {
                 TrackCollision?.Invoke(this);
             }
         }
 
-        public virtual void Exit(GameObject gameObject)
+        public virtual void Exit(IMovable mover)
         {
             bool hadCollision = HasCollision;
-            Contains.Remove(gameObject);
+            StandingOn.Remove(mover);
             if (hadCollision && !HasCollision)
             {
                 ClearCollision?.Invoke(this);

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnholyTrinity.Interfaces;
 using UnholyTrinity.Pickups;
 
 namespace UnholyTrinity.Hex

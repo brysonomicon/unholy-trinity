@@ -8,8 +8,6 @@ using Nrjwolf.Tools.AttachAttributes;
 using UnholyTrinity.Players;
 using UnholyTrinity.Weapons;
 using UnholyTrinity.Hex;
-using UnholyTrinity.Tiles;
-using UnholyTrinity.Camera;
 using UnholyTrinity.Helpers;
 using UnityEngine;
 
@@ -32,10 +30,10 @@ namespace UnholyTrinity.Managers
         // second between ticks so resolution can be watched
         private float TickDuration => turnManager.TickDuration;
 
-        [MinValue(0.1f)] [MaxValue(nameof(TickDuration))]
+        [MinValue(0.1f)] [MaxValue(nameof(TickDuration))] [SerializeField]
         private float shootDuration;
 
-        [MinValue(0.1f)] [MaxValue(nameof(TickDuration))]
+        [MinValue(0.1f)] [MaxValue(nameof(TickDuration))] [SerializeField]
         private float aimDuration;
 
         [SerializeField] [Min(0.1f)] private float turnStartDelay = 0.1f;
@@ -52,8 +50,6 @@ namespace UnholyTrinity.Managers
         [CanBeNull]
         private PickupField LivePickups =>
             PickupManager != null ? PickupManager.Field : null;
-
-        private readonly List<(Player shooter, Rocket rocket)> _rockets = new();
 
         private readonly List<(
             Player shooter,
@@ -86,12 +82,6 @@ namespace UnholyTrinity.Managers
                 _                    => throw new ArgumentOutOfRangeException()
             };
 
-        // false until the spawner has registered every player
-        public bool AllPlayersRegistered => _players.Count == maxPlayers;
-
-        public List<Vector3> CurrentPlayerPositions =>
-            new(_players.Select(x => x.transform.position).ToList());
-
         #endregion
 
         #region Unity Lifecycle
@@ -100,10 +90,14 @@ namespace UnholyTrinity.Managers
         {
             base.Awake();
             Round = 1;
+        }
+
+        private void OnEnable()
+        {
             TurnManager.NewPhaseEvent += OnPhaseChanged;
         }
 
-        private void OnDestroy()
+        private void OnDisable()
         {
             TurnManager.NewPhaseEvent -= OnPhaseChanged;
         }
@@ -117,7 +111,6 @@ namespace UnholyTrinity.Managers
             Round = 1;
             CurrentTick = 0;
             _players.Clear();
-            _rockets.Clear();
             _beams.Clear();
             turnManager.ResetPhases();
         }
@@ -137,8 +130,6 @@ namespace UnholyTrinity.Managers
             }
 
             _players.Add(player);
-            CameraManager.Instance.RegisterPlayerTracked(player.transform, 1,
-                1);
             //Start the game when we get enough players.
             if (_players.Count == maxPlayers)
             {
@@ -161,7 +152,7 @@ namespace UnholyTrinity.Managers
             yield return (turnStartDelay);
 
             Round++;
-            Debug.Log($"New round: {Round}");
+
             NewRoundEvent?.Invoke(Round);
         }
 
@@ -206,31 +197,8 @@ namespace UnholyTrinity.Managers
                 PickupManager.AdvanceTicks(1);
             }
 
-            HashSet<MoveData> movingObjects = new();
+            yield return moveManager.HandleTick();
 
-            // [CB] TODO: Make a common interface for movement.
-            foreach (Player player in _players)
-            {
-                player.BeginMovePhase();
-                IEnumerator<(int, HexCoord)> playerMove =
-                    player.GetPlannedAction(tickIndex)?.Move.Invoke();
-                if (playerMove == null) continue;
-                movingObjects.Add(new MoveData(
-                    WithTileEffects(player, playerMove), player.gameObject));
-            }
-
-            _rockets.ForEach(rocket =>
-            {
-                var rocketMover = new MoveData(
-                    AdvanceRocket(rocket.shooter, rocket.rocket),
-                    rocket.rocket.gameObject);
-                movingObjects.Add(rocketMover);
-            });
-
-            if (movingObjects.Count > 0)
-            {
-                yield return moveManager.HandleTick(movingObjects.ToList());
-            }
 
             // OnStop tile effects fire where each player ends up, including players who didn't move
             foreach (Player player in _players)
@@ -312,79 +280,14 @@ namespace UnholyTrinity.Managers
 
                     int damageAmount = weaponData.GetDamage(at);
 
-                    if (damageAmount > 0)
+                    if (damageAmount <= 0)
                     {
-                        Debug.Log(
-                            $"{shooter.name} hit {player.name} with {weaponData.DisplayName} for {damageAmount} damage");
-                        player.TakeDamage(damageAmount);
+                        return;
                     }
-                    else
-                    {
-                        Debug.Log($"{shooter.name} missed");
-                    }
+
+                    player.TakeDamage(damageAmount);
                 }
             }
-        }
-
-        public void LaunchRocket(Player shooter, RocketLauncherData rocketData,
-            MapManager mapManager, HexCoord target)
-        {
-            Rocket rocket = Instantiate(rocketData.RocketPrefab);
-            rocket.Launch(rocketData, mapManager, shooter.Coord, target);
-            _rockets.Add((shooter, rocket));
-            Debug.Log($"{shooter.name} launched a rocket at {target}");
-        }
-
-        // moves all rockets on the map
-        // private void AdvanceRockets()
-        // {
-        //     foreach ((Player shooter, Rocket rocket) in _rockets.ToList())
-        //     {
-        //         AdvanceRocket(shooter, rocket);
-        //     }
-        // }
-
-        // advances a single rocket forward by the speed defined in the weapon data
-        private IEnumerator<(int, HexCoord)> AdvanceRocket(Player shooter,
-            Rocket rocket)
-        {
-            bool shouldDetonate = false;
-
-            yield return (rocket.Data.Speed, rocket.Coord);
-
-            for (int step = 0;
-                 step < rocket.Data.Speed && !shouldDetonate;
-                 step++)
-            {
-                rocket.StepForward();
-                shouldDetonate =
-                    rocket.HasArrived || IsDirectHit(shooter, rocket);
-
-                if (shouldDetonate)
-                {
-                    DetonateRocket(shooter, rocket);
-                }
-
-                yield return (
-                    shouldDetonate ? 0 : rocket.Data.Speed - (step + 1),
-                    rocket.Coord);
-            }
-        }
-
-        private bool IsDirectHit(Player shooter, Rocket rocket)
-        {
-            return _players.Any(player =>
-                player != shooter &&
-                player.Coord == rocket.Coord
-            );
-        }
-
-        private void DetonateRocket(Player shooter, Rocket rocket)
-        {
-            Debug.Log($"{shooter.name}'s rocket exploded at {rocket.Coord}");
-            ResolveShot(shooter, rocket.Data, rocket.GetBlastTiles());
-            _rockets.Remove((shooter, rocket));
-            Destroy(rocket.gameObject);
         }
 
         public void StartBeam(Player shooter, WeaponData weaponData,
@@ -426,13 +329,7 @@ namespace UnholyTrinity.Managers
 
                     if (damageAmount > 0)
                     {
-                        Debug.Log(
-                            $"{shooter.name} hit {target.name} with {weaponData.DisplayName} for {damageAmount} damage");
                         target.TakeDamage(damageAmount);
-                    }
-                    else
-                    {
-                        Debug.Log($"{shooter.name} missed");
                     }
                 }
             }

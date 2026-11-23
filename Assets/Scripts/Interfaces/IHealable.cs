@@ -1,4 +1,4 @@
-namespace UnholyTrinity.Pickups
+namespace UnholyTrinity.Interfaces
 {
     public interface IHealable : IPickupCollector
     {

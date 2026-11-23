@@ -1,7 +1,9 @@
 using System.Collections.Generic;
+using NaughtyAttributes;
 using Nrjwolf.Tools.AttachAttributes;
 using UnholyTrinity.Helpers;
 using UnholyTrinity.Hex;
+using UnholyTrinity.Interfaces;
 using UnholyTrinity.Pickups;
 using UnityEngine;
 
@@ -17,9 +19,9 @@ namespace UnholyTrinity.Managers
     {
         [SerializeField][GetComponent] private MapManager mapManager;
         [SerializeField] private float visualHeightOffset = 0.5f;
-        [SerializeField, Tooltip("Required. Shows how long until a collected pickup respawns.")]
+        [SerializeField, Required, Tooltip("Required. Shows how long until a collected pickup respawns.")]
         private PickupRespawnRing respawnRingPrefab;
-        [SerializeField, Tooltip("Required. Applied to a pickup's model while it is collected.")]
+        [SerializeField, Required, Tooltip("Required. Applied to a pickup's model while it is collected.")]
         private Material pickupGhostMaterial;
 
         private readonly struct PickupVisual
@@ -84,7 +86,7 @@ namespace UnholyTrinity.Managers
                 Field.Respawned -= OnRespawned;
             }
             MapManager.LayoutChanged -= PositionVisuals;
-            
+
         }
 
         public void CollectAlong(IEnumerable<HexCoord> path, HexCoord end,
@@ -126,7 +128,6 @@ namespace UnholyTrinity.Managers
                 {
                     continue;
                 }
-                // Debug.Log($"Spawning visual for {spawn.Definition.name} at {coord}");
 
                 var root = new GameObject($"{spawn.Definition.name} {coord}");
                 root.transform.SetParent(transform, false);
@@ -198,7 +199,5 @@ namespace UnholyTrinity.Managers
 
         private void OnRespawned(HexCoord coord, PickupSpawn spawn) =>
             Show(coord, spawn);
-
-
     }
 }

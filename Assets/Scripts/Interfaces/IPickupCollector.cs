@@ -1,4 +1,4 @@
-namespace UnholyTrinity.Pickups
+namespace UnholyTrinity.Interfaces
 {
     /// <summary>
     /// Anything that can collect pickups. Effects look for the capability interfaces they need

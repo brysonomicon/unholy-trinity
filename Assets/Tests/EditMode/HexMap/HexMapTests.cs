@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+using UnholyTrinity.Hex.Interfaces;
 using UnholyTrinity.Pickups;
+using UnholyTrinity.Players;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -9,6 +11,7 @@ namespace UnholyTrinity.Hex.Tests
 {
     public class HexMapTests
     {
+
         [Test]
         public void OffMapAndWalls_AreNotWalkable_AndBlockShots()
         {
@@ -260,8 +263,8 @@ namespace UnholyTrinity.Hex.Tests
             map.SetTile(startTile);
             map.SetTile(endTile);
 
-            GameObject p1 = new GameObject();
-            GameObject p2 = new GameObject();
+            IMovable p1 = new GameObject().AddComponent<Player>();
+            IMovable p2 = new GameObject().AddComponent<Player>();
 
             // Check no collisions on no item in tile
             Assert.IsFalse(startTile.HasCollision);
@@ -275,7 +278,7 @@ namespace UnholyTrinity.Hex.Tests
             Assert.IsTrue(map.Collisions.Contains(startTile));
             var collidedObjects = map.Collisions
                 .Where(tile => tile == startTile)
-                .SelectMany(tile => tile.Contains).ToList();
+                .SelectMany(tile => tile.StandingOn).ToList();
 
             Assert.IsTrue(collidedObjects.Contains(p1) &&
                           collidedObjects.Contains(p2));

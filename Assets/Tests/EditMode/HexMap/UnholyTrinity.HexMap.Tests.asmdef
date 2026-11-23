@@ -5,7 +5,9 @@
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "UnholyTrinity.HexMap",
-        "UnholyTrinity.Pickups"
+        "UnholyTrinity.Pickups",
+        "UnholyTrinity.Interfaces",
+        "UnholyTrinity.Players"
     ],
     "includePlatforms": [
         "Editor"

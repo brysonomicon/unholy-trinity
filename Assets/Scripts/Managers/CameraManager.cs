@@ -1,3 +1,4 @@
+using System;
 using UnholyTrinity.Helpers;
 using Nrjwolf.Tools.AttachAttributes;
 using UnholyTrinity.Managers;
@@ -13,8 +14,6 @@ namespace UnholyTrinity.Camera
     /// Resolution phase -> the impartial center camera
     public class CameraManager : Singleton<CameraManager>
     {
-        private GameManager gm;
-
         [SerializeField] [GetComponent]
         private CinemachineCamera resolutionCamera;
 
@@ -24,9 +23,8 @@ namespace UnholyTrinity.Camera
 
         private const int IdlePriority = 0;
 
-        private const int
-            OverviewPriority =
-                1; // center cam's resting priority, so something is always live
+        // center cam's resting priority, so something is always live
+        private const int OverviewPriority = 1;
 
         private const int ActivePriority = 10;
 
@@ -38,19 +36,24 @@ namespace UnholyTrinity.Camera
         protected override void Awake()
         {
             base.Awake();
-            TurnManager.NewPhaseEvent += OnPhaseChanged;
-            GameManager.NewTurnEvent += OnNewTurn;
             toggleCloseViewAction.performed += OnToggleInput;
             toggleCloseViewAction.Enable();
             resolutionCamera.Priority = OverviewPriority;
         }
 
-        private void Start()
+        private void OnEnable()
         {
-            gm = GameManager.Instance;
+            TurnManager.NewPhaseEvent += OnPhaseChanged;
+            GameManager.NewTurnEvent += OnNewTurn;
+            Player.PlayerSpawned += OnPlayerSpawned;
         }
 
-        public void RegisterPlayerTracked(Transform p, float weight,
+        private void OnPlayerSpawned(Player player)
+        {
+            RegisterPlayerTracked(player.transform, 1, 1);
+        }
+
+        private void RegisterPlayerTracked(Transform p, float weight,
             float radius)
         {
             var targetGroup =
@@ -62,6 +65,7 @@ namespace UnholyTrinity.Camera
         {
             TurnManager.NewPhaseEvent -= OnPhaseChanged;
             GameManager.NewTurnEvent -= OnNewTurn;
+            Player.PlayerSpawned -= OnPlayerSpawned;
             toggleCloseViewAction.performed -= OnToggleInput;
             toggleCloseViewAction.Disable();
         }

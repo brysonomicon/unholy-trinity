@@ -1,4 +1,5 @@
 using UnholyTrinity.Hex;
+using UnholyTrinity.Hex.Interfaces;
 using UnityEngine;
 
 namespace UnholyTrinity.Weapons
@@ -14,6 +15,11 @@ namespace UnholyTrinity.Weapons
         protected override bool IsInRange(HexCoord origin, HexCoord target)
         {
             return origin.DistanceTo(target) <= range;
+        }
+
+        public override void Fire(IMovable shooter, IAimer aimer)
+        {
+            throw new System.NotImplementedException();
         }
 
         public override int GetDamage(AimTile aimTile)

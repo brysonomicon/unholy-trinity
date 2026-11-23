@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace UnholyTrinity.Managers
+namespace UnholyTrinity.Helpers
 {
     [CreateAssetMenu(fileName = "NewTurnManager",
         menuName = "Managers/TurnManager")]
@@ -20,7 +20,6 @@ namespace UnholyTrinity.Managers
         public float TickDuration { get; private set; } = 2;
 
         public TurnPhase CurrentPhase => _turnPhase.Peek();
-        public bool IsPlayerTurn => CurrentPhase != TurnPhase.Resolution;
 
         private readonly Queue<TurnPhase> _turnPhase = new(new List<TurnPhase>
         {
@@ -53,7 +52,6 @@ namespace UnholyTrinity.Managers
         {
             TurnPhase previous = _turnPhase.Dequeue();
             _turnPhase.Enqueue(previous);
-            Debug.Log($"Going from {previous} to {CurrentPhase}");
             NewPhaseEvent?.Invoke(CurrentPhase);
         }
 

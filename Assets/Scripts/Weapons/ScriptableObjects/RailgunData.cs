@@ -1,22 +1,29 @@
+using System;
+using System.Collections.Generic;
+using UnholyTrinity.Hex.Interfaces;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace UnholyTrinity.Weapons
 {
-    [CreateAssetMenu(fileName = "RailgunData", menuName = "Unholy Trinity/RailgunData")]
+    [CreateAssetMenu(fileName = "RailgunData",
+        menuName = "Unholy Trinity/RailgunData")]
     public class RailgunData : WeaponData
     {
-        [SerializeField][Min(0)] private int damage = 80;
+        public static event Action<IMovable, WeaponData, IAimer> BeamFired;
+
+        [SerializeField] [Min(0)] private int damage = 80;
+
+        public override void Fire(IMovable shooter, IAimer aimer)
+        {
+            BeamFired?.Invoke(shooter, this, aimer);
+        }
 
         public override int GetDamage(AimTile aimTile)
         {
             bool shotHit = Random.value <= aimTile.Falloff;
 
-            if (shotHit)
-            {
-                return damage;
-            }
-
-            return 0;
+            return shotHit ? damage : 0;
         }
     }
 }

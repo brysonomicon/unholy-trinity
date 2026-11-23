@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using UnholyTrinity.Interfaces;
 using UnholyTrinity.Pickups;
 using UnityEngine;
 

@@ -1,12 +1,11 @@
-using UnholyTrinity.Hex;
+using UnholyTrinity.Interfaces;
 using UnholyTrinity.Pickups;
-using UnholyTrinity.Players;
 
-namespace UnholyTrinity.Tiles
+namespace UnholyTrinity.Hex
 {
     // what a hex does to a unit that enters it or stops on it. resolution (GameManager) runs these on the
     // real player and the plan forecast (Player) runs them on a copy.
-    // pickups is null when the scene has none
+    // pickups are null when the scene has none
     public static class TileEffects
     {
         // runs when a unit steps into coord: its health tile, then its pickup, then its portal.
