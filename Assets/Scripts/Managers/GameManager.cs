@@ -30,7 +30,7 @@ namespace UnholyTrinity.Managers
         [SerializeField] private TurnManager turnManager = TurnManager.Instance;
 
         // second between ticks so resolution can be watched
-        private float TickDuration => turnManager.TickDuration;
+        public float TickDuration => turnManager.TickDuration;
 
         [MinValue(0.1f)] [MaxValue(nameof(TickDuration))]
         private float shootDuration;
