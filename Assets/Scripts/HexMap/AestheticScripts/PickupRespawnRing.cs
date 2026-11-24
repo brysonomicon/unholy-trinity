@@ -8,31 +8,40 @@ namespace UnholyTrinity.Hex
     /// Segmented ring that shows progress to pickup respawn.
     /// </summary>
     public class PickupRespawnRing : MonoBehaviour
+    {
+        [SerializeField] private Renderer ring;
+        [SerializeField, Tooltip("Above this many ticks we share segments.")]
+        private int maxSegments = 24;
+        // private Renderer[] segments = new Renderer[24];
+        [SerializeField]
+        private Renderer innerRing;
+        [SerializeField] private Material innerLitMaterial;
+        [SerializeField] private Material innerUnlitMaterial;
+        private static readonly int SegmentsId = Shader.PropertyToID("_Segments");
+        private static readonly int LitId = Shader.PropertyToID("_Lit");
+        private MaterialPropertyBlock mpb;
+
+        private void Awake()
         {
-            [SerializeField, Tooltip("Clockwise from 12.)")]
-            private Renderer[] segments = new Renderer[12];
+            if (ring == null)
+            {
+                Debug.LogError($"{nameof(PickupRespawnRing)}: ring not assigned.", this);
+                enabled = false;
+            }
+        }
 
-            [SerializeField]
-            private Renderer innerRing = new Renderer();
-            [SerializeField] private Material litMaterial;
-            [SerializeField] private Material unlitMaterial;
-            [SerializeField] private Material innerLitMaterial;
-            [SerializeField] private Material innerUnlitMaterial;
-
-        public void Show (PickupSpawn spawn)
+        public void Show(PickupSpawn spawn)
         {
             int total = spawn.Definition.RespawnTicks;
-            float progress = spawn.IsAvailable ? 1f : (float)(total-spawn.TicksUntilRespawn) / total;
-            int lit = Mathf.RoundToInt(progress * segments.Length);
-            for (int i = 0; i < segments.Length; i++)
-            {
-                if (segments[i] == null)
-                {
-                    Debug.LogWarning($"PickupRespawnRing {name} has no segment at index {i}");
-                    continue;
-                }
-                segments[i].sharedMaterial = i < lit ? litMaterial : unlitMaterial;
-            }
+            int done = spawn.IsAvailable ? total : total - spawn.TicksUntilRespawn;
+            int segs = Mathf.Min(total, maxSegments);
+
+            mpb ??= new MaterialPropertyBlock();
+            ring.GetPropertyBlock(mpb);
+            mpb.SetFloat(SegmentsId, segs);
+            mpb.SetFloat(LitId, (float)done / total * segs);
+            ring.SetPropertyBlock(mpb);
+
             if (innerRing != null)
             {
                 innerRing.sharedMaterial = spawn.IsAvailable ? innerLitMaterial : innerUnlitMaterial;

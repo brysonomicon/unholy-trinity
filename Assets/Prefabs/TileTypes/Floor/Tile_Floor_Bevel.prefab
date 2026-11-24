@@ -84,6 +84,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 97391341ca8d2034db2ec5bcedbbd7c2, type: 2}
+    - target: {fileID: -5754084199372789682, guid: 7b780ad61ab93d84794b80bf17f255e1, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 57681376760324510, guid: 62107f4cc53501c47a1738f88f257b52, type: 3}
     - target: {fileID: 919132149155446097, guid: 7b780ad61ab93d84794b80bf17f255e1, type: 3}
       propertyPath: m_Name
       value: BeveledFloor

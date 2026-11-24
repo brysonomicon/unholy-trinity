@@ -23,8 +23,8 @@ namespace UnholyTrinity.Hex
         [SerializeField, Tooltip("Invoked with the boost strength, e.g. to scale particle emission or animation speed.")]
         private UnityEvent<int> onStrength = new();
 
-        static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
-        static readonly int ColorId = Shader.PropertyToID("_Color");
+        private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+        private static readonly int ColorId = Shader.PropertyToID("_Color");
         private static MaterialPropertyBlock _propertyBlock;
 
         public void Configure(HexTile tile, HexLayout layout)

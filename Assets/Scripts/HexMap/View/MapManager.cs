@@ -60,6 +60,9 @@ public class MapManager : Singleton<MapManager>
     public bool TryGetPortalGroup(HexCoord coord, out int group) =>
         _portalGroups.TryGetValue(coord, out group);
 
+    /// <summary>Returns the active style for a tile.</summary>
+    public HexTileStyle ActiveStyle => ResolveStyle();
+
     protected override void Awake()
     {
         base.Awake();
