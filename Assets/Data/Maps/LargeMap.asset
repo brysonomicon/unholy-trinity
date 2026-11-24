@@ -17862,7 +17862,7 @@ MonoBehaviour:
     Pickup:
       Pickup: {fileID: 0}
     Wall:
-      Kind: 0
+      Kind: 1
       Damage: 0
       DamageMode: 0
     Health:
@@ -17886,7 +17886,7 @@ MonoBehaviour:
     Pickup:
       Pickup: {fileID: 0}
     Wall:
-      Kind: 0
+      Kind: 1
       Damage: 0
       DamageMode: 0
     Health:
@@ -17910,7 +17910,7 @@ MonoBehaviour:
     Pickup:
       Pickup: {fileID: 0}
     Wall:
-      Kind: 0
+      Kind: 1
       Damage: 0
       DamageMode: 0
     Health:
@@ -17934,7 +17934,7 @@ MonoBehaviour:
     Pickup:
       Pickup: {fileID: 0}
     Wall:
-      Kind: 0
+      Kind: 1
       Damage: 0
       DamageMode: 0
     Health:
@@ -17958,7 +17958,7 @@ MonoBehaviour:
     Pickup:
       Pickup: {fileID: 0}
     Wall:
-      Kind: 0
+      Kind: 1
       Damage: 0
       DamageMode: 0
     Health:
@@ -17982,7 +17982,7 @@ MonoBehaviour:
     Pickup:
       Pickup: {fileID: 0}
     Wall:
-      Kind: 0
+      Kind: 1
       Damage: 0
       DamageMode: 0
     Health:
@@ -18246,7 +18246,7 @@ MonoBehaviour:
     Pickup:
       Pickup: {fileID: 0}
     Wall:
-      Kind: 0
+      Kind: 1
       Damage: 0
       DamageMode: 0
     Health:
@@ -18270,7 +18270,7 @@ MonoBehaviour:
     Pickup:
       Pickup: {fileID: 0}
     Wall:
-      Kind: 0
+      Kind: 1
       Damage: 0
       DamageMode: 0
     Health:
@@ -18294,7 +18294,7 @@ MonoBehaviour:
     Pickup:
       Pickup: {fileID: 0}
     Wall:
-      Kind: 0
+      Kind: 1
       Damage: 0
       DamageMode: 0
     Health:
@@ -18318,7 +18318,7 @@ MonoBehaviour:
     Pickup:
       Pickup: {fileID: 0}
     Wall:
-      Kind: 0
+      Kind: 1
       Damage: 0
       DamageMode: 0
     Health:
@@ -18342,7 +18342,7 @@ MonoBehaviour:
     Pickup:
       Pickup: {fileID: 0}
     Wall:
-      Kind: 0
+      Kind: 1
       Damage: 0
       DamageMode: 0
     Health:
@@ -18366,7 +18366,7 @@ MonoBehaviour:
     Pickup:
       Pickup: {fileID: 0}
     Wall:
-      Kind: 0
+      Kind: 1
       Damage: 0
       DamageMode: 0
     Health:

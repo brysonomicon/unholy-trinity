@@ -30,7 +30,7 @@ namespace UnholyTrinity.Managers
         [SerializeField] private TurnManager turnManager = TurnManager.Instance;
 
         // second between ticks so resolution can be watched
-        private float TickDuration => turnManager.TickDuration;
+        public float TickDuration => turnManager.TickDuration;
 
         [MinValue(0.1f)] [MaxValue(nameof(TickDuration))]
         private float shootDuration;
@@ -71,19 +71,19 @@ namespace UnholyTrinity.Managers
         public Player CurrentPlayer =>
             turnManager.CurrentPhase switch
             {
-                TurnPhase.PlayerOne => _players.First(),
-                TurnPhase.PlayerTwo => _players.Last(),
+                TurnPhase.PlayerOne  => _players.First(),
+                TurnPhase.PlayerTwo  => _players.Last(),
                 TurnPhase.Resolution => null,
-                _ => throw new ArgumentOutOfRangeException()
+                _                    => throw new ArgumentOutOfRangeException()
             };
 
         public Player OtherPlayer =>
             turnManager.CurrentPhase switch
             {
-                TurnPhase.PlayerOne => _players.Last(),
-                TurnPhase.PlayerTwo => _players.First(),
+                TurnPhase.PlayerOne  => _players.Last(),
+                TurnPhase.PlayerTwo  => _players.First(),
                 TurnPhase.Resolution => null,
-                _ => throw new ArgumentOutOfRangeException()
+                _                    => throw new ArgumentOutOfRangeException()
             };
 
         // false until the spawner has registered every player
@@ -171,7 +171,7 @@ namespace UnholyTrinity.Managers
         // within this turn's lanes
         private IEnumerator ResolveTick(int tickIndex)
         {
-            // shot -> aim -> move -> LG damage so that LG can be applied according to 
+            // shot -> aim -> move -> LG damage so that LG can be applied according to
             // opponent move path relative to shooter aim cone
 
             #region shoot phase
@@ -201,7 +201,10 @@ namespace UnholyTrinity.Managers
             // respawns come before anyone moves, so a pickup that comes back this tick can be
             // collected this tick. RespawnTicks = 1 means a pickup collected on tick N is
             // available again on tick N + 1
-            PickupManager?.AdvanceTicks(1);
+            if (PickupManager != null)
+            {
+                PickupManager.AdvanceTicks(1);
+            }
 
             HashSet<MoveData> movingObjects = new();
 
@@ -354,18 +357,18 @@ namespace UnholyTrinity.Managers
                  step++)
             {
                 rocket.StepForward();
-                shouldDetonate = rocket.HasArrived || IsDirectHit(shooter, rocket);
-                
+                shouldDetonate =
+                    rocket.HasArrived || IsDirectHit(shooter, rocket);
+
                 if (shouldDetonate)
                 {
                     DetonateRocket(shooter, rocket);
                 }
 
-                yield return (shouldDetonate ? 0 : rocket.Data.Speed - (step + 1),
+                yield return (
+                    shouldDetonate ? 0 : rocket.Data.Speed - (step + 1),
                     rocket.Coord);
             }
-
-           
         }
 
         private bool IsDirectHit(Player shooter, Rocket rocket)
@@ -455,7 +458,7 @@ namespace UnholyTrinity.Managers
                 StartCoroutine(ResolutionRoutine());
             }
             else
-            { 
+            {
                 NewTurnEvent?.Invoke(newPhase == TurnPhase.PlayerOne
                     ? _players.First()
                     : _players.Last());

@@ -1,0 +1,61 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Skybox_TitleSky_Mat
+  m_Shader: {fileID: 4800000, guid: db0c51bf680bbce4694e3f4d53bd2cb3, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _AxisTilt: 32.6
+    - _BigStarBrightness: 3
+    - _BigStarChance: 0.08
+    - _BigStarDensity: 12.3
+    - _BigStarSize: 0.12
+    - _Exposure: 1
+    - _GlowFalloff: 1.5
+    - _GlowHeight: 0.289
+    - _GroundBlend: 0.114
+    - _HorizonOffset: -0.236
+    - _MinStarPixels: 1.5
+    - _NebulaContrast: 1.5
+    - _NebulaIntensity: 0
+    - _NebulaScale: 2.5
+    - _NebulaTilt: 60
+    - _NebulaWidth: 0.35
+    - _RotationOffset: 2
+    - _RotationSpeed: 0.2
+    - _StarChance: 0.15
+    - _StarDensity: 28
+    - _StarHorizonFade: 0.15
+    - _StarSize: 0.06
+    - _StarSoftness: 0.3
+    - _TwinkleAmount: 0.744
+    - _TwinkleSpeed: 1.52
+    m_Colors:
+    - _GroundColor: {r: 0, g: 0, b: 0, a: 1}
+    - _HorizonColor: {r: 0.1697944, g: 0.16981131, b: 0.11454254, a: 1}
+    - _NebulaColor: {r: 0.31132078, g: 0.27073646, b: 0.1042631, a: 1}
+    - _StarColor: {r: 1.5, g: 1.6, b: 1.4, a: 1}
+    - _StarColorAlt: {r: 2.1361256, g: 1.6238714, b: 0, a: 1}
+    - _ZenithColor: {r: 0.007843138, g: 0.006953433, b: 0.003921569, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

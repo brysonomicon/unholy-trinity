@@ -1,0 +1,162 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51fdedfd7b4d1f844bdbf10b899aa49f, type: 3}
+  m_Name: FmodEvents
+  m_EditorClassIdentifier: Pulsar.Audio::UnholyTrinity.Audio.FmodEvents
+  <Announcer>k__BackingField: {fileID: 11400000, guid: 5fd68258d842a3849b75fe20ba3a0505, type: 2}
+  <BGM>k__BackingField:
+    Guid:
+      Data1: 1261271908
+      Data2: 1197294136
+      Data3: -157580884
+      Data4: 1294007128
+    Path: event:/Level/BGM
+  <HealthHeavy>k__BackingField:
+    Guid:
+      Data1: -604930101
+      Data2: 1129596621
+      Data3: -1786791506
+      Data4: 280803888
+    Path: event:/Player/Hit/HealthHeavy
+  <HealthLight>k__BackingField:
+    Guid:
+      Data1: 1508826887
+      Data2: 1137647717
+      Data3: 722957740
+      Data4: -370983958
+    Path: event:/Player/Hit/HealthLight
+  <StepWet>k__BackingField:
+    Guid:
+      Data1: 627728751
+      Data2: 1078683098
+      Data3: 2027288995
+      Data4: 551689365
+    Path: event:/Player/Step/Wet
+  <StepDry>k__BackingField:
+    Guid:
+      Data1: 291237024
+      Data2: 1170606175
+      Data3: 1091966876
+      Data4: -1770904
+    Path: event:/Player/Step/Dry
+  <PickupArmor>k__BackingField:
+    Guid:
+      Data1: -307640127
+      Data2: 1251701518
+      Data3: 2086892479
+      Data4: -789027539
+    Path: event:/SFX/Pickup/Armor
+  <PickupHealth>k__BackingField:
+    Guid:
+      Data1: -1042853716
+      Data2: 1089787656
+      Data3: -1081054080
+      Data4: 306845087
+    Path: event:/SFX/Pickup/Health
+  <PickupWeapon>k__BackingField:
+    Guid:
+      Data1: -1074119271
+      Data2: 1163774647
+      Data3: -2001386095
+      Data4: 1524602895
+    Path: event:/SFX/Pickup/Weapon
+  <Gib>k__BackingField:
+    Guid:
+      Data1: -691966624
+      Data2: 1124616937
+      Data3: -1796991580
+      Data4: 677889207
+    Path: event:/SFX/Gib
+  <RocketMove>k__BackingField:
+    Guid:
+      Data1: 923240155
+      Data2: 1312675492
+      Data3: -999366756
+      Data4: -1729159842
+    Path: event:/SFX/Rocket/Move
+  <RocketExplode>k__BackingField:
+    Guid:
+      Data1: 539855809
+      Data2: 1116060948
+      Data3: 877387419
+      Data4: -720714827
+    Path: event:/SFX/Rocket/Explode
+  <ButtonClick>k__BackingField:
+    Guid:
+      Data1: 186902088
+      Data2: 1172070158
+      Data3: 1327219083
+      Data4: 1148318218
+    Path: event:/UI/Button/Click
+  <ButtonHover>k__BackingField:
+    Guid:
+      Data1: 259815624
+      Data2: 1133619721
+      Data3: 765318809
+      Data4: -165112464
+    Path: event:/UI/Button/Hover
+  <GhostCollect>k__BackingField:
+    Guid:
+      Data1: -774008266
+      Data2: 1236509100
+      Data3: -1009597790
+      Data4: 1996876947
+    Path: event:/UI/Ghost/Collect
+  <GhostProject>k__BackingField:
+    Guid:
+      Data1: 1549363642
+      Data2: 1158939206
+      Data3: -1751194953
+      Data4: -1423970027
+    Path: event:/UI/Ghost/Project
+  <GhostRecall>k__BackingField:
+    Guid:
+      Data1: -41954305
+      Data2: 1154386353
+      Data3: 272865468
+      Data4: -1026929528
+    Path: event:/UI/Ghost/Recall
+  <AttackGauntlet>k__BackingField:
+    Guid:
+      Data1: -666001606
+      Data2: 1094064455
+      Data3: -1377538626
+      Data4: 234846213
+    Path: event:/Weapons/Attack/Gauntlet
+  <AttackLightning>k__BackingField:
+    Guid:
+      Data1: -172058232
+      Data2: 1107349857
+      Data3: 1874899642
+      Data4: 1426245521
+    Path: event:/Weapons/Attack/Lightning
+  <AttackRail>k__BackingField:
+    Guid:
+      Data1: 1118911049
+      Data2: 1158934081
+      Data3: -1175505522
+      Data4: -451074300
+    Path: event:/Weapons/Attack/Rail
+  <AttackRocket>k__BackingField:
+    Guid:
+      Data1: 504072228
+      Data2: 1187686665
+      Data3: -1673529685
+      Data4: 2144497263
+    Path: event:/Weapons/Attack/Rocket
+  <WeaponSwitch>k__BackingField:
+    Guid:
+      Data1: -1785300982
+      Data2: 1264557791
+      Data3: -1706280548
+      Data4: -189658982
+    Path: event:/Weapons/Switch
