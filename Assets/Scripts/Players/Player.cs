@@ -13,7 +13,8 @@ using UnityEngine;
 
 namespace UnholyTrinity.Players
 {
-    public partial class Player : MonoBehaviour, IVitals, IWeaponCollector, IAimer
+    public partial class Player : MonoBehaviour, IVitals, IWeaponCollector,
+        IAimer
     {
         public static event Action<Player> PlayerSpawned;
 
@@ -225,7 +226,8 @@ namespace UnholyTrinity.Players
 
             if (!mapManager.Map.IsWalkable(Coord))
             {
-                throw new ArgumentException($"{name} is on non walkable coord {Coord}");
+                throw new ArgumentException(
+                    $"{name} is on non walkable coord {Coord}");
             }
         }
 
@@ -424,24 +426,9 @@ namespace UnholyTrinity.Players
                 return;
             }
 
-            // ensures the correct Fire() method is used when rocketlauncher equipped
-            if (weapon.Data.RequiresTarget)
-            {
-                PlanShot(weapon, SelectedTile.Value);
-                return;
-            }
-
             PlanningAction.PlannedShot = weapon;
             PlanningAction.PlannedTarget = null;
             PlanningAction.Shoot = () => Fire(weapon);
-            ProjectPlan();
-        }
-
-        private void PlanShot(Weapon weapon, HexCoord target)
-        {
-            PlanningAction.PlannedShot = weapon;
-            PlanningAction.PlannedTarget = target;
-            PlanningAction.Shoot = () => Fire(weapon, target);
             ProjectPlan();
         }
 
@@ -564,12 +551,14 @@ namespace UnholyTrinity.Players
             {
                 Weapon plannedShot = plannedActions[i].PlannedShot;
 
-                if (plannedShot != null)
+                if (plannedShot == null)
                 {
-                    int shotTick = TickData.CurrentTick + 1 + i;
-                    plannedNextFireTick =
-                        shotTick + 1 + plannedShot.Data.Cooldown;
+                    continue;
                 }
+
+                int shotTick = TickData.CurrentTick + 1 + i;
+                plannedNextFireTick =
+                    shotTick + 1 + plannedShot.Data.Cooldown;
             }
 
             return plannedNextFireTick;
@@ -599,8 +588,6 @@ namespace UnholyTrinity.Players
             ShowLiveAim();
         }
 
-        // for rail and LG
-        //TODO: Overload this in the WeaponData
         private void Fire(Weapon weapon)
         {
             if (!CanFire(weapon))
@@ -608,15 +595,10 @@ namespace UnholyTrinity.Players
                 return;
             }
 
-            weapon.Fire();
-            nextFireTick = TickData.CurrentTick + 1 + weapon.Data.Cooldown;
-            weapon.Data.Fire(this, this);
-        }
-
-        // for rocket launcher
-        private void Fire(Weapon weapon, HexCoord target)
-        {
-            weapon.Data.Fire(this, this);
+            if (weapon.Fire(this, this))
+            {
+                nextFireTick = TickData.CurrentTick + 1 + weapon.Data.Cooldown;
+            }
         }
 
         // weapon cooldowns are global, no weapon can be fired until the cooldown of the last

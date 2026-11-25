@@ -68,7 +68,14 @@ namespace UnholyTrinity.Weapons
             return aimTiles;
         }
 
-        // needs: PLayer, is weapondata, CurrentAimDirection, can get its own aimtiles,
+        /// <summary>
+        /// Abstract fire method that uses interfaces to take in all the required data.
+        /// Not all weapons need all this data, but doing it this way means
+        /// we can have each weapon use their own logic to decide how to handle the given inputs, if at all.
+        /// </summary>
+        /// <param name="shooter">The thing shooting; gives us data like "Starting coord"</param>
+        /// <param name="aimer">The thing aiming: gives us data like "AimDirection"</param>
+        /// <returns>Did the weapon actually fire?</returns>
         public abstract bool Fire(IMovable shooter, IAimer aimer);
 
         public abstract int GetDamage(AimTile aimTile);

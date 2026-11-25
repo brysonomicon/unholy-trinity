@@ -1,4 +1,5 @@
 using System;
+using UnholyTrinity.Hex.Interfaces;
 using UnityEngine;
 
 namespace UnholyTrinity.Weapons
@@ -17,15 +18,19 @@ namespace UnholyTrinity.Weapons
             Ammo = data.PickupAmmo;
         }
 
-        public bool Fire()
+        public bool Fire(IMovable shooter, IAimer aimer)
         {
             if (!HasAmmo)
             {
                 return false;
             }
+            bool result = Data.Fire(shooter, aimer);
+            if (result)
+            {
+                Ammo--;
+            }
 
-            Ammo--;
-            return true;
+            return result;
         }
 
         public void AddAmmo(int amount)
