@@ -63,6 +63,11 @@ public class MapManager : Singleton<MapManager>
     protected override void Awake()
     {
         base.Awake();
+        // var def = SelectedMap.Definition != null ? SelectedMap.Definition : definition;
+        if (SelectedMap.Definition != null)
+        {
+            definition = SelectedMap.Definition;
+        }
         Rebuild();
     }
 
