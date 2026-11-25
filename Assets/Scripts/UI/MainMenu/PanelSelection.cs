@@ -6,7 +6,7 @@ using UnityEngine.UI;
 /// Reusable settings panel. The individual controls (VolumeSlider, ResolutionDropdown,
 /// DisplayModeDropdown) handle their own values; this only opens/closes the panel.
 /// Hosts (title screen, pause menu) wire onClosed in the Inspector to restore their own buttons.
-public class SettingsMenu : MonoBehaviour
+public class PanelSelection : MonoBehaviour
 {
     [SerializeField] Selectable firstSelected;
     [SerializeField] UnityEvent onClosed;
@@ -46,6 +46,9 @@ public class SettingsMenu : MonoBehaviour
         var fallback = lastSelected != null && lastSelected.activeInHierarchy
             ? lastSelected
             : firstSelected != null ? firstSelected.gameObject : null;
-        if (fallback != null) es.SetSelectedGameObject(fallback);
+        if (fallback != null)
+        {
+            es.SetSelectedGameObject(fallback);
+        }
     }
 }
