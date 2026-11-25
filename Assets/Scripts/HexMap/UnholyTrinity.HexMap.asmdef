@@ -5,6 +5,8 @@
         "Unity.InputSystem",
         "UnholyTrinity.Pickups",
         "UnholyTrinity.Helpers",
+        "Unity.TextMeshPro"
+        "UnholyTrinity.Helpers",
         "UnholyTrinity.Interfaces"
     ],
     "includePlatforms": [],

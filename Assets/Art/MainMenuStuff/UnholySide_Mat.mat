@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: HexStoneWall
+  m_Name: UnholySide_Mat
   m_Shader: {fileID: -6465566751694194690, guid: 0df0d430fec50764b9f36474c44ab760, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0

@@ -206,7 +206,7 @@ namespace UnholyTrinity.Players
 
                 Coord = current;
                 tickMovePath.Add(Coord);
-                SnapToCoord(Coord);
+                LerpToCoord(Coord);
                 //Otherwise, tell the system how many more steps there are,
                 //and where we currently expect to be.
                 yield return (moveSteps.Count - i - 1, current);

@@ -1,3 +1,4 @@
+using System;
 using UnholyTrinity.Helpers;
 using Nrjwolf.Tools.AttachAttributes;
 using UnholyTrinity.Managers;
@@ -8,17 +9,45 @@ using UnityEngine.InputSystem;
 
 namespace UnholyTrinity.Camera
 {
+    public enum CameraView
+    {
+        TopDown,
+        CloseThird,
+        Free,
+        Overview
+    }
+
     /// Switches Cinemachine camera priorities based on whose turn it is.
-    /// Player turn      -> that player's top-down camera (or close third if toggled)
-    /// Resolution phase -> the impartial center camera
     public class CameraManager : Singleton<CameraManager>
     {
         [SerializeField] [GetComponent]
         private CinemachineCamera resolutionCamera;
 
-        // Lets the player toggle top-down <-> close third. Delete if you handle input elsewhere.
         [SerializeField] private InputAction toggleCloseViewAction =
             new("ToggleCloseView", InputActionType.Button, "<Keyboard>/tab");
+
+        [Header("Free Cam")] [SerializeField] private FreeCamController freeCam;
+        public static event Action<CameraView> ViewChanged;
+
+        // Overview = the resolution camera, which is also what's live before the first turn starts.
+        public CameraView CurrentView =>
+            _freeCam
+                ? CameraView.Free
+                : _currentPhase == TurnPhase.Resolution ||
+                  _currentPlayerRig == null
+                    ? CameraView.Overview
+                    : _closeView
+                        ? CameraView.CloseThird
+                        : CameraView.TopDown;
+
+        private void NotifyView() => ViewChanged?.Invoke(CurrentView);
+
+        private const int
+            FreePriority =
+                20; // above ActivePriority so it overrides everything
+
+        private CinemachineCamera _freeCamera;
+        private bool _freeCam;
 
         private const int IdlePriority = 0;
 
@@ -38,6 +67,10 @@ namespace UnholyTrinity.Camera
             toggleCloseViewAction.performed += OnToggleInput;
             toggleCloseViewAction.Enable();
             resolutionCamera.Priority = OverviewPriority;
+
+            _freeCamera = freeCam.GetComponent<CinemachineCamera>();
+            _freeCamera.Priority = IdlePriority;
+            freeCam.enabled = false;
         }
 
         private void OnEnable()
@@ -78,23 +111,69 @@ namespace UnholyTrinity.Camera
             }
 
             Activate(resolutionCamera);
+            NotifyView();
         }
 
         private void OnNewTurn(Player player) => ResetAndRefresh(player);
 
         private void OnToggleInput(InputAction.CallbackContext _) =>
-            ToggleCloseView();
+            CycleView();
 
-        /// Hook a UI button to this too if you want one.
-        private void ToggleCloseView()
+        private void CycleView()
         {
-            if (_currentPhase == TurnPhase.Resolution)
+            if (_freeCam)
             {
-                return; // no toggle during resolution
+                ExitFreeCam();
+                return;
             }
 
-            _closeView = !_closeView;
-            Refresh();
+            bool canUseCloseView = _currentPhase != TurnPhase.Resolution &&
+                                   _currentPlayerRig != null;
+
+            if (canUseCloseView && !_closeView)
+            {
+                _closeView = true;
+                Refresh();
+            }
+            else
+            {
+                SetFreeCam(true);
+            }
+        }
+
+        private void ExitFreeCam()
+        {
+            _closeView = false; // the cycle restarts at top-down
+            SetFreeCam(false);
+
+            // Skip during resolution: the resolution camera is already live underneath
+            if (_currentPhase != TurnPhase.Resolution &&
+                _currentPlayerRig != null)
+            {
+                Refresh();
+            }
+        }
+
+        private void SetFreeCam(bool on)
+        {
+            _freeCam = on;
+
+            if (on)
+            {
+                // Start exactly where the view currently is, so nothing jumps.
+                Transform view = UnityEngine.Camera.main.transform;
+                freeCam.transform.SetPositionAndRotation(view.position,
+                    view.rotation);
+                freeCam.enabled = true;
+                _freeCamera.Priority = FreePriority;
+            }
+            else
+            {
+                freeCam.enabled = false;
+                _freeCamera.Priority = IdlePriority;
+            }
+
+            NotifyView();
         }
 
         private void ResetAndRefresh(Player player)
@@ -106,7 +185,10 @@ namespace UnholyTrinity.Camera
 
         private void Refresh()
         {
-            Activate(_closeView ? _currentPlayerRig.CloseThird : _currentPlayerRig.TopDown);
+            Activate(_closeView
+                ? _currentPlayerRig.CloseThird
+                : _currentPlayerRig.TopDown);
+            NotifyView();
         }
 
         private void Activate(CinemachineCamera cam)

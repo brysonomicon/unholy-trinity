@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Linq;
 using System.Collections.Generic;
 using JetBrains.Annotations;
@@ -47,6 +48,9 @@ namespace UnholyTrinity.Players
         // ticks counted for the whole game, so a cooldown can block ticks
         // in subsequent turns
         private int nextFireTick;
+        
+        private float TickDuration => gm.TickDuration;
+
 
         // this turn's plan, one UnholyAction per tick
         private readonly List<UnholyAction> plannedActions = new();
@@ -330,6 +334,38 @@ namespace UnholyTrinity.Players
             ClearForecast();
             directionCompass.Hide();
         }
+        
+        private void LerpToCoord() => LerpToCoord(Coord);
+
+        private void LerpToCoord(HexCoord coord)
+        {
+            StopAllCoroutines();
+            var desiredPose = GetPose(coord, CurrentAimDirection);
+            var currentPose = new Pose(transform.position, transform.rotation);
+            float t = gm.TickDuration/2;
+            StartCoroutine(LerpPoseOverTime(transform, currentPose , desiredPose, t));
+        }
+        IEnumerator LerpPoseOverTime(Transform targetTransform, Pose startPose, Pose endPose, float duration)
+        {
+            float elapsed = 0f;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+        
+                Pose currentPose = new Pose(
+                    Vector3.Lerp(startPose.position, endPose.position, t),
+                    Quaternion.Slerp(startPose.rotation, endPose.rotation, t)
+                    );
+                targetTransform.SetPositionAndRotation(currentPose.position, currentPose.rotation);
+        
+                yield return null;
+            }
+
+            targetTransform.SetPositionAndRotation(endPose.position, endPose.rotation);
+        }
+
 
         // resolution plays out for real from here, so the forecast and planned pickups are cleared
         private void RevealPlan()

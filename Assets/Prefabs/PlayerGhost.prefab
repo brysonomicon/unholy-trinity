@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 676944222948213224}
   - component: {fileID: 8234563929994209187}
+  - component: {fileID: 6766090077888763376}
   m_Layer: 0
   m_Name: PlayerGhost
   m_TagString: Untagged
@@ -57,6 +58,18 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
+--- !u!114 &6766090077888763376
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 399705995008798299}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22de685d770014e478e19f67582a3600, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UnholyTrinity.Players.ModelTint
 --- !u!1 &1262321624602767887
 GameObject:
   m_ObjectHideFlags: 0
@@ -224,7 +237,7 @@ PrefabInstance:
     - target: {fileID: 5866666021909216657, guid: 955de8a91f562ae4798b6964f83b48bb, type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 9100000, guid: 5f5273ad8efafa845b67f656e1b49053, type: 2}
+      objectReference: {fileID: 9100000, guid: 90a4222aa41d0ee49b0c97e363d39b36, type: 2}
     - target: {fileID: 5866666021909216657, guid: 955de8a91f562ae4798b6964f83b48bb, type: 3}
       propertyPath: m_ApplyRootMotion
       value: 0
