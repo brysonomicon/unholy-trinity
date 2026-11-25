@@ -9,17 +9,11 @@ using UnityEngine.InputSystem;
 
 namespace UnholyTrinity.Camera
 {
-    public enum CameraView
-    {
-        TopDown,
-        CloseThird,
-        Free,
-        Overview
-    }
-
     /// Switches Cinemachine camera priorities based on whose turn it is.
     public class CameraManager : Singleton<CameraManager>
     {
+        public static event Action<CameraView> ViewChanged;
+
         [SerializeField] [GetComponent]
         private CinemachineCamera resolutionCamera;
 
@@ -27,7 +21,6 @@ namespace UnholyTrinity.Camera
             new("ToggleCloseView", InputActionType.Button, "<Keyboard>/tab");
 
         [Header("Free Cam")] [SerializeField] private FreeCamController freeCam;
-        public static event Action<CameraView> ViewChanged;
 
         // Overview = the resolution camera, which is also what's live before the first turn starts.
         public CameraView CurrentView =>

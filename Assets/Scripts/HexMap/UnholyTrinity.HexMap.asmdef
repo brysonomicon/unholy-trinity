@@ -2,12 +2,11 @@
     "name": "UnholyTrinity.HexMap",
     "rootNamespace": "UnholyTrinity.Hex",
     "references": [
-        "Unity.InputSystem",
-        "UnholyTrinity.Pickups",
-        "UnholyTrinity.Helpers",
-        "Unity.TextMeshPro"
-        "UnholyTrinity.Helpers",
-        "UnholyTrinity.Interfaces"
+        "GUID:75469ad4d38634e559750d17036d5f7c",
+        "GUID:4c876c7d087a741458a6494216558d4f",
+        "GUID:6055be8ebefd69e48b49212b09b47b2f",
+        "GUID:d07f2c7eeb7646918f2211d61fe3b5f2",
+        "GUID:2ecaabce92ff20a4cb1231b2526fa697"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
