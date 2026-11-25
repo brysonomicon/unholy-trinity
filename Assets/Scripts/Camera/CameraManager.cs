@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using UnholyTrinity.Helpers;
 using Nrjwolf.Tools.AttachAttributes;
-using UnholyTrinity.Managers;
 using Unity.Cinemachine;
 using UnholyTrinity.Players;
 using UnityEngine;
