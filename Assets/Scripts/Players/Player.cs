@@ -48,7 +48,7 @@ namespace UnholyTrinity.Players
         // ticks counted for the whole game, so a cooldown can block ticks
         // in subsequent turns
         private int nextFireTick;
-        
+
         private float TickDuration => gm.TickDuration;
 
 
@@ -334,7 +334,7 @@ namespace UnholyTrinity.Players
             ClearForecast();
             directionCompass.Hide();
         }
-        
+
         private void LerpToCoord() => LerpToCoord(Coord);
 
         private void LerpToCoord(HexCoord coord)
@@ -342,10 +342,13 @@ namespace UnholyTrinity.Players
             StopAllCoroutines();
             var desiredPose = GetPose(coord, CurrentAimDirection);
             var currentPose = new Pose(transform.position, transform.rotation);
-            float t = gm.TickDuration/2;
-            StartCoroutine(LerpPoseOverTime(transform, currentPose , desiredPose, t));
+            float t = gm.TickDuration / 2;
+            StartCoroutine(LerpPoseOverTime(transform, currentPose, desiredPose,
+                t));
         }
-        IEnumerator LerpPoseOverTime(Transform targetTransform, Pose startPose, Pose endPose, float duration)
+
+        IEnumerator LerpPoseOverTime(Transform targetTransform, Pose startPose,
+            Pose endPose, float duration)
         {
             float elapsed = 0f;
 
@@ -353,17 +356,19 @@ namespace UnholyTrinity.Players
             {
                 elapsed += Time.deltaTime;
                 float t = Mathf.Clamp01(elapsed / duration);
-        
+
                 Pose currentPose = new Pose(
                     Vector3.Lerp(startPose.position, endPose.position, t),
                     Quaternion.Slerp(startPose.rotation, endPose.rotation, t)
-                    );
-                targetTransform.SetPositionAndRotation(currentPose.position, currentPose.rotation);
-        
+                );
+                targetTransform.SetPositionAndRotation(currentPose.position,
+                    currentPose.rotation);
+
                 yield return null;
             }
 
-            targetTransform.SetPositionAndRotation(endPose.position, endPose.rotation);
+            targetTransform.SetPositionAndRotation(endPose.position,
+                endPose.rotation);
         }
 
 
