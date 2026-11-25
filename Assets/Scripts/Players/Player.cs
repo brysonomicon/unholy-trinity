@@ -21,7 +21,6 @@ namespace UnholyTrinity.Players
 
         #region Fields
 
-        [SerializeField] private TurnManager turnManager;
         [SerializeField] [GetComponent] private PlayerAnimationDriver driver;
 
         // unserialized, passed to player by spawner instead
@@ -48,9 +47,6 @@ namespace UnholyTrinity.Players
         // ticks counted for the whole game, so a cooldown can block ticks
         // in subsequent turns
         private int nextFireTick;
-
-        private float TickDuration => gm.TickDuration;
-
 
         // this turn's plan, one UnholyAction per tick
         private readonly List<UnholyAction> plannedActions = new();
@@ -149,6 +145,8 @@ namespace UnholyTrinity.Players
 
         private bool HasTargetInShotCone => SelectedTile != null &&
                                             IsInShotCone(SelectedTile.Value);
+
+        public TurnPhase turnPhase;
 
         #endregion
 
@@ -342,7 +340,7 @@ namespace UnholyTrinity.Players
             StopAllCoroutines();
             var desiredPose = GetPose(coord, CurrentAimDirection);
             var currentPose = new Pose(transform.position, transform.rotation);
-            float t = gm.TickDuration / 2;
+            float t = TickData.TickDuration / 2;
             StartCoroutine(LerpPoseOverTime(transform, currentPose, desiredPose,
                 t));
         }
@@ -810,27 +808,21 @@ namespace UnholyTrinity.Players
 
         #region Event Handlers
 
-        private void OnNewTurn(Player obj)
+        // player two gets no new turn event on turn end, so resolution
+        // hides the plan as well
+        private void OnNewPhase(TurnPhase newPhase)
         {
-            // [CB] This might be entirely handled by the UI manager. IDK.
-            if (obj == this)
+            if (newPhase == turnPhase)
             {
                 // Do stuff to enable actions
                 ClearPlan();
                 directionCompass.Show(mapManager.Layout);
             }
-            else
-            {
-                // Do stuff to disable actions
-                StopProjecting();
-            }
-        }
 
-        // player two gets no new turn event on turn end, so resolution
-        // hides the plan as well
-        private void OnNewPhase(TurnPhase newPhase)
-        {
-            if (newPhase == TurnPhase.Resolution)
+            // Do stuff to disable actions
+            StopProjecting();
+
+            if (turnPhase == TurnPhase.Resolution)
             {
                 RevealPlan();
             }

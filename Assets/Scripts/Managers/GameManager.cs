@@ -7,7 +7,6 @@ using NaughtyAttributes;
 using Nrjwolf.Tools.AttachAttributes;
 using UnholyTrinity.Players;
 using UnholyTrinity.Weapons;
-using UnholyTrinity.Weapons.Pickups;
 using UnholyTrinity.Hex;
 using UnholyTrinity.Helpers;
 using UnityEngine;
@@ -20,13 +19,10 @@ namespace UnholyTrinity.Managers
         #region Fields
 
         public static event Action<int> NewRoundEvent;
-        public static event Action<Player> NewTurnEvent;
 
         [SerializeField] private int maxPlayers = 2;
 
         [SerializeField] [GetComponent] private MovementManager moveManager;
-
-        [SerializeField] private TurnManager turnManager = TurnManager.Instance;
 
         // second between ticks so resolution can be watched
         private float TickDuration => TickData.TickDuration;
@@ -62,7 +58,7 @@ namespace UnholyTrinity.Managers
 
         [CanBeNull]
         public Player CurrentPlayer =>
-            turnManager.CurrentPhase switch
+            TurnManager.CurrentPhase switch
             {
                 TurnPhase.PlayerOne  => _players.First(),
                 TurnPhase.PlayerTwo  => _players.Last(),
@@ -71,7 +67,7 @@ namespace UnholyTrinity.Managers
             };
 
         public Player OtherPlayer =>
-            turnManager.CurrentPhase switch
+            TurnManager.CurrentPhase switch
             {
                 TurnPhase.PlayerOne  => _players.Last(),
                 TurnPhase.PlayerTwo  => _players.First(),
@@ -116,7 +112,7 @@ namespace UnholyTrinity.Managers
             TickData.SetCurrentTick(0);
             _players.Clear();
             _beams.Clear();
-            turnManager.ResetPhases();
+            TurnManager.Reset();
             PlayerSpawner.Instance.SpawnPlayers();
         }
 
@@ -138,7 +134,7 @@ namespace UnholyTrinity.Managers
             //Start the game when we get enough players.
             if (_players.Count == maxPlayers)
             {
-                NewTurnEvent?.Invoke(_players.First());
+                TurnManager.StartGame();
             }
         }
 
@@ -158,7 +154,7 @@ namespace UnholyTrinity.Managers
 
             Round++;
 
-            TurnManager.Instance.EndTurn();
+            TurnManager.EndTurn();
             NewRoundEvent?.Invoke(Round);
         }
 
@@ -359,12 +355,6 @@ namespace UnholyTrinity.Managers
             if (newPhase == TurnPhase.Resolution)
             {
                 StartCoroutine(ResolutionRoutine());
-            }
-            else
-            {
-                NewTurnEvent?.Invoke(newPhase == TurnPhase.PlayerOne
-                    ? _players.First()
-                    : _players.Last());
             }
         }
 

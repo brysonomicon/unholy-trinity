@@ -33,6 +33,12 @@ namespace UnholyTrinity.Managers
             for (int i = 0; i < spawnPoints.Length; i++)
             {
                 Player spawnedPlayer = Instantiate(playerPrefab);
+                spawnedPlayer.turnPhase = i switch
+                {
+                    0 => TurnPhase.PlayerOne,
+                    1 => TurnPhase.PlayerTwo,
+                    _ => throw new ArgumentException("Need additional turn phases for more players!")
+                };
                 spawnedPlayer.name = $"Player {i + 1}";
                 spawnedPlayer.Initialize(mapManager, spawnPoints[i].Coord,
                     spawnPoints[i].Aim);
