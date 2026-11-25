@@ -12,6 +12,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: Tile_Wall_Bouncy
       objectReference: {fileID: 0}
+    - target: {fileID: 2847749392187958909, guid: e1099649f8d11a24d9933f92e59710d8, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -1.923
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021169278566620434, guid: e1099649f8d11a24d9933f92e59710d8, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 639d3fcf9a11937438d0cda27edd2eb2, type: 2}
     - target: {fileID: 7180584419166922632, guid: e1099649f8d11a24d9933f92e59710d8, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

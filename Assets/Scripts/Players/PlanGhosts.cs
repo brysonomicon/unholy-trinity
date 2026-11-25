@@ -25,6 +25,17 @@ namespace UnholyTrinity.Players
 
         [SerializeField, Tooltip("Style for the cones of ghosts that fire. Falls back to the style Show is given.")]
         private AimPreview coneStyle;
+        
+        [Header("Ghost Look")]
+        [SerializeField] private Material ghostMaterial;
+
+        [Tooltip("One colour per decision in the turn: first ghost, second ghost, third ghost.")]
+        [SerializeField] private Color[] ghostColors =
+        {
+            new Color(1.0f, 0.15f, 0.15f, 0.35f), // red
+            new Color(0.15f, 1.0f, 0.15f, 0.35f), // green
+            new Color(0.2f, 0.4f, 1.0f, 0.35f),   // blue
+        };
 
         // a ghost and its cone are removed together, cone is null if the ghost doesn't fire
         private readonly List<(GameObject ghost, Transform cone)> ghosts = new();
@@ -39,7 +50,7 @@ namespace UnholyTrinity.Players
             {
                 GameObject ghost = Instantiate(ghostPrefab, planned.Pose.position, planned.Pose.rotation);
                 ghost.name = $"{name} Ghost {ghosts.Count + 1}";
-
+                StyleGhost(ghost, ghosts.Count);
                 // drawn on its own root rather than under the ghost so the ghost's rotation and scale
                 // don't skew the tiles
                 Transform cone = planned.Cone != null && style != null
@@ -79,6 +90,18 @@ namespace UnholyTrinity.Players
             {
                 Destroy(cone.gameObject);
             }
+        }
+        private void StyleGhost(GameObject ghost, int index)
+        {
+            ModelTint tint = ghost.GetComponentInChildren<ModelTint>();
+            if (tint == null)
+            {
+                Debug.LogWarning($"{ghost.name}: ghost prefab has no ModelTint.", ghost);
+                return;
+            }
+
+            Color color = ghostColors[index % ghostColors.Length];
+            tint.MakeGhost(ghostMaterial, color);
         }
     }
 }
