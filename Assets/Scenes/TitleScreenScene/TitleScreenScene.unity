@@ -412,11 +412,11 @@ RectTransform:
   - {fileID: 1222962091}
   m_Father: {fileID: 1936167400}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -294}
-  m_SizeDelta: {x: 310, y: 256}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 0.5, y: 0}
+  m_AnchorMax: {x: 0.5, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 310, y: 360}
+  m_Pivot: {x: 0.5, y: 0}
 --- !u!114 &132109989
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -437,7 +437,7 @@ MonoBehaviour:
   m_ChildAlignment: 1
   m_Spacing: 0
   m_ChildForceExpandWidth: 1
-  m_ChildForceExpandHeight: 1
+  m_ChildForceExpandHeight: 0
   m_ChildControlWidth: 0
   m_ChildControlHeight: 0
   m_ChildScaleWidth: 0
@@ -504,6 +504,7 @@ GameObject:
   - component: {fileID: 240488887}
   - component: {fileID: 240488886}
   - component: {fileID: 240488885}
+  - component: {fileID: 240488888}
   m_Layer: 5
   m_Name: StartButton
   m_TagString: Untagged
@@ -544,10 +545,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
   m_Navigation:
-    m_Mode: 3
+    m_Mode: 4
     m_WrapAround: 0
     m_SelectOnUp: {fileID: 0}
-    m_SelectOnDown: {fileID: 0}
+    m_SelectOnDown: {fileID: 2116995589}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
@@ -613,6 +614,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 240488883}
   m_CullTransparentMesh: 1
+--- !u!114 &240488888
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 240488883}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1232d7de191960047948a108ee89d5c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SelectOnHover
 --- !u!1 &380242817 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 97366733cf893b14e8d027790c361a27, type: 3}
@@ -1366,6 +1379,7 @@ GameObject:
   - component: {fileID: 1222962093}
   - component: {fileID: 1222962092}
   - component: {fileID: 1222962095}
+  - component: {fileID: 1222962096}
   m_Layer: 5
   m_Name: QuitButton
   m_TagString: Untagged
@@ -1406,9 +1420,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
   m_Navigation:
-    m_Mode: 3
+    m_Mode: 4
     m_WrapAround: 0
-    m_SelectOnUp: {fileID: 0}
+    m_SelectOnUp: {fileID: 2116995589}
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
@@ -1499,6 +1513,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f1758bcaa4224e142abb1dba379e8527, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::QuitGame
+--- !u!114 &1222962096
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1222962090}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1232d7de191960047948a108ee89d5c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SelectOnHover
 --- !u!1 &1378864415
 GameObject:
   m_ObjectHideFlags: 0
@@ -2005,6 +2031,7 @@ GameObject:
   - component: {fileID: 2116995591}
   - component: {fileID: 2116995590}
   - component: {fileID: 2116995589}
+  - component: {fileID: 2116995592}
   m_Layer: 5
   m_Name: SettingsButton
   m_TagString: Untagged
@@ -2045,10 +2072,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
   m_Navigation:
-    m_Mode: 3
+    m_Mode: 4
     m_WrapAround: 0
-    m_SelectOnUp: {fileID: 0}
-    m_SelectOnDown: {fileID: 0}
+    m_SelectOnUp: {fileID: 240488885}
+    m_SelectOnDown: {fileID: 1222962092}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
@@ -2150,6 +2177,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2116995587}
   m_CullTransparentMesh: 1
+--- !u!114 &2116995592
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2116995587}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1232d7de191960047948a108ee89d5c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SelectOnHover
 --- !u!1001 &1486646473394280326
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2283,13 +2322,41 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6348668643186776559, guid: 6916d1f35e6856a428e764ffc196c8fd, type: 3}
+      propertyPath: onClosed.m_PersistentCalls.m_Calls.Array.data[1].m_Mode
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 6348668643186776559, guid: 6916d1f35e6856a428e764ffc196c8fd, type: 3}
+      propertyPath: onClosed.m_PersistentCalls.m_Calls.Array.data[2].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6348668643186776559, guid: 6916d1f35e6856a428e764ffc196c8fd, type: 3}
       propertyPath: onClosed.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 132109987}
     - target: {fileID: 6348668643186776559, guid: 6916d1f35e6856a428e764ffc196c8fd, type: 3}
-      propertyPath: onClosed.m_PersistentCalls.m_Calls.Array.data[2].m_Target
+      propertyPath: onClosed.m_PersistentCalls.m_Calls.Array.data[1].m_Target
       value: 
       objectReference: {fileID: 380242817}
+    - target: {fileID: 6348668643186776559, guid: 6916d1f35e6856a428e764ffc196c8fd, type: 3}
+      propertyPath: onClosed.m_PersistentCalls.m_Calls.Array.data[2].m_Target
+      value: 
+      objectReference: {fileID: 240488885}
+    - target: {fileID: 6348668643186776559, guid: 6916d1f35e6856a428e764ffc196c8fd, type: 3}
+      propertyPath: onClosed.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
+      value: SetActive
+      objectReference: {fileID: 0}
+    - target: {fileID: 6348668643186776559, guid: 6916d1f35e6856a428e764ffc196c8fd, type: 3}
+      propertyPath: onClosed.m_PersistentCalls.m_Calls.Array.data[2].m_MethodName
+      value: Select
+      objectReference: {fileID: 0}
+    - target: {fileID: 6348668643186776559, guid: 6916d1f35e6856a428e764ffc196c8fd, type: 3}
+      propertyPath: onClosed.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
+      value: UnityEngine.GameObject, UnityEngine
+      objectReference: {fileID: 0}
+    - target: {fileID: 6348668643186776559, guid: 6916d1f35e6856a428e764ffc196c8fd, type: 3}
+      propertyPath: onClosed.m_PersistentCalls.m_Calls.Array.data[2].m_TargetAssemblyTypeName
+      value: UnityEngine.UI.Button, UnityEngine.UI
+      objectReference: {fileID: 0}
     - target: {fileID: 6622233721637007465, guid: 6916d1f35e6856a428e764ffc196c8fd, type: 3}
       propertyPath: m_AnchorMax.y
       value: 1
