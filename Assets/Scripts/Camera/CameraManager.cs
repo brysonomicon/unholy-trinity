@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnholyTrinity.Helpers;
 using Nrjwolf.Tools.AttachAttributes;
 using UnholyTrinity.Managers;
@@ -54,6 +55,8 @@ namespace UnholyTrinity.Camera
         private TurnPhase _currentPhase;
         private PlayerCameraRig _currentPlayerRig;
 
+        private Dictionary<TurnPhase, Player> playerPhaseMap = new Dictionary<TurnPhase, Player>();
+
         protected override void Awake()
         {
             base.Awake();
@@ -69,13 +72,13 @@ namespace UnholyTrinity.Camera
         private void OnEnable()
         {
             TurnManager.NewPhaseEvent += OnPhaseChanged;
-            GameManager.NewTurnEvent += OnNewTurn;
             Player.PlayerSpawned += OnPlayerSpawned;
         }
 
         private void OnPlayerSpawned(Player player)
         {
             RegisterPlayerTracked(player.transform, 1, 1);
+            playerPhaseMap[player.turnPhase] = player;
         }
 
         private void RegisterPlayerTracked(Transform p, float weight,
@@ -89,7 +92,6 @@ namespace UnholyTrinity.Camera
         private void OnDisable()
         {
             TurnManager.NewPhaseEvent -= OnPhaseChanged;
-            GameManager.NewTurnEvent -= OnNewTurn;
             Player.PlayerSpawned -= OnPlayerSpawned;
             toggleCloseViewAction.performed -= OnToggleInput;
             toggleCloseViewAction.Disable();
@@ -98,16 +100,14 @@ namespace UnholyTrinity.Camera
         private void OnPhaseChanged(TurnPhase phase)
         {
             _currentPhase = phase;
-            if (phase != TurnPhase.Resolution)
+            if (phase == TurnPhase.Resolution)
             {
+                Activate(resolutionCamera);
+                NotifyView();
                 return;
             }
-
-            Activate(resolutionCamera);
-            NotifyView();
+            ResetAndRefresh(playerPhaseMap[phase]);
         }
-
-        private void OnNewTurn(Player player) => ResetAndRefresh(player);
 
         private void OnToggleInput(InputAction.CallbackContext _) =>
             CycleView();
