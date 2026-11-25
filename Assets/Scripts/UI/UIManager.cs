@@ -15,19 +15,12 @@ public class UIManager : MonoBehaviour
 
     private void Awake()
     {
-        GameManager.NewTurnEvent += OnNextTurn;
         TurnManager.NewPhaseEvent += OnNewPhase;
     }
 
     private void OnDestroy()
     {
-        GameManager.NewTurnEvent -= OnNextTurn;
         TurnManager.NewPhaseEvent -= OnNewPhase;
-    }
-
-    private void OnNextTurn(Player player)
-    {
-        GenerateActionCards(player);
     }
 
     private void OnNewPhase(TurnPhase newPhase)
@@ -92,7 +85,7 @@ public class UIManager : MonoBehaviour
             .AddRow()
             .AddOption("Clear Tick", () => PlanAndRefresh(current.ClearTick))
             .AddRow()
-            .AddOption("End Turn", () => TurnManager.Instance.EndTurn());
+            .AddOption("End Turn", () => TurnManager.EndTurn());
 
         return;
 

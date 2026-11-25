@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using UnholyTrinity.Helpers;
 using UnholyTrinity.Hex;
 using UnityEngine;
@@ -23,6 +24,14 @@ public class MapManager : Singleton<MapManager>
     private HexOrientation orientation = HexOrientation.PointyTop;
 
     [SerializeField, Min(0.01f)] private float hexSize = 1f;
+
+    [field: SerializeField]
+    [CanBeNull]
+    public PickupManager PickupManager { get; private set; }
+
+    [CanBeNull]
+    private PickupField LivePickups =>
+        PickupManager != null ? PickupManager.Field : null;
 
     [SerializeField,
      Tooltip(
@@ -164,7 +173,8 @@ public class MapManager : Singleton<MapManager>
     /// Flood-fills from <paramref name="start"/> (already marked visited) along portal links in both directions.
     /// Returns every portal in the network, lowest coordinate first.
     /// </summary>
-    private List<HexCoord> CollectNetwork(HexCoord start, HashSet<HexCoord> visited)
+    private List<HexCoord> CollectNetwork(HexCoord start,
+        HashSet<HexCoord> visited)
     {
         var members = new List<HexCoord>();
         var queue = new Queue<HexCoord>();
@@ -213,7 +223,7 @@ public class MapManager : Singleton<MapManager>
         {
             return;
         }
-            
+
         orientation = value;
         if (Application.isPlaying)
         {
@@ -340,7 +350,7 @@ public class MapManager : Singleton<MapManager>
                      Shader.Find("Standard");
 
         _runtimeMaterial = new Material(shader)
-        { name = "HexTile (Runtime)" };
+            { name = "HexTile (Runtime)" };
 
         return _runtimeMaterial;
     }

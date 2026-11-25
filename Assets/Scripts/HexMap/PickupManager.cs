@@ -1,13 +1,14 @@
+using System;
 using System.Collections.Generic;
 using NaughtyAttributes;
 using Nrjwolf.Tools.AttachAttributes;
 using UnholyTrinity.Helpers;
-using UnholyTrinity.Hex;
 using UnholyTrinity.Interfaces;
 using UnholyTrinity.Pickups;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
-namespace UnholyTrinity.Managers
+namespace UnholyTrinity.Hex
 {
     /// <summary>
     /// Scene entry point for pickups: builds a <see cref="PickupField"/> from the map and shows each pickup's
@@ -57,6 +58,21 @@ namespace UnholyTrinity.Managers
             MapManager.LayoutChanged += PositionVisuals;
 
             SpawnVisuals();
+        }
+
+        private void OnEnable()
+        {
+            TickData.Tick += OnTick;
+        }
+
+        private void OnDisable()
+        {
+            TickData.Tick -= OnTick;
+        }
+
+        private void OnTick(SamType obj)
+        {
+            AdvanceTicks(1);
         }
 
         // these are only cosmetic, but easy to forget about

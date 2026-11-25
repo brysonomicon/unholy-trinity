@@ -1,7 +1,7 @@
 using TMPro;
-using UnholyTrinity;
 using UnholyTrinity.Helpers;
 using UnholyTrinity.Managers;
+using UnholyTrinity.Players;
 using UnityEngine;
 
 public class TurnInfo : MonoBehaviour
@@ -18,7 +18,7 @@ public class TurnInfo : MonoBehaviour
     private void Start()
     {
         OnNewRound(GameManager.Instance.Round);
-        OnNewPhase(TurnManager.Instance.CurrentPhase);
+        OnNewPhase(TurnManager.CurrentPhase);
     }
 
     private void OnDestroy()

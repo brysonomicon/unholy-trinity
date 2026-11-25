@@ -40,14 +40,6 @@ namespace UnholyTrinity.Managers
         // in registration order, so index 0 is player 1
         public IReadOnlyList<Player> Players => _players;
 
-        [field: SerializeField]
-        [CanBeNull]
-        public PickupManager PickupManager { get; private set; }
-
-        [CanBeNull]
-        private PickupField LivePickups =>
-            PickupManager != null ? PickupManager.Field : null;
-
         private readonly List<(
             Player shooter,
             WeaponData Data,
@@ -168,6 +160,7 @@ namespace UnholyTrinity.Managers
             // opponent move path relative to shooter aim cone
 
             #region shoot phase
+            TickData.CallTick(SamType.Shoot);
 
             foreach (Player player in _players)
             {
@@ -180,6 +173,7 @@ namespace UnholyTrinity.Managers
 
             #region aim phase
 
+            TickData.CallTick(SamType.Aim);
             foreach (Player player in _players)
             {
                 player.GetPlannedAction(tickIndex)?.Aim?.Invoke();
@@ -190,17 +184,9 @@ namespace UnholyTrinity.Managers
             #endregion
 
             #region move phase
-
-            // respawns come before anyone moves, so a pickup that comes back this tick can be
-            // collected this tick. RespawnTicks = 1 means a pickup collected on tick N is
-            // available again on tick N + 1
-            if (PickupManager != null)
-            {
-                PickupManager.AdvanceTicks(1);
-            }
+            TickData.CallTick(SamType.Move);
 
             yield return moveManager.HandleTick();
-
 
             // OnStop tile effects fire where each player ends up, including players who didn't move
             foreach (Player player in _players)
