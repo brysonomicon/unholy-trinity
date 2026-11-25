@@ -20,25 +20,37 @@ namespace UnholyTrinity.Weapons
         [Min(1)]
         public int Speed { get; private set; } = 2;
 
+        public override bool RequiresTarget => true;
+
         // falloff by distance from impact tile, 0 is direct hit
         [SerializeField] private float[] blastFalloff = { 1f, 0.66f, 0.33f };
 
-        public override void Fire(IMovable shooter, IAimer aimer)
+        public override bool Fire(IMovable shooter, IAimer aimer)
         {
             if (!aimer.SelectedTile.HasValue)
             {
-                return;
+                return false;
             }
-            if (shooter is not IVitals)
+
+            if (shooter is not IVitals vitals)
             {
-                return;
+                return false;
             }
+
+            List<AimTile> aimTiles = GetAimTiles(MapManager.Instance.Map,
+                shooter.Coord, aimer.CurrentAimDirection);
+            int targetIndex = aimTiles.FindIndex(aimTile =>
+                aimTile.Coord == aimer.SelectedTile.Value);
+            if (targetIndex < 0)
+            {
+                return false;
+            }
+
             Rocket rocket = Instantiate(RocketPrefab);
-            rocket.Launch(this, shooter as IVitals, shooter.Coord, aimer.SelectedTile.Value);
+            rocket.Launch(this, vitals, shooter.Coord,
+                aimer.SelectedTile.Value);
+            return true;
         }
-
-        public override bool RequiresTarget => true;
-
 
         public override int GetDamage(AimTile aimTile)
         {

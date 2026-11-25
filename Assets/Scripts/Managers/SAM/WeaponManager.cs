@@ -27,7 +27,6 @@ namespace Managers
     public class WeaponManager : Singleton<WeaponManager>
     {
         private readonly List<FireData> _beams = new();
-        private readonly List<ExplosionData> _explosions = new();
 
         private void OnEnable()
         {

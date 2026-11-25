@@ -14,9 +14,10 @@ namespace UnholyTrinity.Weapons
 
         [SerializeField] [Min(0)] private int damage = 80;
 
-        public override void Fire(IMovable shooter, IAimer aimer)
+        public override bool Fire(IMovable shooter, IAimer aimer)
         {
             BeamFired?.Invoke(shooter, this, aimer);
+            return true;
         }
 
         public override int GetDamage(AimTile aimTile)

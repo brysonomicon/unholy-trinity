@@ -17,7 +17,7 @@ namespace UnholyTrinity.Weapons
             return origin.DistanceTo(target) <= range;
         }
 
-        public override void Fire(IMovable shooter, IAimer aimer)
+        public override bool Fire(IMovable shooter, IAimer aimer)
         {
             throw new System.NotImplementedException();
         }

@@ -7,9 +7,9 @@ using NaughtyAttributes;
 using Nrjwolf.Tools.AttachAttributes;
 using UnholyTrinity.Players;
 using UnholyTrinity.Weapons;
+using UnholyTrinity.Weapons.Pickups;
 using UnholyTrinity.Hex;
 using UnholyTrinity.Helpers;
-using UnholyTrinity.Managers;
 using UnityEngine;
 
 namespace UnholyTrinity.Managers

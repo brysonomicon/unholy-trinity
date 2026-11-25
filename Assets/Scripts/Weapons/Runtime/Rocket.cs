@@ -27,9 +27,11 @@ public class Rocket : MonoBehaviour, IMovable
     public List<HexDirection> MoveSteps { get; set; }
 
     public RocketLauncherData Data { get; private set; }
-    public HexCoord Coord => path[MoveIndex];
+    public HexCoord Coord => Tile.Coord;
+    public HexCoord TargetCoord => path.Last();
 
     private IVitals _shooter;
+    private bool _isValid;
 
     private void OnEnable()
     {
@@ -40,6 +42,8 @@ public class Rocket : MonoBehaviour, IMovable
     {
         (this as IMovable).Unregister(this);
     }
+
+    public void SetValid() => _isValid = true;
 
     public void Launch(
         RocketLauncherData data,

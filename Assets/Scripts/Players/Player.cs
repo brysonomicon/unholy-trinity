@@ -610,44 +610,13 @@ namespace UnholyTrinity.Players
 
             weapon.Fire();
             nextFireTick = TickData.CurrentTick + 1 + weapon.Data.Cooldown;
-
-            List<AimTile> aimTiles = weapon.Data.GetAimTiles(mapManager.Map,
-                Coord, CurrentAimDirection);
-            if (weapon.Data.IsContinuous)
-            {
-                gm.StartBeam(this, weapon.Data, CurrentAimDirection, aimTiles);
-            }
-            else
-            {
-                gm.ResolveShot(this, weapon.Data, aimTiles);
-            }
+            weapon.Data.Fire(this, this);
         }
 
         // for rocket launcher
         private void Fire(Weapon weapon, HexCoord target)
         {
-            RocketLauncherData rocketData = (RocketLauncherData)weapon.Data;
-            List<AimTile> aimTiles = rocketData.GetAimTiles(mapManager.Map,
-                Coord, CurrentAimDirection);
-            int targetIndex =
-                aimTiles.FindIndex(aimTile => aimTile.Coord == target);
-
-            if (targetIndex < 0)
-            {
-                return;
-            }
-
-            if (!CanFire(weapon))
-            {
-                return;
-            }
-
-            weapon.Fire();
-            nextFireTick = TickData.CurrentTick + 1 + weapon.Data.Cooldown;
-
-            HexCoord landingTile =
-                rocketData.GetLandingTile(aimTiles, aimTiles[targetIndex]);
-            ((RocketLauncherData)weapon.Data).LaunchRocket(this, mapManager, landingTile);
+            weapon.Data.Fire(this, this);
         }
 
         // weapon cooldowns are global, no weapon can be fired until the cooldown of the last

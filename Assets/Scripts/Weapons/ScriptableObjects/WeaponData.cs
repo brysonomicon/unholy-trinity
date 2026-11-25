@@ -68,7 +68,8 @@ namespace UnholyTrinity.Weapons
             return aimTiles;
         }
 
-        public abstract void Fire(IMovable shooter, IAimer aimer);
+        // needs: PLayer, is weapondata, CurrentAimDirection, can get its own aimtiles,
+        public abstract bool Fire(IMovable shooter, IAimer aimer);
 
         public abstract int GetDamage(AimTile aimTile);
 
