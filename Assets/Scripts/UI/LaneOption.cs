@@ -10,6 +10,7 @@ public class LaneOption : MonoBehaviour
     [SerializeField] private Image iconImage;
     [SerializeField][Range(0f, 1f)] private float disabledIconAlpha = 0.35f;
     [SerializeField] private Color selectedColor = new Color(1f, 0.85f, 0.4f);
+    [SerializeField] private float iconOnlyPadding = 3f;
 
     public void Setup(string label, UnityAction onClick, bool clickable, Sprite icon, bool selected)
     {
@@ -23,6 +24,12 @@ public class LaneOption : MonoBehaviour
         iconImage.sprite = icon;
         iconImage.preserveAspect = true;
         iconImage.enabled = icon != null;
+
+        if (string.IsNullOrEmpty(label))
+        {
+            iconImage.rectTransform.offsetMin = new Vector2(iconOnlyPadding, iconOnlyPadding);
+            iconImage.rectTransform.offsetMax = new Vector2(-iconOnlyPadding, -iconOnlyPadding);
+        }
 
         iconImage.color = clickable 
             ? Color.white : 

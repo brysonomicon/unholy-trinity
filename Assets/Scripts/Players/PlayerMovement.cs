@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using NaughtyAttributes;
+using UnholyTrinity.Helpers;
 using UnholyTrinity.Hex;
 using UnityEngine;
 
@@ -68,6 +69,11 @@ namespace UnholyTrinity.Players
         // planning shouldn't touch
         public void PlanMove(HexDirection? direction)
         {
+            if (PlanningStep != SAMType.Move)
+            {
+                return;
+            }
+            
             PlanningAction.PlannedDirection = direction;
             UpdatePlannedMove();
             ProjectPlan();

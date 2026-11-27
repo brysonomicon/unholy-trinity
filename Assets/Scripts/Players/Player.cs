@@ -4,6 +4,7 @@ using System.Linq;
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using Nrjwolf.Tools.AttachAttributes;
+using UnholyTrinity.Helpers;
 using UnholyTrinity.Hex;
 using UnholyTrinity.Managers;
 using UnholyTrinity.Weapons;
@@ -45,6 +46,9 @@ namespace UnholyTrinity.Players
         
         private float TickDuration => gm.TickDuration;
 
+
+        // cooldown of last fired shot so the shoot card can show how much is left
+        private int lastFiredCooldown;
 
         // this turn's plan, one UnholyAction per tick
         private readonly List<UnholyAction> plannedActions = new();
@@ -101,8 +105,24 @@ namespace UnholyTrinity.Players
 
         public int PlanningTickOfTurn => plannedActions.Count;
 
+        // the current action being planned this tick, tracked to SAM order can be enforced
+        public SAMType PlanningStep { get; private set; } = SAMType.Shoot;
+
         public bool CanPlanNextTick =>
             plannedActions.Count < TurnManager.Instance.TicksPerTurn;
+        
+        public bool CanAdvancePlanningStep =>
+            PlanningStep != SAMType.Move || CanPlanNextTick;
+        
+        public float PlannedFireReadiness
+        {
+            get
+            {
+                int ticksUntilReady = Mathf.Max(0, GetPlannedNextFireTick() - PlanningTick);
+
+                return 1f - (float)ticksUntilReady / (GetPlannedLastCooldown() + 1);
+            }
+        }
 
         private UnholyAction PlanningAction => plannedActions[^1];
 
@@ -409,7 +429,7 @@ namespace UnholyTrinity.Players
         // is planned
         public void SelectWeapon(Weapon weapon)
         {
-            if (weapon == CurrentWeapon)
+            if (weapon == CurrentWeapon || PlanningStep != SAMType.Shoot)
             {
                 return;
             }
@@ -425,9 +445,10 @@ namespace UnholyTrinity.Players
         // and the planned cooldown has expired by that tick
         public bool CanPlanShot(Weapon weapon)
         {
-            return GetUnplannedAmmo(weapon) > 0 &&
-                    PlanningTick >= GetPlannedNextFireTick() &&
-                    (!weapon.Data.RequiresTarget || HasTargetInShotCone);
+            return PlanningStep == SAMType.Shoot &&
+                   GetUnplannedAmmo(weapon) > 0 &&
+                   PlanningTick >= GetPlannedNextFireTick() &&
+                   (!weapon.Data.RequiresTarget || HasTargetInShotCone);
         }
 
         public void PlanShot(Weapon weapon)
@@ -463,6 +484,11 @@ namespace UnholyTrinity.Players
         // fills the next tick of the shoot lane without firing
         public void PlanHoldFire()
         {
+            if (PlanningStep != SAMType.Shoot)
+            {
+                return;
+            }
+
             Debug.Log($"{name} holds fire on tick {PlanningTick}");
             PlanningAction.PlannedShot = null;
             PlanningAction.PlannedTarget = null;
@@ -472,6 +498,11 @@ namespace UnholyTrinity.Players
 
         public void SelectTile(HexCoord coord)
         {
+            if (PlanningStep != SAMType.Shoot)
+            {
+                return;
+            }
+
             SelectedTile = coord;
             selectionPreview.Show(new List<AimTile> { new AimTile(coord, 1f) }, mapManager.Layout);
         }
@@ -485,7 +516,9 @@ namespace UnholyTrinity.Players
         public bool CanPlanRotation(bool clockwise)
         {
             int stepsAfterRotation = PlannedAimSteps + (clockwise ? -1 : 1);
-            return Mathf.Abs(stepsAfterRotation) <= aimStepsPerTick;
+
+            return PlanningStep == SAMType.Aim &&
+                   Mathf.Abs(stepsAfterRotation) <= aimStepsPerTick;
         }
 
         public void PlanRotation(bool clockwise)
@@ -503,6 +536,11 @@ namespace UnholyTrinity.Players
 
         public void PlanHoldAim()
         {
+            if (PlanningStep != SAMType.Aim)
+            {
+                return;
+            }
+
             SetPlannedAim(PreviousPlannedAim);
         }
 
@@ -523,14 +561,32 @@ namespace UnholyTrinity.Players
             return PlanningAction.PlannedDirection == direction;
         }
 
-        public void PlanNextTick()
+        // confirming a move starts the next tick's plan. next tick button is confirm for now
+        public void AdvancePlanningStep()
         {
-            if (!CanPlanNextTick)
+            if (!CanAdvancePlanningStep)
             {
                 return;
             }
 
+            switch (PlanningStep)
+            {
+                case SAMType.Shoot:
+                    PlanningStep = SAMType.Aim;
+                    break;
+                case SAMType.Aim:
+                    PlanningStep = SAMType.Move;
+                    break;
+                case SAMType.Move:
+                    PlanNextTick();
+                    break;
+            }
+        }
+
+        private void PlanNextTick()
+        {
             plannedActions.Add(CreateNewDefaultAction(PlanningAction.PlannedAim));
+            PlanningStep = SAMType.Shoot;
             ProjectPlan();
         }
 
@@ -540,16 +596,57 @@ namespace UnholyTrinity.Players
                    plannedActions.Count(action => action.PlannedShot == weapon);
         }
 
-        // clears the tick being planned currently. if already clear, clears previous tick
-        public void ClearTick()
+        // reopens a step of a tick for editing. keeps its choice but everything planned
+        // after it is discarded. used by the SAM grid and the back button
+        public void RewindPlanningTo(int tickIndex, SAMType step)
         {
-            if (!HasTickChanges && plannedActions.Count > 1)
+            bool isCurrentTick = tickIndex == plannedActions.Count - 1;
+
+            // can only rewind to steps that have been planned already
+            if (tickIndex < 0 || tickIndex >= plannedActions.Count ||
+                (isCurrentTick && step > PlanningStep))
             {
-                plannedActions.RemoveAt(plannedActions.Count - 1);
+                return;
             }
 
-            plannedActions[^1] = CreateNewDefaultAction(PreviousPlannedAim);
+            plannedActions.RemoveRange(tickIndex + 1, plannedActions.Count - tickIndex - 1);
+
+            // steps that come after the reopened one are reset to defaults
+            if (step < SAMType.Move)
+            {
+                PlanningAction.PlannedDirection = null;
+            }
+
+            if (step < SAMType.Aim)
+            {
+                PlanningAction.PlannedAim = PreviousPlannedAim;
+                PlanningAction.Aim = null;
+            }
+
+            PlanningStep = step;
+            UpdatePlannedMove();
             ProjectPlan();
+        }
+
+        public void StepBackPlanning()
+        {
+            if (PlanningStep != SAMType.Shoot)
+            {
+                RewindPlanningTo(plannedActions.Count - 1, PlanningStep - 1);
+            }
+            else if (plannedActions.Count > 1)
+            {
+                RewindPlanningTo(plannedActions.Count - 2, SAMType.Move);
+            }
+        }
+
+        // whether or not a step of a tick has been confirmed so SAM grid knows which cells are filled
+        public bool IsStepConfirmed(int tickIndex, SAMType step)
+        {
+            int currentTickIndex = plannedActions.Count - 1;
+
+            return tickIndex < currentTickIndex ||
+                   (tickIndex == currentTickIndex && step < PlanningStep);
         }
 
         // clears the entire plan, used for turn start
@@ -557,6 +654,7 @@ namespace UnholyTrinity.Players
         {
             plannedActions.Clear();
             plannedActions.Add(CreateNewDefaultAction(CurrentAimDirection));
+            PlanningStep = SAMType.Shoot;
             ProjectPlan();
         }
 
@@ -588,6 +686,21 @@ namespace UnholyTrinity.Players
             }
 
             return plannedNextFireTick;
+        }
+
+        private int GetPlannedLastCooldown()
+        {
+            for (int i = plannedActions.Count - 2; i >= 0; i--)
+            {
+                Weapon plannedShot = plannedActions[i].PlannedShot;
+
+                if (plannedShot != null)
+                {
+                    return plannedShot.Data.Cooldown;
+                }
+            }
+
+            return lastFiredCooldown;
         }
 
         #endregion
@@ -624,6 +737,7 @@ namespace UnholyTrinity.Players
 
             weapon.Fire();
             nextFireTick = gm.CurrentTick + 1 + weapon.Data.Cooldown;
+            lastFiredCooldown = weapon.Data.Cooldown;
 
             List<AimTile> aimTiles = weapon.Data.GetAimTiles(mapManager.Map, Coord, CurrentAimDirection);
             if (weapon.Data.IsContinuous)
@@ -656,6 +770,7 @@ namespace UnholyTrinity.Players
 
             weapon.Fire();
             nextFireTick = gm.CurrentTick + 1 + weapon.Data.Cooldown;
+            lastFiredCooldown = weapon.Data.Cooldown;
 
             HexCoord landingTile = rocketData.GetLandingTile(aimTiles, aimTiles[targetIndex]);
 
