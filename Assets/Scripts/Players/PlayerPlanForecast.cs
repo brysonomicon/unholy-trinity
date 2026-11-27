@@ -70,7 +70,7 @@ namespace UnholyTrinity.Players
             PlannedVitals vitals = new(this);
             HexCoord coord = Coord;
 
-            foreach (UnholyAction action in plannedActions)
+            foreach (UnholyAction action in _plannedActions)
             {
                 // pickups respawn before anyone moves
                 pickups?.AdvanceTicks(1);

@@ -101,12 +101,10 @@ public class Rocket : MonoBehaviour, IMovable
 
     public void BeginMovePhase()
     {
-        throw new NotImplementedException();
     }
 
     public void EndMovePhase()
     {
-        throw new NotImplementedException();
     }
 }
 }

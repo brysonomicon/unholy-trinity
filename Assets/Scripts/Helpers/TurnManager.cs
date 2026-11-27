@@ -7,9 +7,9 @@ namespace UnholyTrinity.Helpers
     {
         public static event Action<TurnPhase> NewPhaseEvent;
 
-        public static TurnPhase CurrentPhase => _turnPhase.Peek();
+        public static TurnPhase CurrentPhase => Phase.Peek();
 
-        private static readonly Queue<TurnPhase> _turnPhase = new(new List<TurnPhase>
+        private static readonly Queue<TurnPhase> Phase = new(new List<TurnPhase>
         {
             TurnPhase.PlayerOne,
             TurnPhase.PlayerTwo,
@@ -18,17 +18,17 @@ namespace UnholyTrinity.Helpers
 
         public static void EndTurn()
         {
-            TurnPhase previous = _turnPhase.Dequeue();
-            _turnPhase.Enqueue(previous);
+            TurnPhase previous = Phase.Dequeue();
+            Phase.Enqueue(previous);
             NewPhaseEvent?.Invoke(CurrentPhase);
         }
 
         public static void Reset()
         {
-            _turnPhase.Clear();
-            _turnPhase.Enqueue(TurnPhase.PlayerOne);
-            _turnPhase.Enqueue(TurnPhase.PlayerTwo);
-            _turnPhase.Enqueue(TurnPhase.Resolution);
+            Phase.Clear();
+            Phase.Enqueue(TurnPhase.PlayerOne);
+            Phase.Enqueue(TurnPhase.PlayerTwo);
+            Phase.Enqueue(TurnPhase.Resolution);
         }
 
         public static void StartGame()

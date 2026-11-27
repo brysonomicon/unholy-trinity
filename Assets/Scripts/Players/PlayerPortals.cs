@@ -16,7 +16,7 @@ namespace UnholyTrinity.Players
         public void MoveThroughPortal(HexCoord exit)
         {
             Coord = exit;
-            tickMovePath.Add(Coord);
+            _tickMovePath.Add(Coord);
             SnapToCoord(Coord);
         }
 

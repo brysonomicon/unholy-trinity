@@ -138,7 +138,8 @@ public class GameManager : Singleton<GameManager>
     {
         for (int i = 0; i < TickData.TicksPerTurn; i++)
         {
-            TickData.SetCurrentTick(TickData.CurrentTick + 1);
+            TickData.SetCurrentTick(TickData.CurrentTick);
+            Debug.Log("Resolving tick" + i);
             yield return ResolveTick(i);
         }
 
@@ -160,7 +161,7 @@ public class GameManager : Singleton<GameManager>
         // opponent move path relative to shooter aim cone
 
         #region shoot phase
-        TickData.CallTick(SAMType.Move);
+        TickData.CallTick(SAMType.Shoot);
 
         foreach (Player player in _players)
         {
@@ -168,6 +169,7 @@ public class GameManager : Singleton<GameManager>
         }
 
         yield return new WaitForSeconds(shootDuration);
+        TickData.CallTock(SAMType.Shoot);
 
         #endregion
 
@@ -180,27 +182,28 @@ public class GameManager : Singleton<GameManager>
         }
 
         yield return new WaitForSeconds(aimDuration);
-
+        TickData.CallTock(SAMType.Aim);
         #endregion
 
         #region move phase
         TickData.CallTick(SAMType.Move);
+        Debug.Log("Moving tick " + tickIndex);
 
         yield return moveManager.HandleTick();
 
         // OnStop tile effects fire where each player ends up, including players who didn't move
         foreach (Player player in _players)
         {
-            player.EndMovePhase();
             TileEffects.OnStop(player.Map, MapManager.Instance.LivePickups, player.Coord,
                 player);
         }
 
         // LG needs both players end position, so it resolves after everyone moves
         ResolveBeams();
-
+        TickData.CallTock(SAMType.Move);
         #endregion
 
+        Debug.Log("Ghosting tick " + tickIndex);
         // absorb ghosts after each turn
         foreach (Player player in _players)
         {

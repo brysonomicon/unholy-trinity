@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using NaughtyAttributes;
-using UnholyTrinity.Helpers;
 using UnholyTrinity.Hex;
 using UnholyTrinity.Hex.Interfaces;
 using UnityEngine;
@@ -9,16 +8,11 @@ namespace UnholyTrinity.Players
 {
     public partial class Player : IMovable
     {
-        public HexCoord Momentum => momentum;
-
-        public int MomentumGainPerTick => momentumGainPerTick;
-
         public int MoveIndex { get; set; }
 
         public HexTile Tile { get; set; }
 
-        public List<HexDirection> MoveSteps =>
-            plannedActions[TickData.CurrentTick].PlannedMove;
+        public List<HexDirection> MoveSteps { get; private set; } = new();
 
         [Header("Movement")] [SerializeField, Min(1)]
         private int baseMomentumMax = 1;
@@ -26,21 +20,20 @@ namespace UnholyTrinity.Players
         [SerializeField, MinValue("baseMomentumMax")]
         private int aimMomentumMax;
 
-        [SerializeField] [Min(1)] private int momentumGainPerTick = 1;
+        [field: SerializeField] [Min(1)] public int MomentumGainPerTick { get; private set; }= 1;
 
         [field: SerializeField]
         [Tooltip("Used to display where the player will be during the turn.")]
         public HexCoord Coord { get; private set; }
 
         //? [CB] Should this be public so the wall get interact with it?
-        [SerializeField] private HexCoord momentum = new(0, 0);
+        [field: SerializeField] public HexCoord Momentum { get; private set; }
 
         // momentum from the end of the previous planned tick from the planning model
         // lastMomentum only updated once per turn and didn't work for calculating momentum
         // between ticks
         private HexCoord PreviousPlannedMomentum =>
-            GetPlannedMomentum(plannedActions.Count - 1);
-        // [SerializeField] private HexCoord lastMomentum = new(0, 0);
+            GetPlannedMomentum(_plannedActions.Count - 1);
 
         #region Planning
 
@@ -52,7 +45,7 @@ namespace UnholyTrinity.Players
             for (int i = 0; i < tickCount; i++)
             {
                 plannedCoord = GetMoveEnd(plannedCoord,
-                    plannedActions[i].PlannedMove);
+                    _plannedActions[i].PlannedMove);
             }
 
             return plannedCoord;
@@ -95,7 +88,7 @@ namespace UnholyTrinity.Players
                 ? UpdatePlannedMomentum(direction.Value)
                 : HexCoord.Zero;
 
-            HexCoord start = GetPlannedCoord(plannedActions.Count - 1);
+            HexCoord start = GetPlannedCoord(_plannedActions.Count - 1);
             List<HexDirection> steps =
                 GetStepListFromMomentum(start, plannedMomentum);
 
@@ -130,7 +123,7 @@ namespace UnholyTrinity.Players
 
             if (isMoving && isAimingAlongMove && !isReversing)
             {
-                speed = Mathf.Min(previousSpeed + momentumGainPerTick,
+                speed = Mathf.Min(previousSpeed + MomentumGainPerTick,
                     aimMomentumMax);
             }
             else if (isSameDirection)
@@ -146,8 +139,8 @@ namespace UnholyTrinity.Players
         private HexCoord GetPlannedMomentum(int tickCount)
         {
             return tickCount > 0
-                ? plannedActions[tickCount - 1].PlannedMomentum
-                : momentum;
+                ? _plannedActions[tickCount - 1].PlannedMomentum
+                : Momentum;
         }
 
         // takes its start and momentum as inputs so each tick can be planned from the
@@ -179,15 +172,6 @@ namespace UnholyTrinity.Players
 
         #region Resolution
 
-
-
-        private bool TryStep(HexDirection direction, out HexCoord next)
-        {
-            next = GetStepDestination(Coord, direction);
-
-            return next != Coord;
-        }
-
         private HexCoord GetStepDestination(HexCoord from,
             HexDirection direction)
         {
@@ -195,6 +179,15 @@ namespace UnholyTrinity.Players
             return _mapManager.Map.IsWalkable(next)
                 ? next
                 : from;
+        }
+
+        public void Move()
+        {
+            HexMap map = MapManager.Instance.Map;
+            map.Step(Coord, MoveSteps[MoveIndex], this);
+            _tickMovePath.Add(Coord);
+            LerpToCoord(Coord);
+            MoveIndex++;
         }
 
         #endregion
