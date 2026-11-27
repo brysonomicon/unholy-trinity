@@ -5,7 +5,9 @@ namespace UnholyTrinity.Helpers
 {
 public static class TurnManager
 {
+    public static int Round { get; private set; }
     public static event Action<TurnPhase> NewPhaseEvent;
+    public static event Action<int> NewRoundEvent;
 
     public static TurnPhase CurrentPhase => Phase.Peek();
 
@@ -20,6 +22,7 @@ public static class TurnManager
     {
         TurnPhase previous = Phase.Dequeue();
         Phase.Enqueue(previous);
+        UpdateRound();
         NewPhaseEvent?.Invoke(CurrentPhase);
     }
 
@@ -29,12 +32,24 @@ public static class TurnManager
         Phase.Enqueue(TurnPhase.PlayerOne);
         Phase.Enqueue(TurnPhase.PlayerTwo);
         Phase.Enqueue(TurnPhase.Resolution);
+        Round = 0;
     }
 
     public static void StartGame()
     {
         Reset();
+        UpdateRound();
         NewPhaseEvent?.Invoke(CurrentPhase);
+    }
+
+    private static void UpdateRound()
+    {
+        if (CurrentPhase != TurnPhase.PlayerOne)
+        {
+            return;
+        }
+        Round++;
+        NewRoundEvent?.Invoke(Round);
     }
 }
 }

@@ -10,19 +10,18 @@ public class TurnInfo : MonoBehaviour
 
     private void Awake()
     {
-        GameManager.NewRoundEvent += OnNewRound;
         TurnManager.NewPhaseEvent += OnNewPhase;
+        TurnManager.NewRoundEvent += OnNewRound;
     }
 
     private void Start()
     {
-        OnNewRound(GameManager.Instance.Round);
+        OnNewRound(TurnManager.Round);
         OnNewPhase(TurnManager.CurrentPhase);
     }
 
     private void OnDestroy()
     {
-        GameManager.NewRoundEvent -= OnNewRound;
         TurnManager.NewPhaseEvent -= OnNewPhase;
     }
 
