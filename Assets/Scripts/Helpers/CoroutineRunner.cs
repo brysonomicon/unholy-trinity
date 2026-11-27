@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace UnholyTrinity.Helpers
 {
-public static class CoroutineRunner
+internal static class CoroutineRunner
 {
     //The only goal of this is to hold Coroutines for us :D
     private class RunnerHost : MonoBehaviour
