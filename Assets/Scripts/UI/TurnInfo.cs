@@ -1,6 +1,5 @@
 using TMPro;
 using UnholyTrinity.Helpers;
-using UnholyTrinity.Managers;
 using UnityEngine;
 
 public class TurnInfo : MonoBehaviour
@@ -8,7 +7,7 @@ public class TurnInfo : MonoBehaviour
     [SerializeField] private TMP_Text roundNumberText;
     [SerializeField] private TMP_Text phaseText;
 
-    private void Awake()
+    private void OnEnable()
     {
         TurnManager.NewPhaseEvent += OnNewPhase;
         TurnManager.NewRoundEvent += OnNewRound;
@@ -20,9 +19,10 @@ public class TurnInfo : MonoBehaviour
         OnNewPhase(TurnManager.CurrentPhase);
     }
 
-    private void OnDestroy()
+    private void OnDisable()
     {
         TurnManager.NewPhaseEvent -= OnNewPhase;
+        TurnManager.NewRoundEvent -= OnNewRound;
     }
 
     private void OnNewPhase(TurnPhase newPhase)

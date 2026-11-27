@@ -121,8 +121,6 @@ public class CameraManager : Singleton<CameraManager>
         ResetAndRefresh(playerPhaseMap[phase]);
     }
 
-    private void OnNewTurn(Player player) => ResetAndRefresh(player);
-
     private void OnToggleInput(InputAction.CallbackContext _) => CycleView();
 
     private void CycleView()
