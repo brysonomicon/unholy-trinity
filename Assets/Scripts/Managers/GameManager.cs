@@ -147,28 +147,29 @@ public class GameManager : Singleton<GameManager>
 
         #region shoot phase
 
+        yield return TickData.CallTick(SAMType.Shoot);
         foreach (Player player in _players)
         {
             player.GetPlannedAction(tickIndex)?.Shoot?.Invoke();
         }
 
         yield return new WaitForSeconds(shootDuration);
-
+        yield return TickData.CallTock(SAMType.Shoot);
         #endregion
 
         #region aim phase
-
+        yield return TickData.CallTick(SAMType.Aim);
         foreach (Player player in _players)
         {
             player.GetPlannedAction(tickIndex)?.Aim?.Invoke();
         }
 
         yield return new WaitForSeconds(aimDuration);
-
+        yield return TickData.CallTick(SAMType.Aim);
         #endregion
 
         #region move phase
-
+        yield return TickData.CallTick(SAMType.Move);
         // respawns come before anyone moves, so a pickup that comes back this tick can be
         // collected this tick. RespawnTicks = 1 means a pickup collected on tick N is
         // available again on tick N + 1
@@ -213,6 +214,7 @@ public class GameManager : Singleton<GameManager>
 
         // LG needs both players end position, so it resolves after everyone moves
         ResolveBeams();
+        yield return TickData.CallTick(SAMType.Move);
 
         #endregion
 

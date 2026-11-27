@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnholyTrinity.Helpers;
 using Nrjwolf.Tools.AttachAttributes;
@@ -21,7 +22,7 @@ public enum CameraView
 public class CameraManager : Singleton<CameraManager>
 {
     [SerializeField] [GetComponent] private CinemachineCamera resolutionCamera;
-
+    [SerializeField] private CinemachineBrain brain;
     [SerializeField] private InputAction toggleCloseViewAction =
         new("ToggleCloseView", InputActionType.Button, "<Keyboard>/tab");
 
@@ -65,7 +66,11 @@ public class CameraManager : Singleton<CameraManager>
         _freeCamera = freeCam.GetComponent<CinemachineCamera>();
         _freeCamera.Priority = IdlePriority;
         freeCam.enabled = false;
+    }
 
+    private void OnEnable()
+    {
+        TickData.Tick += OnTick;
         TurnManager.NewPhaseEvent += OnPhaseChanged;
         Player.PlayerSpawned += RegisterPlayerTracked;
     }
@@ -82,8 +87,25 @@ public class CameraManager : Singleton<CameraManager>
     {
         TurnManager.NewPhaseEvent -= OnPhaseChanged;
         Player.PlayerSpawned -= RegisterPlayerTracked;
+        TickData.Tick -= OnTick;
         toggleCloseViewAction.performed -= OnToggleInput;
         toggleCloseViewAction.Disable();
+    }
+
+    private IEnumerator OnTick(SAMType type)
+    {
+        if (type != SAMType.Shoot)
+        {
+            yield break;
+        }
+        Activate(resolutionCamera);
+        NotifyView();
+        //wait 1 frame for camera to update
+        yield return null;
+        while (brain.ActiveBlend != null)
+        {
+            yield return null;
+        }
     }
 
     private void OnPhaseChanged(TurnPhase phase)
