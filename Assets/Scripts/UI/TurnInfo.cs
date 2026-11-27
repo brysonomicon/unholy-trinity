@@ -1,5 +1,5 @@
-
 using TMPro;
+using UnholyTrinity.Helpers;
 using UnholyTrinity.Managers;
 using UnityEngine;
 
@@ -17,7 +17,7 @@ public class TurnInfo : MonoBehaviour
     private void Start()
     {
         OnNewRound(GameManager.Instance.Round);
-        OnNewPhase(TurnManager.Instance.CurrentPhase);
+        OnNewPhase(TurnManager.CurrentPhase);
     }
 
     private void OnDestroy()
@@ -25,7 +25,7 @@ public class TurnInfo : MonoBehaviour
         GameManager.NewRoundEvent -= OnNewRound;
         TurnManager.NewPhaseEvent -= OnNewPhase;
     }
-    
+
     private void OnNewPhase(TurnPhase newPhase)
     {
         phaseText.text =
@@ -36,6 +36,4 @@ public class TurnInfo : MonoBehaviour
     {
         roundNumberText.text = "ROUND " + roundNumber;
     }
-
 }
-

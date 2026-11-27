@@ -9,7 +9,6 @@ using UnholyTrinity.Players;
 using UnholyTrinity.Weapons;
 using UnholyTrinity.Hex;
 using UnholyTrinity.Tiles;
-using UnholyTrinity.Camera;
 using UnholyTrinity.Helpers;
 using UnityEngine;
 
@@ -21,16 +20,13 @@ namespace UnholyTrinity.Managers
         #region Fields
 
         public static event Action<int> NewRoundEvent;
-        public static event Action<Player> NewTurnEvent;
 
         [SerializeField] private int maxPlayers = 2;
 
         [SerializeField] [GetComponent] private MovementManager moveManager;
 
-        [SerializeField] private TurnManager turnManager = TurnManager.Instance;
-
         // second between ticks so resolution can be watched
-        public float TickDuration => turnManager.TickDuration;
+        public float TickDuration => TickData.TickDuration;
 
         [MinValue(0.1f)] [MaxValue(nameof(TickDuration))]
         private float shootDuration;
@@ -69,7 +65,7 @@ namespace UnholyTrinity.Managers
 
         [CanBeNull]
         public Player CurrentPlayer =>
-            turnManager.CurrentPhase switch
+            TurnManager.CurrentPhase switch
             {
                 TurnPhase.PlayerOne  => _players.First(),
                 TurnPhase.PlayerTwo  => _players.Last(),
@@ -78,19 +74,13 @@ namespace UnholyTrinity.Managers
             };
 
         public Player OtherPlayer =>
-            turnManager.CurrentPhase switch
+            TurnManager.CurrentPhase switch
             {
                 TurnPhase.PlayerOne  => _players.Last(),
                 TurnPhase.PlayerTwo  => _players.First(),
                 TurnPhase.Resolution => null,
                 _                    => throw new ArgumentOutOfRangeException()
             };
-
-        // false until the spawner has registered every player
-        public bool AllPlayersRegistered => _players.Count == maxPlayers;
-
-        public List<Vector3> CurrentPlayerPositions =>
-            new(_players.Select(x => x.transform.position).ToList());
 
         #endregion
 
@@ -101,11 +91,13 @@ namespace UnholyTrinity.Managers
             base.Awake();
             Round = 1;
             TurnManager.NewPhaseEvent += OnPhaseChanged;
+            Player.PlayerSpawned += RegisterPlayer;
         }
 
         private void OnDestroy()
         {
             TurnManager.NewPhaseEvent -= OnPhaseChanged;
+            Player.PlayerSpawned -= RegisterPlayer;
         }
 
         #endregion
@@ -119,10 +111,10 @@ namespace UnholyTrinity.Managers
             _players.Clear();
             _rockets.Clear();
             _beams.Clear();
-            turnManager.ResetPhases();
+            TurnManager.Reset();
         }
 
-        public void RegisterPlayer(Player player)
+        private void RegisterPlayer(Player player)
         {
             if (_players.Contains(player))
             {
@@ -137,12 +129,10 @@ namespace UnholyTrinity.Managers
             }
 
             _players.Add(player);
-            CameraManager.Instance.RegisterPlayerTracked(player.transform, 1,
-                1);
             //Start the game when we get enough players.
             if (_players.Count == maxPlayers)
             {
-                NewTurnEvent?.Invoke(_players.First());
+                TurnManager.StartGame();
             }
         }
 
@@ -152,7 +142,7 @@ namespace UnholyTrinity.Managers
 
         private IEnumerator ResolutionRoutine()
         {
-            for (int i = 0; i < turnManager.TicksPerTurn; i++)
+            for (int i = 0; i < TickData.TicksPerTurn; i++)
             {
                 CurrentTick++;
                 yield return ResolveTick(i);
@@ -459,9 +449,7 @@ namespace UnholyTrinity.Managers
             }
             else
             {
-                NewTurnEvent?.Invoke(newPhase == TurnPhase.PlayerOne
-                    ? _players.First()
-                    : _players.Last());
+                TurnManager.EndTurn();
             }
         }
 
