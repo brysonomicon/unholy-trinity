@@ -22,7 +22,6 @@ internal static class CoroutineRunner
             }
 
             GameObject go = new GameObject("GlobalCoroutineRunner");
-            Object.DontDestroyOnLoad(go);
             _instance = go.AddComponent<RunnerHost>();
             return _instance;
         }
