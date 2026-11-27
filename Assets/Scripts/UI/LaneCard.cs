@@ -9,12 +9,20 @@ public class LaneCard : MonoBehaviour
     [SerializeField] private Transform optionRows;
     [SerializeField] private float optionSpacing = 10f;
     [SerializeField] private LaneOption optionPrefab;
+    [SerializeField] private RectTransform fill;
 
     private Transform currentRow;
 
     public LaneCard Setup(string title)
     {
         titleText.text = title;
+        return this;
+    }
+
+    public LaneCard SetFill(float amount)
+    {
+        fill.gameObject.SetActive(amount > 0f);
+        fill.anchorMax = new Vector2(1f, amount);
         return this;
     }
 

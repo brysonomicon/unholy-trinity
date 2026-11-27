@@ -23,9 +23,9 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
     [SerializeField] [GetComponent] private PlayerAnimationDriver driver;
 
     // unserialized, passed to player by spawner instead
-    private MapManager mapManager;
+    private MapManager _mapManager;
 
-    public HexMap Map => mapManager.Map;
+    public HexMap Map => _mapManager.Map;
 
     [Header("Map")] [SerializeField] private float heightOffset = 0.5f;
     [SerializeField] private DirectionCompass directionCompass;
@@ -44,14 +44,17 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
 
     // ticks counted for the whole game, so a cooldown can block ticks
     // in subsequent turns
-    private int nextFireTick;
+    private int _nextFireTick;
+
+    // cooldown of last fired shot so the shoot card can show how much is left
+    private int _lastFiredCooldown;
 
     // this turn's plan, one UnholyAction per tick
-    private readonly List<UnholyAction> plannedActions = new();
+    private readonly List<UnholyAction> _plannedActions = new();
 
     // set up by BeginMovePhase each tick. beams read MoveStartCoord for their start sample,
     // tickMovePath will be needed for pickups
-    private readonly List<HexCoord> tickMovePath = new();
+    private readonly List<HexCoord> _tickMovePath = new();
 
     public HexCoord MoveStartCoord { get; private set; }
 
@@ -93,20 +96,36 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
     // raised whenever a player's health or armour changes, so UI can update
     public static event Action<Player> HealthChangedEvent;
 
-    public IReadOnlyList<HexCoord> TickMovePath => tickMovePath;
+    public IReadOnlyList<HexCoord> TickMovePath => _tickMovePath;
 
-    public int PlanningTickOfTurn => plannedActions.Count;
+    public int PlanningTickOfTurn => _plannedActions.Count;
+
+    // the current action being planned this tick, tracked to SAM order can be enforced
+    public SAMType PlanningStep { get; private set; } = SAMType.Shoot;
 
     public bool CanPlanNextTick =>
-        plannedActions.Count < TickData.TicksPerTurn;
+        _plannedActions.Count < TickData.TicksPerTurn;
 
-    private UnholyAction PlanningAction => plannedActions[^1];
+    public bool CanAdvancePlanningStep =>
+        PlanningStep != SAMType.Move || CanPlanNextTick;
+
+    public float PlannedFireReadiness
+    {
+        get
+        {
+            int ticksUntilReady = Mathf.Max(0, GetPlannedNextFireTick() - PlanningTick);
+
+            return 1f - (float)ticksUntilReady / (GetPlannedLastCooldown() + 1);
+        }
+    }
+
+    private UnholyAction PlanningAction => _plannedActions[^1];
 
     // the game tick the action being planned will resolve on
-    private int PlanningTick => TickData.CurrentTick + plannedActions.Count;
+    private int PlanningTick => TickData.CurrentTick + _plannedActions.Count;
 
     // aim from the end of the previous tick, which this tick starts from
-    private AimDirection PreviousPlannedAim => GetPlannedAim(plannedActions.Count - 1);
+    private AimDirection PreviousPlannedAim => GetPlannedAim(_plannedActions.Count - 1);
 
     private static readonly int AimDirectionCount = Enum.GetValues(typeof(AimDirection)).Length;
 
@@ -177,7 +196,7 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
 
     private void OnDrawGizmos()
     {
-        if (mapManager == null ||
+        if (_mapManager == null ||
             CurrentWeapon == null ||
             CurrentWeapon.Data == null)
         {
@@ -185,12 +204,12 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
         }
 
         foreach (AimTile aimTile in CurrentWeapon.Data.GetAimTiles(
-                     mapManager.Map, Coord, CurrentAimDirection))
+                     _mapManager.Map, Coord, CurrentAimDirection))
         {
             Gizmos.color =
                 Color.Lerp(Color.yellow, Color.red, aimTile.Falloff);
             Gizmos.DrawSphere(
-                mapManager.Layout.HexToWorld(aimTile.Coord) +
+                _mapManager.Layout.HexToWorld(aimTile.Coord) +
                 Vector3.up * 0.6f, 0.2f);
         }
     }
@@ -205,7 +224,7 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
         Coord = spawnCoord;
         CurrentAimDirection = spawnAim;
         momentum = HexCoord.Zero;
-        mapManager = mm;
+        _mapManager = mm;
         SnapToCoord(Coord);
         ClearPlan();
     }
@@ -217,7 +236,7 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
         Pose pose = GetPose(coord, CurrentAimDirection);
         transform.SetPositionAndRotation(pose.position, pose.rotation);
 
-        if (!mapManager.Map.IsWalkable(Coord))
+        if (!_mapManager.Map.IsWalkable(Coord))
         {
             Debug.LogWarning($"{name} is on non walkable coord {Coord}");
         }
@@ -231,15 +250,15 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
     private AimDirection GetPlannedAim(int tickCount)
     {
         return tickCount > 0
-            ? plannedActions[tickCount - 1].PlannedAim
+            ? _plannedActions[tickCount - 1].PlannedAim
             : CurrentAimDirection;
     }
 
     private List<AimTile> GetPlannedShotTiles()
     {
-        int shotTickCount = plannedActions.Count - 1;
+        int shotTickCount = _plannedActions.Count - 1;
         return CurrentWeapon.Data.GetAimTiles(
-            mapManager.Map, GetPlannedCoord(shotTickCount), GetPlannedAim(shotTickCount)
+            _mapManager.Map, GetPlannedCoord(shotTickCount), GetPlannedAim(shotTickCount)
         );
     }
 
@@ -247,12 +266,12 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
     // tick. null when that tick doesn't fire
     private List<AimTile> GetPlannedShotCone(int tickIndex)
     {
-        Weapon shot = tickIndex < plannedActions.Count
-            ? plannedActions[tickIndex].PlannedShot
+        Weapon shot = tickIndex < _plannedActions.Count
+            ? _plannedActions[tickIndex].PlannedShot
             : null;
 
         return shot?.Data.GetAimTiles(
-            mapManager.Map, GetPlannedCoord(tickIndex), GetPlannedAim(tickIndex)
+            _mapManager.Map, GetPlannedCoord(tickIndex), GetPlannedAim(tickIndex)
         );
     }
 
@@ -260,8 +279,8 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
     private void ShowLiveAim()
     {
         aimPreview.Show(
-            CurrentWeapon.Data.GetAimTiles(mapManager.Map, Coord, CurrentAimDirection),
-            mapManager.Layout
+            CurrentWeapon.Data.GetAimTiles(_mapManager.Map, Coord, CurrentAimDirection),
+            _mapManager.Layout
         );
     }
 
@@ -272,8 +291,8 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
 
     private Quaternion GetAimRotation(AimDirection aim)
     {
-        Vector3 aimVector = mapManager.Layout.HexToWorld(aim.ToOffset()) -
-                            mapManager.Layout.HexToWorld(HexCoord.Zero);
+        Vector3 aimVector = _mapManager.Layout.HexToWorld(aim.ToOffset()) -
+                            _mapManager.Layout.HexToWorld(HexCoord.Zero);
 
         return Quaternion.LookRotation(aimVector);
     }
@@ -284,7 +303,7 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
 
     private void ProjectPlan()
     {
-        int tickCount = plannedActions.Count;
+        int tickCount = _plannedActions.Count;
 
         // ghost i stands where tick i + 1 starts, which is where that tick's shot fires from.
         // the tick being planned already has the main aim preview, so its ghost skips the cone
@@ -296,13 +315,13 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
             ghosts.Add(new PlanGhost(GetPlannedPose(i), cone));
         }
 
-        planGhosts.Show(ghosts, mapManager.Layout, aimPreview);
+        planGhosts.Show(ghosts, _mapManager.Layout, aimPreview);
 
         Pose plannedPose = GetPlannedPose(tickCount);
         transform.SetPositionAndRotation(plannedPose.position, plannedPose.rotation);
 
-        aimPreview.Show(GetPlannedShotTiles(), mapManager.Layout);
-        plannedBlastPreview.Show(GetPlannedBlastTiles(), mapManager.Layout);
+        aimPreview.Show(GetPlannedShotTiles(), _mapManager.Layout);
+        plannedBlastPreview.Show(GetPlannedBlastTiles(), _mapManager.Layout);
 
         UpdateForecast();
     }
@@ -365,18 +384,18 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
         // from. each is picked up as its tick resolves, taking its cone with it
         List<PlanGhost> ghosts = new();
 
-        for (int i = 1; i <= plannedActions.Count; i++)
+        for (int i = 1; i <= _plannedActions.Count; i++)
         {
             ghosts.Add(new PlanGhost(GetPlannedPose(i), GetPlannedShotCone(i)));
         }
 
-        planGhosts.Show(ghosts, mapManager.Layout, aimPreview);
+        planGhosts.Show(ghosts, _mapManager.Layout, aimPreview);
     }
 
     private Pose GetPose(HexCoord coord, AimDirection aim)
     {
         return new Pose(
-            mapManager.Layout.HexToWorld(coord) + Vector3.up * heightOffset,
+            _mapManager.Layout.HexToWorld(coord) + Vector3.up * heightOffset,
             GetAimRotation(aim)
         );
     }
@@ -390,13 +409,13 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
     {
         List<AimTile> blastTiles = new();
 
-        foreach (UnholyAction action in plannedActions)
+        foreach (UnholyAction action in _plannedActions)
         {
             if (action.PlannedTarget != null &&
                 action.PlannedShot.Data is RocketLauncherData rocketData)
             {
                 blastTiles.AddRange(
-                    rocketData.GetBlastTiles(mapManager.Map, action.PlannedTarget.Value)
+                    rocketData.GetBlastTiles(_mapManager.Map, action.PlannedTarget.Value)
                 );
             }
         }
@@ -416,7 +435,7 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
     // is planned
     public void SelectWeapon(Weapon weapon)
     {
-        if (weapon == CurrentWeapon)
+        if (weapon == CurrentWeapon || PlanningStep != SAMType.Shoot)
         {
             return;
         }
@@ -432,7 +451,8 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
     // and the planned cooldown has expired by that tick
     public bool CanPlanShot(Weapon weapon)
     {
-        return GetUnplannedAmmo(weapon) > 0 &&
+        return PlanningStep == SAMType.Shoot &&
+               GetUnplannedAmmo(weapon) > 0 &&
                PlanningTick >= GetPlannedNextFireTick() &&
                (!weapon.Data.RequiresTarget || HasTargetInShotCone);
     }
@@ -474,6 +494,11 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
     // fills the next tick of the shoot lane without firing
     public void PlanHoldFire()
     {
+        if (PlanningStep != SAMType.Shoot)
+        {
+            return;
+        }
+
         Debug.Log($"{name} holds fire on tick {PlanningTick}");
         PlanningAction.PlannedShot = null;
         PlanningAction.PlannedTarget = null;
@@ -483,8 +508,13 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
 
     public void SelectTile(HexCoord coord)
     {
+        if (PlanningStep != SAMType.Shoot)
+        {
+            return;
+        }
+
         SelectedTile = coord;
-        selectionPreview.Show(new List<AimTile> { new AimTile(coord, 1f) }, mapManager.Layout);
+        selectionPreview.Show(new List<AimTile> { new AimTile(coord, 1f) }, _mapManager.Layout);
     }
 
     private void ClearSelectedTile()
@@ -496,7 +526,9 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
     public bool CanPlanRotation(bool clockwise)
     {
         int stepsAfterRotation = PlannedAimSteps + (clockwise ? -1 : 1);
-        return Mathf.Abs(stepsAfterRotation) <= aimStepsPerTick;
+
+        return PlanningStep == SAMType.Aim &&
+               Mathf.Abs(stepsAfterRotation) <= aimStepsPerTick;
     }
 
     public void PlanRotation(bool clockwise)
@@ -514,6 +546,11 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
 
     public void PlanHoldAim()
     {
+        if (PlanningStep != SAMType.Aim)
+        {
+            return;
+        }
+
         SetPlannedAim(PreviousPlannedAim);
     }
 
@@ -534,40 +571,100 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
         return PlanningAction.PlannedDirection == direction;
     }
 
-    public void PlanNextTick()
+    // confirming a move starts the next tick's plan. next tick button is confirm for now
+    public void AdvancePlanningStep()
     {
-        if (!CanPlanNextTick)
+        if (!CanAdvancePlanningStep)
         {
             return;
         }
 
-        plannedActions.Add(CreateNewDefaultAction(PlanningAction.PlannedAim));
+        switch (PlanningStep)
+        {
+            case SAMType.Shoot:
+                PlanningStep = SAMType.Aim;
+                break;
+            case SAMType.Aim:
+                PlanningStep = SAMType.Move;
+                break;
+            case SAMType.Move:
+                PlanNextTick();
+                break;
+        }
+    }
+
+    private void PlanNextTick()
+    {
+        _plannedActions.Add(CreateNewDefaultAction(PlanningAction.PlannedAim));
+        PlanningStep = SAMType.Shoot;
         ProjectPlan();
     }
 
     public int GetUnplannedAmmo(Weapon weapon)
     {
         return weapon.Ammo -
-               plannedActions.Count(action => action.PlannedShot == weapon);
+               _plannedActions.Count(action => action.PlannedShot == weapon);
     }
 
-    // clears the tick being planned currently. if already clear, clears previous tick
-    public void ClearTick()
+    // reopens a step of a tick for editing. keeps its choice but everything planned
+    // after it is discarded. used by the SAM grid and the back button
+    public void RewindPlanningTo(int tickIndex, SAMType step)
     {
-        if (!HasTickChanges && plannedActions.Count > 1)
+        bool isCurrentTick = tickIndex == _plannedActions.Count - 1;
+
+        // can only rewind to steps that have been planned already
+        if (tickIndex < 0 || tickIndex >= _plannedActions.Count ||
+            (isCurrentTick && step > PlanningStep))
         {
-            plannedActions.RemoveAt(plannedActions.Count - 1);
+            return;
         }
 
-        plannedActions[^1] = CreateNewDefaultAction(PreviousPlannedAim);
+        _plannedActions.RemoveRange(tickIndex + 1, _plannedActions.Count - tickIndex - 1);
+
+        // steps that come after the reopened one are reset to defaults
+        if (step < SAMType.Move)
+        {
+            PlanningAction.PlannedDirection = null;
+        }
+
+        if (step < SAMType.Aim)
+        {
+            PlanningAction.PlannedAim = PreviousPlannedAim;
+            PlanningAction.Aim = null;
+        }
+
+        PlanningStep = step;
+        UpdatePlannedMove();
         ProjectPlan();
+    }
+
+    public void StepBackPlanning()
+    {
+        if (PlanningStep != SAMType.Shoot)
+        {
+            RewindPlanningTo(_plannedActions.Count - 1, PlanningStep - 1);
+        }
+        else if (_plannedActions.Count > 1)
+        {
+            RewindPlanningTo(_plannedActions.Count - 2, SAMType.Move);
+        }
+    }
+
+    // whether or not a step of a tick has been confirmed so SAM grid knows which cells are filled
+    public bool IsStepConfirmed(int tickIndex, SAMType step)
+    {
+        int currentTickIndex = _plannedActions.Count - 1;
+
+        return tickIndex < currentTickIndex ||
+               (tickIndex == currentTickIndex && step < PlanningStep);
     }
 
     // clears the entire plan, used for turn start
     private void ClearPlan()
     {
-        plannedActions.Clear();
-        plannedActions.Add(CreateNewDefaultAction(CurrentAimDirection));
+        _plannedActions.Clear();
+        _plannedActions.Add(CreateNewDefaultAction(CurrentAimDirection));
+        PlanningStep = SAMType.Shoot;
         ProjectPlan();
     }
 
@@ -584,11 +681,11 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
 
     private int GetPlannedNextFireTick()
     {
-        int plannedNextFireTick = nextFireTick;
+        int plannedNextFireTick = _nextFireTick;
 
-        for (int i = 0; i < plannedActions.Count - 1; i++)
+        for (int i = 0; i < _plannedActions.Count - 1; i++)
         {
-            Weapon plannedShot = plannedActions[i].PlannedShot;
+            Weapon plannedShot = _plannedActions[i].PlannedShot;
 
             if (plannedShot != null)
             {
@@ -599,6 +696,21 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
         }
 
         return plannedNextFireTick;
+    }
+
+    private int GetPlannedLastCooldown()
+    {
+        for (int i = _plannedActions.Count - 2; i >= 0; i--)
+        {
+            Weapon plannedShot = _plannedActions[i].PlannedShot;
+
+            if (plannedShot != null)
+            {
+                return plannedShot.Data.Cooldown;
+            }
+        }
+
+        return _lastFiredCooldown;
     }
 
     #endregion
@@ -612,8 +724,8 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
     [CanBeNull]
     public UnholyAction GetPlannedAction(int tickIndex)
     {
-        return tickIndex < plannedActions.Count
-            ? plannedActions[tickIndex]
+        return tickIndex < _plannedActions.Count
+            ? _plannedActions[tickIndex]
             : null;
     }
 
@@ -634,9 +746,10 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
         }
 
         weapon.Fire();
-        nextFireTick = TickData.CurrentTick + 1 + weapon.Data.Cooldown;
+        _nextFireTick = TickData.CurrentTick + 1 + weapon.Data.Cooldown;
+        _lastFiredCooldown = weapon.Data.Cooldown;
 
-        List<AimTile> aimTiles = weapon.Data.GetAimTiles(mapManager.Map, Coord, CurrentAimDirection);
+        List<AimTile> aimTiles = weapon.Data.GetAimTiles(_mapManager.Map, Coord, CurrentAimDirection);
         if (weapon.Data.IsContinuous)
         {
             gm.StartBeam(this, weapon.Data, CurrentAimDirection, aimTiles);
@@ -651,7 +764,7 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
     private void Fire(Weapon weapon, HexCoord target)
     {
         RocketLauncherData rocketData = (RocketLauncherData)weapon.Data;
-        List<AimTile> aimTiles = rocketData.GetAimTiles(mapManager.Map, Coord, CurrentAimDirection);
+        List<AimTile> aimTiles = rocketData.GetAimTiles(_mapManager.Map, Coord, CurrentAimDirection);
         int targetIndex = aimTiles.FindIndex(aimTile => aimTile.Coord == target);
 
         if (targetIndex < 0)
@@ -666,7 +779,8 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
         }
 
         weapon.Fire();
-        nextFireTick = TickData.CurrentTick + 1 + weapon.Data.Cooldown;
+        _nextFireTick = TickData.CurrentTick + 1 + weapon.Data.Cooldown;
+        _lastFiredCooldown = weapon.Data.Cooldown;
 
         HexCoord landingTile = rocketData.GetLandingTile(aimTiles, aimTiles[targetIndex]);
 
@@ -675,14 +789,14 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
             Debug.Log($"{name}'s rocket scattered from {target} to {landingTile}");
         }
 
-        gm.LaunchRocket(this, (RocketLauncherData)weapon.Data, mapManager, landingTile);
+        gm.LaunchRocket(this, (RocketLauncherData)weapon.Data, _mapManager, landingTile);
     }
 
     // weapon cooldowns are global, no weapon can be fired until the cooldown of the last
     // fired weapon has expired
     private bool CanFire(Weapon weapon)
     {
-        return weapon.HasAmmo && TickData.CurrentTick >= nextFireTick;
+        return weapon.HasAmmo && TickData.CurrentTick >= _nextFireTick;
     }
 
     private void SetAim(AimDirection aim)
@@ -697,7 +811,7 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
     {
         driver.TargetSpeed = 1;
         MoveStartCoord = Coord;
-        tickMovePath.Clear();
+        _tickMovePath.Clear();
     }
 
     public void EndMovePhase()
@@ -709,7 +823,7 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
     // only meaningful after the move phase
     public List<AimTile> GetBeamTilesFromCurrentCoord(WeaponData weaponData, AimDirection firedAim)
     {
-        return weaponData.GetAimTiles(mapManager.Map, Coord, firedAim);
+        return weaponData.GetAimTiles(_mapManager.Map, Coord, firedAim);
     }
 
     #endregion
@@ -870,7 +984,7 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
         else if (newPhase == turnPhase)
         {
             ClearPlan();
-            directionCompass.Show(mapManager.Layout);
+            directionCompass.Show(_mapManager.Layout);
         }
     }
 
