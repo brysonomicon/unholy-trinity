@@ -4,245 +4,232 @@ using UnholyTrinity.Hex.Interfaces;
 
 namespace UnholyTrinity.Hex
 {
-    /// <summary>
-    /// The logical map: a sparse set of tiles, so any shape is allowed. Hexes with no tile are off-map
-    /// and behave like walls. Pure data with no Unity dependencies, so it is safe for simulation and tests.
-    /// </summary>
-    public class HexMap
+/// <summary>
+/// The logical map: a sparse set of tiles, so any shape is allowed. Hexes with no tile are off-map
+/// and behave like walls. Pure data with no Unity dependencies, so it is safe for simulation and tests.
+/// </summary>
+public class HexMap
+{
+    public readonly Dictionary<HexCoord, HexTile> TileCoords =
+        new();
+
+    public HashSet<HexTile> Collisions { get; private set; } = new();
+
+    public IReadOnlyCollection<HexTile> Tiles => TileCoords.Values;
+    public int Count => TileCoords.Count;
+
+    public bool Contains(HexCoord coord) => TileCoords.ContainsKey(coord);
+
+    public bool TryGetTile(HexCoord coord, out HexTile tile) =>
+        TileCoords.TryGetValue(coord, out tile);
+
+    public bool IsWalkable(HexCoord coord) =>
+        TileCoords.TryGetValue(coord, out var tile) && tile.IsWalkable;
+
+    public bool BlocksLineOfFire(HexCoord coord) =>
+        !TileCoords.TryGetValue(coord, out var tile) || tile.BlocksLineOfFire;
+
+    public HexMap()
     {
-        public readonly Dictionary<HexCoord, HexTile> tiles =
-            new();
+        HexTile.TrackCollision += OnTrackCollision;
+        HexTile.ClearCollision += OnClearCollision;
+        IMovable.RegisterMover += OnRegisterMover;
+    }
 
-        public HashSet<HexTile> Collisions
+    ~HexMap()
+    {
+        HexTile.TrackCollision -= OnTrackCollision;
+        HexTile.ClearCollision -= OnClearCollision;
+        IMovable.RegisterMover -= OnRegisterMover;
+    }
+
+    private void OnRegisterMover(IMovable mover)
+    {
+        TileCoords[mover.Coord].Enter(ref mover);
+    }
+
+    private void OnTrackCollision(HexTile tile)
+    {
+        Collisions.Add(tile);
+    }
+
+    private void OnClearCollision(HexTile tile)
+    {
+        Collisions.Remove(tile);
+    }
+
+    /// <summary>
+    /// The wall variant at <paramref name="coord"/>. False for non-wall tiles and for off-map hexes,
+    /// which callers should treat as normal walls.
+    /// </summary>
+    public bool TryGetWall(HexCoord coord, out WallSettings wall)
+    {
+        if (TileCoords.TryGetValue(coord, out var tile) &&
+            tile.Type == TileType.Wall)
         {
-            get;
-            private set;
-        } = new();
-
-        public IReadOnlyCollection<HexTile> Tiles => tiles.Values;
-        public int Count => tiles.Count;
-
-        public bool Contains(HexCoord coord) => tiles.ContainsKey(coord);
-
-        public bool TryGetTile(HexCoord coord, out HexTile tile) =>
-            tiles.TryGetValue(coord, out tile);
-
-        public bool IsWalkable(HexCoord coord) =>
-            tiles.TryGetValue(coord, out var tile) && tile.IsWalkable;
-
-        public bool BlocksLineOfFire(HexCoord coord) =>
-            !tiles.TryGetValue(coord, out var tile) || tile.BlocksLineOfFire;
-
-        public HexMap()
-        {
-            HexTile.TrackCollision += OnTrackCollision;
-            HexTile.ClearCollision += OnClearCollision;
-            IMovable.RegisterMover += OnRegisterMover;
+            wall = tile.WallSettings;
+            return true;
         }
 
-        ~HexMap()
+        wall = default;
+        return false;
+    }
+
+    public void SetTile(HexTile tile) => TileCoords[tile.Coord] = tile;
+
+    public bool RemoveTile(HexCoord coord) => TileCoords.Remove(coord);
+
+    public void Clear() => TileCoords.Clear();
+
+    public IEnumerable<HexCoord> Neighbors(HexCoord coord,
+        bool walkableOnly = false)
+    {
+        for (int i = 0; i < HexDirectionExtensions.Count; i++)
         {
-            HexTile.TrackCollision -= OnTrackCollision;
-            HexTile.ClearCollision -= OnClearCollision;
-            IMovable.RegisterMover -= OnRegisterMover;
-        }
-
-        private void OnRegisterMover(IMovable obj)
-        {
-            tiles[obj.Coord].Enter(obj);
-        }
-
-        private void OnTrackCollision(HexTile tile)
-        {
-            Collisions.Add(tile);
-        }
-
-        private void OnClearCollision(HexTile tile)
-        {
-            Collisions.Remove(tile);
-        }
-
-        /// <summary>
-        /// The wall variant at <paramref name="coord"/>. False for non-wall tiles and for off-map hexes,
-        /// which callers should treat as normal walls.
-        /// </summary>
-        public bool TryGetWall(HexCoord coord, out WallSettings wall)
-        {
-            if (tiles.TryGetValue(coord, out var tile) &&
-                tile.Type == TileType.Wall)
-            {
-                wall = tile.WallSettings;
-                return true;
-            }
-
-            wall = default;
-            return false;
-        }
-
-        public void SetTile(HexTile tile) => tiles[tile.Coord] = tile;
-
-        public bool RemoveTile(HexCoord coord) => tiles.Remove(coord);
-
-        public void Clear() => tiles.Clear();
-
-        public IEnumerable<HexCoord> Neighbors(HexCoord coord,
-            bool walkableOnly = false)
-        {
-            for (int i = 0; i < HexDirectionExtensions.Count; i++)
-            {
-                var n = coord.Neighbor((HexDirection)i);
-                if (walkableOnly ? IsWalkable(n) : Contains(n))
-                    yield return n;
-            }
-        }
-
-        public IEnumerable<HexTile> TilesOfType(TileType type)
-        {
-            foreach (var tile in tiles.Values)
-            {
-                if (tile.Type == type)
-                    yield return tile;
-            }
-        }
-
-        public IEnumerable<HexTile> PickupPoints =>
-            TilesOfType(TileType.PickupPoint);
-
-        /// <summary>Returns human-readable problems with the map; empty when valid.</summary>
-        public List<string> Validate()
-        {
-            var problems = new List<string>();
-            foreach (var tile in tiles.Values)
-            {
-                if (tile.Type == TileType.Portal)
-                    ValidatePortal(tile, problems);
-                else if (tile.Type == TileType.PickupPoint)
-                    ValidatePickupPoint(tile, problems);
-            }
-
-            return problems;
-        }
-
-        #region Portals
-
-        public bool TryGetPortalExit(HexCoord coord, out HexCoord exit,
-            out int rotationSteps)
-        {
-            if (tiles.TryGetValue(coord, out var tile) &&
-                tile.Type == TileType.Portal && tile.Portal.IsEntrance
-                && tile.Portal.Target != coord &&
-                tiles.TryGetValue(tile.Portal.Target, out var target)
-                && target.Type == TileType.Portal)
-            {
-                exit = tile.Portal.Target;
-                rotationSteps = tile.Portal.RotationSteps;
-                return true;
-            }
-
-            exit = coord;
-            rotationSteps = 0;
-            return false;
-        }
-
-        /// <summary>
-        /// Where a unit standing on <paramref name="coord"/> ends up: the portal's target on an entrance,
-        /// otherwise <paramref name="coord"/>.
-        /// </summary>
-        public HexCoord ThroughPortal(HexCoord coord)
-        {
-            TryGetPortalExit(coord, out var exit, out _);
-            return exit;
-        }
-
-        /// <summary>
-        /// Walks <paramref name="steps"/> from <paramref name="start"/> the way a mover does: stops at the first
-        /// unwalkable hex, and on stepping onto a portal entrance jumps to its target and rotates every remaining
-        /// step by the portal's rotation, in place. Returns where the walk ends.
-        /// </summary>
-        /// <param name="start">The tile to start at.</param>
-        /// <param name="steps">A list of steps you intend to take.</param>
-        /// <param name="totalRotation">Sum of the rotations of every portal crossed, for turning momentum to match.</param>
-        public HexCoord RedirectThroughPortals(HexCoord start,
-            IList<HexDirection> steps, out int totalRotation)
-        {
-            totalRotation = 0;
-            var current = start;
-            for (int i = 0; i < steps.Count; i++)
-            {
-                var next = current.Neighbor(steps[i]);
-                if (!IsWalkable(next))
-                    break;
-                current = next;
-
-                if (TryGetPortalExit(current, out var exit, out int rotation))
-                {
-                    current = exit;
-                    totalRotation += rotation;
-                    for (int j = i + 1; j < steps.Count; j++)
-                        steps[j] = steps[j].Rotate(rotation);
-                }
-            }
-
-            return current;
-        }
-
-        /// <summary>Every portal entrance that sends units to <paramref name="target"/>.</summary>
-        public IEnumerable<HexCoord> EntrancesTo(HexCoord target)
-        {
-            foreach (var tile in tiles.Values)
-            {
-                if (tile.Type == TileType.Portal && tile.Portal.IsEntrance &&
-                    tile.Portal.Target == target
-                    && tile.Coord != target)
-                {
-                    yield return tile.Coord;
-                }
-            }
-        }
-
-        void ValidatePortal(HexTile tile, List<string> problems)
-        {
-            if (tile.Portal.ExitOnly)
-            {
-                if (!EntrancesTo(tile.Coord).Any())
-                    problems.Add($"Portal exit {tile.Coord} has no entrances.");
-                return;
-            }
-
-            var target = tile.Portal.Target;
-            if (target == tile.Coord)
-                problems.Add($"Portal {tile.Coord} links to itself.");
-            else if (!tiles.TryGetValue(target, out var other))
-                problems.Add(
-                    $"Portal {tile.Coord} links to {target}, which is off the map.");
-            else if (other.Type != TileType.Portal)
-                problems.Add(
-                    $"Portal {tile.Coord} links to {target}, which is a {other.Type}, not a portal.");
-        }
-
-        #endregion
-
-        private static void ValidatePickupPoint(HexTile tile,
-            List<string> problems)
-        {
-            if (!tile.Pickup.HasPickup)
-                problems.Add(
-                    $"Pickup point {tile.Coord} has no pickup assigned.");
-        }
-
-        public void Step(HexCoord start, HexCoord end, in IMovable mover)
-        {
-            tiles[start].Exit(mover);
-            var target = MapManager.Instance.Layout.HexToWorld(tiles[end].Coord);
-            mover.gameObject.transform.position = target;
-            tiles[end].Enter(mover);
-        }
-
-        public void Step(HexCoord start, HexDirection direction,
-            in IMovable mover)
-        {
-            HexCoord target = start + direction;
-            Step(start, target, mover);
+            var n = coord.Neighbor((HexDirection)i);
+            if (walkableOnly ? IsWalkable(n) : Contains(n))
+                yield return n;
         }
     }
+
+    public IEnumerable<HexTile> TilesOfType(TileType type)
+    {
+        foreach (var tile in TileCoords.Values)
+        {
+            if (tile.Type == type)
+                yield return tile;
+        }
+    }
+
+    public IEnumerable<HexTile> PickupPoints =>
+        TilesOfType(TileType.PickupPoint);
+
+    /// <summary>Returns human-readable problems with the map; empty when valid.</summary>
+    public List<string> Validate()
+    {
+        var problems = new List<string>();
+        foreach (var tile in TileCoords.Values)
+        {
+            if (tile.Type == TileType.Portal)
+                ValidatePortal(tile, problems);
+            else if (tile.Type == TileType.PickupPoint)
+                ValidatePickupPoint(tile, problems);
+        }
+
+        return problems;
+    }
+
+    #region Portals
+
+    public bool TryGetPortalExit(HexCoord coord, out HexCoord exit,
+        out int rotationSteps)
+    {
+        if (TileCoords.TryGetValue(coord, out var tile) &&
+            tile.Type == TileType.Portal && tile.Portal.IsEntrance
+            && tile.Portal.Target != coord &&
+            TileCoords.TryGetValue(tile.Portal.Target, out var target)
+            && target.Type == TileType.Portal)
+        {
+            exit = tile.Portal.Target;
+            rotationSteps = tile.Portal.RotationSteps;
+            return true;
+        }
+
+        exit = coord;
+        rotationSteps = 0;
+        return false;
+    }
+
+    /// <summary>
+    /// Where a unit standing on <paramref name="coord"/> ends up: the portal's target on an entrance,
+    /// otherwise <paramref name="coord"/>.
+    /// </summary>
+    public HexCoord ThroughPortal(HexCoord coord)
+    {
+        TryGetPortalExit(coord, out var exit, out _);
+        return exit;
+    }
+
+    /// <summary>
+    /// Walks <paramref name="steps"/> from <paramref name="start"/> the way a mover does: stops at the first
+    /// unwalkable hex, and on stepping onto a portal entrance jumps to its target and rotates every remaining
+    /// step by the portal's rotation, in place. Returns where the walk ends.
+    /// </summary>
+    /// <param name="start">The tile to start at.</param>
+    /// <param name="steps">A list of steps you intend to take.</param>
+    /// <param name="totalRotation">Sum of the rotations of every portal crossed, for turning momentum to match.</param>
+    public HexCoord RedirectThroughPortals(HexCoord start,
+        IList<HexDirection> steps, out int totalRotation)
+    {
+        totalRotation = 0;
+        var current = start;
+        for (int i = 0; i < steps.Count; i++)
+        {
+            var next = current.Neighbor(steps[i]);
+            if (!IsWalkable(next))
+                break;
+            current = next;
+
+            if (TryGetPortalExit(current, out var exit, out int rotation))
+            {
+                current = exit;
+                totalRotation += rotation;
+                for (int j = i + 1; j < steps.Count; j++)
+                    steps[j] = steps[j].Rotate(rotation);
+            }
+        }
+
+        return current;
+    }
+
+    /// <summary>Every portal entrance that sends units to <paramref name="target"/>.</summary>
+    public IEnumerable<HexCoord> EntrancesTo(HexCoord target)
+    {
+        foreach (var tile in TileCoords.Values)
+        {
+            if (tile.Type == TileType.Portal && tile.Portal.IsEntrance &&
+                tile.Portal.Target == target
+                && tile.Coord != target)
+            {
+                yield return tile.Coord;
+            }
+        }
+    }
+
+    private void ValidatePortal(HexTile tile, List<string> problems)
+    {
+        if (tile.Portal.ExitOnly)
+        {
+            if (!EntrancesTo(tile.Coord).Any())
+                problems.Add($"Portal exit {tile.Coord} has no entrances.");
+            return;
+        }
+
+        var target = tile.Portal.Target;
+        if (target == tile.Coord)
+            problems.Add($"Portal {tile.Coord} links to itself.");
+        else if (!TileCoords.TryGetValue(target, out var other))
+            problems.Add(
+                $"Portal {tile.Coord} links to {target}, which is off the map.");
+        else if (other.Type != TileType.Portal)
+            problems.Add(
+                $"Portal {tile.Coord} links to {target}, which is a {other.Type}, not a portal.");
+    }
+
+    #endregion
+
+    private static void ValidatePickupPoint(HexTile tile,
+        List<string> problems)
+    {
+        if (!tile.Pickup.HasPickup)
+            problems.Add(
+                $"Pickup point {tile.Coord} has no pickup assigned.");
+    }
+
+    public void Step(HexCoord start, HexCoord end, ref IMovable mover)
+    {
+        TileCoords[start].Exit(ref mover);
+        TileCoords[end].Enter(ref mover);
+    }
+}
 }

@@ -174,23 +174,25 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector, IAimer
         TickData.Tick += OnTick;
     }
 
-    private void OnTick(SAMType obj)
+    private IEnumerator OnTick(SAMType type)
     {
         int currentTick = TickData.CurrentTick;
-        switch (obj)
+        var action = GetPlannedAction(currentTick);
+        switch (type)
         {
             case SAMType.Shoot:
                 break;
             case SAMType.Aim:
                 break;
             case SAMType.Move:
-                var action = GetPlannedAction(currentTick);
                 Momentum = GetPlannedMomentum(currentTick);
                 MoveSteps = action == null ? new List<HexDirection>() : action.PlannedMove;
                 break;
             default:
-                throw new ArgumentOutOfRangeException(nameof(obj), obj, null);
+                throw new ArgumentOutOfRangeException(nameof(type), type, null);
         }
+
+        yield return null;
     }
 
     private void Start()
@@ -236,6 +238,8 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector, IAimer
         CurrentAimDirection = spawnAim;
         Momentum = HexCoord.Zero;
         _mapManager = mm;
+        IMovable self = this;
+        mm.Map.TileCoords[spawnCoord].Enter(ref self);
         SnapToCoord(Coord);
         ClearPlan();
     }
@@ -352,18 +356,6 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector, IAimer
         SnapToCoord();
         ClearForecast();
         directionCompass.Hide();
-    }
-
-    private void LerpToCoord() => LerpToCoord(Coord);
-
-    private void LerpToCoord(HexCoord coord)
-    {
-        StopAllCoroutines();
-        var desiredPose = GetPose(coord, CurrentAimDirection);
-        var currentPose = new Pose(transform.position, transform.rotation);
-        float t = TickData.TickDuration / 2;
-        StartCoroutine(LerpPoseOverTime(transform, currentPose, desiredPose,
-            t));
     }
 
     private static IEnumerator LerpPoseOverTime(Transform targetTransform, Pose startPose,

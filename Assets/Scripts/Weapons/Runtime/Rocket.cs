@@ -22,11 +22,11 @@ public class Rocket : MonoBehaviour, IMovable
     public int MomentumGainPerTick => 0;
 
     public HexTile Tile { get; set; }
+    public HexCoord Coord { get; set; }
 
     public List<HexDirection> MoveSteps { get; private set; }
 
     private RocketLauncherData Data { get; set; }
-    public HexCoord Coord => Tile.Coord;
 
     private IVitals _shooter;
 
@@ -57,6 +57,7 @@ public class Rocket : MonoBehaviour, IMovable
             var tile = tileList[i];
             steps.Add(tile.DirectionTo(tileList[i + 1]));
         }
+
         MoveSteps = steps;
         Momentum = tileList.Last() - tileList.First();
         _shooter = shooter;
@@ -95,7 +96,7 @@ public class Rocket : MonoBehaviour, IMovable
 
     private void Detonate()
     {
-        RocketExplosion?.Invoke(Coord, Data);
+        RocketExplosion?.Invoke(Tile.Coord, Data);
         Destroy(gameObject);
     }
 

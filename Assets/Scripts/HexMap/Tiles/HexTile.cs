@@ -41,9 +41,10 @@ namespace UnholyTrinity.Hex
             Health = health;
         }
 
-        public virtual void Enter(IMovable mover)
+        public virtual void Enter(ref IMovable mover)
         {
             mover.Tile = this;
+            mover.Coord = Coord;
             StandingOn.Add(mover);
             if (HasCollision)
             {
@@ -51,7 +52,7 @@ namespace UnholyTrinity.Hex
             }
         }
 
-        public virtual void Exit(IMovable mover)
+        public virtual void Exit(ref IMovable mover)
         {
             bool hadCollision = HasCollision;
             StandingOn.Remove(mover);

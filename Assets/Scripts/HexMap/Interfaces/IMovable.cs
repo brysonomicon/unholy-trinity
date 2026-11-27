@@ -18,7 +18,8 @@ public interface IMovable
 
     int MoveIndex { get; set; }
     HexTile Tile { get; set; }
-    HexCoord Coord { get; }
+
+    HexCoord Coord { get; set; }
     List<HexDirection> MoveSteps { get; }
     public bool CanMove => MoveIndex < MoveSteps.Count;
     public int RemainingStepCount => MoveSteps.Count - MoveIndex;

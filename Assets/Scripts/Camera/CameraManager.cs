@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnholyTrinity.Helpers;
 using Nrjwolf.Tools.AttachAttributes;
@@ -16,6 +17,8 @@ namespace UnholyTrinity.Camera
 
         [SerializeField] [GetComponent]
         private CinemachineCamera resolutionCamera;
+        [SerializeField]
+        private CinemachineBrain brain;
 
         [SerializeField] private InputAction toggleCloseViewAction =
             new("ToggleCloseView", InputActionType.Button, "<Keyboard>/tab");
@@ -35,9 +38,8 @@ namespace UnholyTrinity.Camera
 
         private void NotifyView() => ViewChanged?.Invoke(CurrentView);
 
-        private const int
-            FreePriority =
-                20; // above ActivePriority so it overrides everything
+        // above ActivePriority so it overrides everything
+        private const int FreePriority = 20;
 
         private CinemachineCamera _freeCamera;
         private bool _freeCam;
@@ -54,7 +56,7 @@ namespace UnholyTrinity.Camera
         private TurnPhase _currentPhase;
         private PlayerCameraRig _currentPlayerRig;
 
-        private Dictionary<TurnPhase, Player> playerPhaseMap = new Dictionary<TurnPhase, Player>();
+        private Dictionary<TurnPhase, Player> playerPhaseMap = new();
 
         protected override void Awake()
         {
@@ -71,7 +73,23 @@ namespace UnholyTrinity.Camera
         private void OnEnable()
         {
             TurnManager.NewPhaseEvent += OnPhaseChanged;
+            TickData.Tick += OnTick;
             Player.PlayerSpawned += OnPlayerSpawned;
+        }
+
+        private IEnumerator OnTick(SAMType arg)
+        {
+            if (arg != SAMType.Shoot)
+            {
+                yield break;
+            }
+            Activate(resolutionCamera);
+            NotifyView();
+            yield return null;
+            while (brain.ActiveBlend != null)
+            {
+                yield return null;
+            }
         }
 
         private void OnPlayerSpawned(Player player)

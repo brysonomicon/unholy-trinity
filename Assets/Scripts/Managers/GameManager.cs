@@ -161,7 +161,7 @@ public class GameManager : Singleton<GameManager>
         // opponent move path relative to shooter aim cone
 
         #region shoot phase
-        TickData.CallTick(SAMType.Shoot);
+        yield return TickData.CallTick(SAMType.Shoot);
 
         foreach (Player player in _players)
         {
@@ -169,24 +169,24 @@ public class GameManager : Singleton<GameManager>
         }
 
         yield return new WaitForSeconds(shootDuration);
-        TickData.CallTock(SAMType.Shoot);
+        yield return TickData.CallTock(SAMType.Shoot);
 
         #endregion
 
         #region aim phase
 
-        TickData.CallTick(SAMType.Aim);
+        yield return TickData.CallTick(SAMType.Aim);
         foreach (Player player in _players)
         {
             player.GetPlannedAction(tickIndex)?.Aim?.Invoke();
         }
 
         yield return new WaitForSeconds(aimDuration);
-        TickData.CallTock(SAMType.Aim);
+        yield return TickData.CallTock(SAMType.Aim);
         #endregion
 
         #region move phase
-        TickData.CallTick(SAMType.Move);
+        yield return TickData.CallTick(SAMType.Move);
         Debug.Log("Moving tick " + tickIndex);
 
         yield return moveManager.HandleTick();
@@ -200,7 +200,7 @@ public class GameManager : Singleton<GameManager>
 
         // LG needs both players end position, so it resolves after everyone moves
         ResolveBeams();
-        TickData.CallTock(SAMType.Move);
+        yield return TickData.CallTock(SAMType.Move);
         #endregion
 
         Debug.Log("Ghosting tick " + tickIndex);

@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using NaughtyAttributes;
 using Nrjwolf.Tools.AttachAttributes;
@@ -11,7 +12,7 @@ namespace UnholyTrinity.Hex
 {
     /// <summary>
     /// Scene entry point for pickups: builds a <see cref="PickupField"/> from the map and shows each pickup's
-    /// visual while it is available. Registers with the <see cref="GameController"/> through the <see cref="MapManager"/>
+    /// visual while it is available. Registers with the <see cref="MapManager"/> through the <see cref="MapManager"/>
     /// whose move phase drives it
     /// through <see cref="CollectAlong"/> and <see cref="AdvanceTicks"/>.
     /// </summary>
@@ -69,9 +70,10 @@ namespace UnholyTrinity.Hex
             TickData.Tick -= OnTick;
         }
 
-        private void OnTick(SAMType obj)
+        private IEnumerator OnTick(SAMType obj)
         {
             AdvanceTicks(1);
+            yield return null;
         }
 
         // these are only cosmetic, but easy to forget about
