@@ -103,7 +103,7 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
     private UnholyAction PlanningAction => plannedActions[^1];
 
     // the game tick the action being planned will resolve on
-    private int PlanningTick => gm.CurrentTick + plannedActions.Count;
+    private int PlanningTick => TickData.CurrentTick + plannedActions.Count;
 
     // aim from the end of the previous tick, which this tick starts from
     private AimDirection PreviousPlannedAim => GetPlannedAim(plannedActions.Count - 1);
@@ -325,7 +325,7 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
         StopAllCoroutines();
         var desiredPose = GetPose(coord, CurrentAimDirection);
         var currentPose = new Pose(transform.position, transform.rotation);
-        float t = gm.TickDuration / 2;
+        float t = TickData.TickDuration / 2;
         StartCoroutine(LerpPoseOverTime(transform, currentPose, desiredPose, t));
     }
 
@@ -592,7 +592,7 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
 
             if (plannedShot != null)
             {
-                int shotTick = gm.CurrentTick + 1 + i;
+                int shotTick = TickData.CurrentTick + 1 + i;
                 plannedNextFireTick =
                     shotTick + 1 + plannedShot.Data.Cooldown;
             }
@@ -634,7 +634,7 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
         }
 
         weapon.Fire();
-        nextFireTick = gm.CurrentTick + 1 + weapon.Data.Cooldown;
+        nextFireTick = TickData.CurrentTick + 1 + weapon.Data.Cooldown;
 
         List<AimTile> aimTiles = weapon.Data.GetAimTiles(mapManager.Map, Coord, CurrentAimDirection);
         if (weapon.Data.IsContinuous)
@@ -666,7 +666,7 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
         }
 
         weapon.Fire();
-        nextFireTick = gm.CurrentTick + 1 + weapon.Data.Cooldown;
+        nextFireTick = TickData.CurrentTick + 1 + weapon.Data.Cooldown;
 
         HexCoord landingTile = rocketData.GetLandingTile(aimTiles, aimTiles[targetIndex]);
 
@@ -682,7 +682,7 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
     // fired weapon has expired
     private bool CanFire(Weapon weapon)
     {
-        return weapon.HasAmmo && gm.CurrentTick >= nextFireTick;
+        return weapon.HasAmmo && TickData.CurrentTick >= nextFireTick;
     }
 
     private void SetAim(AimDirection aim)

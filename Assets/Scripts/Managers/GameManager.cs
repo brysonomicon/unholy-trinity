@@ -53,10 +53,6 @@ public class GameManager : Singleton<GameManager>
         AimDirection firedAim,
         List<AimTile> firedTiles)> _beams = new();
 
-    // counts every tick of the game and only resets with ResetGame.
-    // cooldowns are stored as the tick they expire on
-    public int CurrentTick { get; private set; }
-
     [CanBeNull]
     public Player CurrentPlayer =>
         TurnManager.CurrentPhase switch
@@ -90,7 +86,7 @@ public class GameManager : Singleton<GameManager>
 
     public void ResetGame()
     {
-        CurrentTick = 0;
+        TickData.SetCurrentTick(0);
         _players.Clear();
         _rockets.Clear();
         _beams.Clear();
@@ -127,7 +123,7 @@ public class GameManager : Singleton<GameManager>
     {
         for (int i = 0; i < TickData.TicksPerTurn; i++)
         {
-            CurrentTick++;
+            TickData.SetCurrentTick(TickData.CurrentTick + 1);
             yield return ResolveTick(i);
         }
 
@@ -165,7 +161,7 @@ public class GameManager : Singleton<GameManager>
         }
 
         yield return new WaitForSeconds(aimDuration);
-        yield return TickData.CallTick(SAMType.Aim);
+        yield return TickData.CallTock(SAMType.Aim);
         #endregion
 
         #region move phase
@@ -214,7 +210,7 @@ public class GameManager : Singleton<GameManager>
 
         // LG needs both players end position, so it resolves after everyone moves
         ResolveBeams();
-        yield return TickData.CallTick(SAMType.Move);
+        yield return TickData.CallTock(SAMType.Move);
 
         #endregion
 

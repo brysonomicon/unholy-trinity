@@ -11,6 +11,8 @@ public static class TickData
     public static event Func<SAMType, IEnumerator> Tick;
     public static event Func<SAMType, IEnumerator> Tock;
 
+    // counts every tick of the game and only resets with ResetGame.
+    // cooldowns are stored as the tick they expire on
     public static int CurrentTick { get; private set; }
 
     public static int TicksPerTurn = 3;

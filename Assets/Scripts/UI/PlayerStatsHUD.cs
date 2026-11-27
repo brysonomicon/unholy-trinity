@@ -28,7 +28,7 @@ public class PlayerStatsHUD : MonoBehaviour
     {
         Player.HealthChangedEvent -= OnHealthChanged;
         Player.PlanForecastChangedEvent -= OnHealthChanged;
-        TurnManager.NewPhaseEvent += OnNewPhase;
+        TurnManager.NewPhaseEvent -= OnNewPhase;
     }
 
     private void OnHealthChanged(Player _) => Refresh();
