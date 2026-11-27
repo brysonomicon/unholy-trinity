@@ -22,8 +22,6 @@ namespace UnholyTrinity.Hex
         public IReadOnlyCollection<HexTile> Tiles => tiles.Values;
         public int Count => tiles.Count;
 
-        public HexTile this[HexCoord coord] => tiles[coord];
-
         public bool Contains(HexCoord coord) => tiles.ContainsKey(coord);
 
         public bool TryGetTile(HexCoord coord, out HexTile tile) =>
@@ -235,7 +233,16 @@ namespace UnholyTrinity.Hex
         public void Step(HexCoord start, HexCoord end, in IMovable mover)
         {
             tiles[start].Exit(mover);
-            tiles[end].Exit(mover);
+            var target = MapManager.Instance.Layout.HexToWorld(tiles[end].Coord);
+            mover.gameObject.transform.position = target;
+            tiles[end].Enter(mover);
+        }
+
+        public void Step(HexCoord start, HexDirection direction,
+            in IMovable mover)
+        {
+            HexCoord target = start + direction;
+            Step(start, target, mover);
         }
     }
 }

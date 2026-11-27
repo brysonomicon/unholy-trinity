@@ -10,28 +10,25 @@ namespace UnholyTrinity.Weapons
 {
 public class Rocket : MonoBehaviour, IMovable
 {
-    public static event Action<HexCoord, RocketLauncherData> RocketExplosion;
+    public static event Action<HexCoord, RocketLauncherData>
+        RocketExplosion;
 
     [SerializeField] private float heightOffset = 0.5f;
     [SerializeField] private AimPreview blastPreview;
 
-    // includes the tile fired from and the impact tile
-    private List<HexCoord> path;
-    public int MoveIndex { get; private set; }
+    public int MoveIndex { get; set; }
 
     public HexCoord Momentum { get; private set; }
-    public int MomentumGainPerTick { get; }
+    public int MomentumGainPerTick => 0;
 
     public HexTile Tile { get; set; }
 
-    public List<HexDirection> MoveSteps { get; set; }
+    public List<HexDirection> MoveSteps { get; private set; }
 
-    public RocketLauncherData Data { get; private set; }
+    private RocketLauncherData Data { get; set; }
     public HexCoord Coord => Tile.Coord;
-    public HexCoord TargetCoord => path.Last();
 
     private IVitals _shooter;
-    private bool _isValid;
 
     private void OnEnable()
     {
@@ -43,7 +40,7 @@ public class Rocket : MonoBehaviour, IMovable
         (this as IMovable).Unregister(this);
     }
 
-    public void SetValid() => _isValid = true;
+    private bool _shouldDetonate;
 
     public void Launch(
         RocketLauncherData data,
@@ -53,37 +50,32 @@ public class Rocket : MonoBehaviour, IMovable
     )
     {
         Data = data;
-        path = origin.LineTo(target);
+        var tileList = origin.LineTo(target);
+        var steps = new List<HexDirection>();
+        for (int i = 0; i < tileList.Count - 1; i++)
+        {
+            var tile = tileList[i];
+            steps.Add(tile.DirectionTo(tileList[i + 1]));
+        }
+        MoveSteps = steps;
+        Momentum = tileList.Last() - tileList.First();
         _shooter = shooter;
         MoveIndex = 0;
+
         //! TODO: Some sort of visualizer abstraction
         // blastPreview.Show(data.GetBlastTiles(mapManager.Map, target),
         //     mapManager.Layout);
     }
 
     // advances a single rocket forward by the speed defined in the weapon data
-    private IEnumerator<(int, HexCoord)> AdvanceRocket()
+    public void Move()
     {
-        bool shouldDetonate = false;
-
-        yield return (Data.Speed, Coord);
-
-        for (int step = 0;
-             step < Data.Speed && !shouldDetonate;
-             step++)
+        (this as IMovable).Move();
+        _shouldDetonate =
+            !(this as IMovable).CanMove || IsDirectHit();
+        if (_shouldDetonate)
         {
-            Move();
-            shouldDetonate =
-                !(this as IMovable).CanMove || IsDirectHit();
-
-            if (shouldDetonate)
-            {
-                Detonate();
-            }
-
-            yield return (
-                shouldDetonate ? 0 : Data.Speed - (step + 1),
-                Coord);
+            Detonate();
         }
     }
 
@@ -115,16 +107,6 @@ public class Rocket : MonoBehaviour, IMovable
     public void EndMovePhase()
     {
         throw new NotImplementedException();
-    }
-
-    public void Move()
-    {
-        if (!(this as IMovable).CanMove)
-        {
-            return;
-        }
-
-        MoveIndex++;
     }
 }
 }

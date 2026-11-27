@@ -14,831 +14,834 @@ using UnityEngine;
 
 namespace UnholyTrinity.Players
 {
-    public partial class Player : MonoBehaviour, IVitals, IWeaponCollector,
-        IAimer
+public partial class Player : MonoBehaviour, IVitals, IWeaponCollector, IAimer
+{
+    public static event Action<Player> PlayerSpawned;
+
+    #region Fields
+
+    [SerializeField] [GetComponent] private PlayerAnimationDriver driver;
+
+    // unserialized, passed to player by spawner instead
+    private MapManager _mapManager = MapManager.Instance;
+
+    public HexMap Map => _mapManager.Map;
+
+    [Header("Map")] [SerializeField] private float heightOffset = 0.5f;
+    [SerializeField] private DirectionCompass directionCompass;
+
+    [field: SerializeField]
+    public PlayerCameraRig CameraRig { get; private set; }
+
+    [Header("Combat")] [SerializeField] private WeaponData startingWeapon;
+    [SerializeField] private AimPreview aimPreview;
+    [SerializeField] private PlanGhosts planGhosts;
+    [SerializeField] private AimPreview selectionPreview;
+
+    [SerializeField] private AimPreview plannedBlastPreview;
+
+    // how many 30 degree steps a player can aim in one tick
+    [SerializeField] [Min(1)] private int aimStepsPerTick = 1;
+
+    // ticks counted for the whole game, so a cooldown can block ticks
+    // in subsequent turns
+    private int nextFireTick;
+
+    // this turn's plan, one UnholyAction per tick
+    private readonly List<UnholyAction> plannedActions = new();
+
+    // set up by BeginMovePhase each tick. beams read MoveStartCoord for their start sample,
+    // tickMovePath will be needed for pickups
+    private readonly List<HexCoord> tickMovePath = new();
+
+    public HexCoord MoveStartCoord { get; private set; }
+
+    // the selected tile that rocket launcher fires at
+    public HexCoord? SelectedTile { get; private set; }
+
+    // all the weapons the player holds
+    [SerializeField] private List<Weapon> weapons = new();
+    public IReadOnlyList<Weapon> Weapons => weapons;
+
+    // the equipped weapon used for planning
+    public Weapon CurrentWeapon { get; private set; }
+
+    [field: SerializeField]
+    public AimDirection CurrentAimDirection { get; private set; }
+
+    [Header("Health")] [SerializeField, Min(1)]
+    private int maxHealth = 100;
+
+    [field: SerializeField] public int CurrentHealth { get; private set; }
+
+    public bool IsDead => CurrentHealth <= 0;
+
+    [Header("Armour")] [SerializeField, Min(0)]
+    private int maxArmour = 100;
+
+    [Tooltip(
+        "Percent of each hit the armour absorbs, spending one armour per point absorbed.")]
+    [SerializeField, Range(0, 100)]
+    private int armourAbsorbPercent = 50;
+
+    [Tooltip(
+        "Round the absorbed share up, so even small hits use armour first.")]
+    [SerializeField]
+    private bool roundAbsorbUp = true;
+
+    [field: SerializeField] public int CurrentArmour { get; private set; }
+
+    public int MaxArmour => maxArmour;
+
+    public int MaxHealth => maxHealth;
+
+    // raised whenever a player's health or armour changes, so UI can update
+    public static event Action<Player> HealthChangedEvent;
+
+    public IReadOnlyList<HexCoord> TickMovePath => tickMovePath;
+
+    public int PlanningTickOfTurn => plannedActions.Count;
+
+    public bool CanPlanNextTick =>
+        plannedActions.Count < TickData.TicksPerTurn;
+
+    private UnholyAction PlanningAction => plannedActions[^1];
+
+    // the game tick the action being planned will resolve on
+    private int PlanningTick => TickData.CurrentTick + plannedActions.Count;
+
+    // aim from the end of the previous tick, which this tick starts from
+    private AimDirection PreviousPlannedAim =>
+        GetPlannedAim(plannedActions.Count - 1);
+
+    private static readonly int AimDirectionCount =
+        Enum.GetValues(typeof(AimDirection)).Length;
+
+    private int PlannedAimSteps
     {
-        public static event Action<Player> PlayerSpawned;
-
-        #region Fields
-
-        [SerializeField] [GetComponent] private PlayerAnimationDriver driver;
-
-        // unserialized, passed to player by spawner instead
-        private MapManager mapManager;
-
-        public HexMap Map => mapManager.Map;
-
-        [Header("Map")] [SerializeField] private float heightOffset = 0.5f;
-        [SerializeField] private DirectionCompass directionCompass;
-
-        [field: SerializeField]
-        public PlayerCameraRig CameraRig { get; private set; }
-
-        [Header("Combat")] [SerializeField] private WeaponData startingWeapon;
-        [SerializeField] private AimPreview aimPreview;
-        [SerializeField] private PlanGhosts planGhosts;
-        [SerializeField] private AimPreview selectionPreview;
-
-        [SerializeField] private AimPreview plannedBlastPreview;
-
-        // how many 30 degree steps a player can aim in one tick
-        [SerializeField] [Min(1)] private int aimStepsPerTick = 1;
-
-        // ticks counted for the whole game, so a cooldown can block ticks
-        // in subsequent turns
-        private int nextFireTick;
-
-        // this turn's plan, one UnholyAction per tick
-        private readonly List<UnholyAction> plannedActions = new();
-
-        // set up by BeginMovePhase each tick. beams read MoveStartCoord for their start sample,
-        // tickMovePath will be needed for pickups
-        private readonly List<HexCoord> tickMovePath = new();
-
-        public HexCoord MoveStartCoord { get; private set; }
-
-        // the selected tile that rocket launcher fires at
-        public HexCoord? SelectedTile { get; private set; }
-
-        // all the weapons the player holds
-        [SerializeField] private List<Weapon> weapons = new();
-        public IReadOnlyList<Weapon> Weapons => weapons;
-
-        // the equipped weapon used for planning
-        public Weapon CurrentWeapon { get; private set; }
-
-        [field: SerializeField]
-        public AimDirection CurrentAimDirection { get; private set; }
-
-        [Header("Health")] [SerializeField, Min(1)]
-        private int maxHealth = 100;
-
-        [field: SerializeField] public int CurrentHealth { get; private set; }
-
-        public bool IsDead => CurrentHealth <= 0;
-
-        [Header("Armour")] [SerializeField, Min(0)]
-        private int maxArmour = 100;
-
-        [Tooltip(
-            "Percent of each hit the armour absorbs, spending one armour per point absorbed.")]
-        [SerializeField, Range(0, 100)]
-        private int armourAbsorbPercent = 50;
-
-        [Tooltip(
-            "Round the absorbed share up, so even small hits use armour first.")]
-        [SerializeField]
-        private bool roundAbsorbUp = true;
-
-        [field: SerializeField] public int CurrentArmour { get; private set; }
-
-        public int MaxArmour => maxArmour;
-
-        public int MaxHealth => maxHealth;
-
-        // raised whenever a player's health or armour changes, so UI can update
-        public static event Action<Player> HealthChangedEvent;
-
-        public IReadOnlyList<HexCoord> TickMovePath => tickMovePath;
-
-        public int PlanningTickOfTurn => plannedActions.Count;
-
-        public bool CanPlanNextTick =>
-            plannedActions.Count < TickData.TicksPerTurn;
-
-        private UnholyAction PlanningAction => plannedActions[^1];
-
-        // the game tick the action being planned will resolve on
-        private int PlanningTick => TickData.CurrentTick + plannedActions.Count;
-        public int CurrentTick { get; set; }
-
-        // aim from the end of the previous tick, which this tick starts from
-        private AimDirection PreviousPlannedAim =>
-            GetPlannedAim(plannedActions.Count - 1);
-
-        private static readonly int AimDirectionCount =
-            Enum.GetValues(typeof(AimDirection)).Length;
-
-        private int PlannedAimSteps
+        get
         {
-            get
-            {
-                int steps =
-                    ((int)PlanningAction.PlannedAim - (int)PreviousPlannedAim +
-                     AimDirectionCount) % AimDirectionCount;
-
-                return steps > AimDirectionCount / 2
-                    ? steps - AimDirectionCount
-                    : steps;
-            }
-        }
-
-        public bool IsHoldingFire => PlanningAction.PlannedShot == null;
-
-        public bool IsHoldingAim =>
-            PlanningAction.PlannedAim == PreviousPlannedAim;
-
-        public bool IsHoldingMove => PlanningAction.PlannedMove.Count == 0;
-
-        private bool HasTickChanges =>
-            !IsHoldingFire || !IsHoldingAim || !IsHoldingMove;
-
-        private bool HasTargetInShotCone => SelectedTile != null &&
-                                            IsInShotCone(SelectedTile.Value);
-
-        public TurnPhase turnPhase;
-
-        #endregion
-
-        #region Unity Lifecycle
-
-        private void Awake()
-        {
-            if (CameraRig == null)
-            {
-                throw new MissingComponentException(
-                    $"{name} has no CameraRig assigned.");
-            }
-
-            CameraRig.SetTarget(transform);
-
-            CurrentHealth = maxHealth;
-            CurrentArmour = 0;
-            CurrentWeapon = new Weapon(startingWeapon);
-            weapons.Insert(0, CurrentWeapon);
-        }
-
-        private void OnEnable()
-        {
-            MapManager.LayoutChanged += SnapToCoord;
-            TurnManager.NewPhaseEvent += OnNewPhase;
-            (this as IMovable).Register(this);
-            PlayerSpawned?.Invoke(this);
-        }
-
-        private void OnDisable()
-        {
-            TurnManager.NewPhaseEvent -= OnNewPhase;
-            MapManager.LayoutChanged -= SnapToCoord;
-            (this as IMovable).Unregister(this);
-        }
-
-        private void OnDrawGizmos()
-        {
-            if (mapManager == null ||
-                CurrentWeapon == null ||
-                CurrentWeapon.Data == null)
-            {
-                return;
-            }
-
-            foreach (AimTile aimTile in CurrentWeapon.Data.GetAimTiles(
-                         mapManager.Map, Coord, CurrentAimDirection))
-            {
-                Gizmos.color =
-                    Color.Lerp(Color.yellow, Color.red, aimTile.Falloff);
-                Gizmos.DrawSphere(
-                    mapManager.Layout.HexToWorld(aimTile.Coord) +
-                    Vector3.up * 0.6f, 0.2f);
-            }
-        }
-
-        #endregion
-
-        #region Setup
-
-        // called by the spawner
-        public void Initialize(MapManager mm, HexCoord spawnCoord,
-            AimDirection spawnAim)
-        {
-            Coord = spawnCoord;
-            CurrentAimDirection = spawnAim;
-            momentum = HexCoord.Zero;
-            mapManager = mm;
-            SnapToCoord(Coord);
-            ClearPlan();
-        }
-
-        private void SnapToCoord() => SnapToCoord(Coord);
-
-        private void SnapToCoord(HexCoord coord)
-        {
-            Pose pose = GetPose(coord, CurrentAimDirection);
-            transform.SetPositionAndRotation(pose.position, pose.rotation);
-
-            if (!mapManager.Map.IsWalkable(Coord))
-            {
-                throw new ArgumentException(
-                    $"{name} is on non walkable coord {Coord}");
-            }
-        }
-
-        #endregion
-
-        #region Aim
-
-        // aim after the first tickCount planned ticks, 0 = real aim
-        private AimDirection GetPlannedAim(int tickCount)
-        {
-            return tickCount > 0
-                ? plannedActions[tickCount - 1].PlannedAim
-                : CurrentAimDirection;
-        }
-
-        private List<AimTile> GetPlannedShotTiles()
-        {
-            int shotTickCount = plannedActions.Count - 1;
-            return CurrentWeapon.Data.GetAimTiles(
-                mapManager.Map, GetPlannedCoord(shotTickCount),
-                GetPlannedAim(shotTickCount)
-            );
-        }
-
-        // the cone of the shot planned on tick tickIndex, fired from where the player starts that
-        // tick. null when that tick doesn't fire
-        private List<AimTile> GetPlannedShotCone(int tickIndex)
-        {
-            Weapon shot = tickIndex < plannedActions.Count
-                ? plannedActions[tickIndex].PlannedShot
-                : null;
-
-            return shot?.Data.GetAimTiles(
-                mapManager.Map, GetPlannedCoord(tickIndex),
-                GetPlannedAim(tickIndex)
-            );
-        }
-
-        // during resolution the aim preview follows where the player really is and aims
-        private void ShowLiveAim()
-        {
-            aimPreview.Show(
-                CurrentWeapon.Data.GetAimTiles(mapManager.Map, Coord,
-                    CurrentAimDirection),
-                mapManager.Layout
-            );
-        }
-
-        public bool IsInShotCone(HexCoord coord)
-        {
-            return GetPlannedShotTiles().Any(aimTile => aimTile.Coord == coord);
-        }
-
-        private Quaternion GetAimRotation(AimDirection aim)
-        {
-            Vector3 aimVector = mapManager.Layout.HexToWorld(aim.ToOffset()) -
-                                mapManager.Layout.HexToWorld(HexCoord.Zero);
-
-            return Quaternion.LookRotation(aimVector);
-        }
-
-        #endregion
-
-        #region Plan Projection
-
-        private void ProjectPlan()
-        {
-            int tickCount = plannedActions.Count;
-
-            // ghost i stands where tick i + 1 starts, which is where that tick's shot fires from.
-            // the tick being planned already has the main aim preview, so its ghost skips the cone
-            List<PlanGhost> ghosts = new();
-
-            for (int i = 0; i < tickCount; i++)
-            {
-                List<AimTile> cone =
-                    i < tickCount - 1 ? GetPlannedShotCone(i) : null;
-                ghosts.Add(new PlanGhost(GetPlannedPose(i), cone));
-            }
-
-            planGhosts.Show(ghosts, mapManager.Layout, aimPreview);
-
-            Pose plannedPose = GetPlannedPose(tickCount);
-            transform.SetPositionAndRotation(plannedPose.position,
-                plannedPose.rotation);
-
-            aimPreview.Show(GetPlannedShotTiles(), mapManager.Layout);
-            plannedBlastPreview.Show(GetPlannedBlastTiles(), mapManager.Layout);
-
-            UpdateForecast();
-        }
-
-        private void StopProjecting()
-        {
-            planGhosts.Hide();
-            aimPreview.Hide();
-            plannedBlastPreview.Hide();
-            ClearSelectedTile();
-            SnapToCoord();
-            ClearForecast();
-            directionCompass.Hide();
-        }
-
-        private void LerpToCoord() => LerpToCoord(Coord);
-
-        private void LerpToCoord(HexCoord coord)
-        {
-            StopAllCoroutines();
-            var desiredPose = GetPose(coord, CurrentAimDirection);
-            var currentPose = new Pose(transform.position, transform.rotation);
-            float t = TickData.TickDuration / 2;
-            StartCoroutine(LerpPoseOverTime(transform, currentPose, desiredPose,
-                t));
-        }
-
-        IEnumerator LerpPoseOverTime(Transform targetTransform, Pose startPose,
-            Pose endPose, float duration)
-        {
-            float elapsed = 0f;
-
-            while (elapsed < duration)
-            {
-                elapsed += Time.deltaTime;
-                float t = Mathf.Clamp01(elapsed / duration);
-
-                Pose currentPose = new Pose(
-                    Vector3.Lerp(startPose.position, endPose.position, t),
-                    Quaternion.Slerp(startPose.rotation, endPose.rotation, t)
-                );
-                targetTransform.SetPositionAndRotation(currentPose.position,
-                    currentPose.rotation);
-
-                yield return null;
-            }
-
-            targetTransform.SetPositionAndRotation(endPose.position,
-                endPose.rotation);
-        }
-
-
-        // resolution plays out for real from here, so the forecast and planned pickups are cleared
-        private void RevealPlan()
-        {
-            plannedBlastPreview.Hide();
-            ClearSelectedTile();
-            SnapToCoord();
-            ClearForecast();
-            ShowLiveAim();
-            directionCompass.Hide();
-
-            // ghost i stands where the player ends tick i, which is where tick i + 1's shot fires
-            // from. each is picked up as its tick resolves, taking its cone with it
-            List<PlanGhost> ghosts = new();
-
-            for (int i = 1; i <= plannedActions.Count; i++)
-            {
-                ghosts.Add(new PlanGhost(GetPlannedPose(i),
-                    GetPlannedShotCone(i)));
-            }
-
-            planGhosts.Show(ghosts, mapManager.Layout, aimPreview);
-        }
-
-        private Pose GetPose(HexCoord coord, AimDirection aim)
-        {
-            return new Pose(
-                mapManager.Layout.HexToWorld(coord) + Vector3.up * heightOffset,
-                GetAimRotation(aim)
-            );
-        }
-
-        private Pose GetPlannedPose(int tickCount)
-        {
-            return GetPose(GetPlannedCoord(tickCount),
-                GetPlannedAim(tickCount));
-        }
-
-        private List<AimTile> GetPlannedBlastTiles()
-        {
-            List<AimTile> blastTiles = new();
-
-            foreach (UnholyAction action in plannedActions)
-            {
-                if (action.PlannedTarget != null &&
-                    action.PlannedShot.Data is RocketLauncherData rocketData)
-                {
-                    blastTiles.AddRange(
-                        rocketData.GetBlastTiles(mapManager.Map,
-                            action.PlannedTarget.Value)
-                    );
-                }
-            }
-
-            return blastTiles;
-        }
-
-        #endregion
-
-        #region Planning
-
-        // actions gets queued into lanes during the players turn and only take
-        // effect during resolution. nothing in planning changes ammo, aim, or position
-
-        // only changes which weapon the shoot card fires and which weapons aim cone is when
-        // selecting a weapon doesn't have an action cost. ammo/cooldown are checked when a shot
-        // is planned
-        public void SelectWeapon(Weapon weapon)
-        {
-            if (weapon == CurrentWeapon)
-            {
-                return;
-            }
-
-            CurrentWeapon = weapon;
-            ClearSelectedTile();
-
-            PlanHoldFire();
-        }
-
-        // a shot can be queued if the lane has a free tick, there is ammo left
-        // and the planned cooldown has expired by that tick
-        public bool CanPlanShot(Weapon weapon)
-        {
-            return GetUnplannedAmmo(weapon) > 0 &&
-                   PlanningTick >= GetPlannedNextFireTick() &&
-                   (!weapon.Data.RequiresTarget || HasTargetInShotCone);
-        }
-
-        public void PlanShot(Weapon weapon)
-        {
-            if (!CanPlanShot(weapon))
-            {
-                return;
-            }
-
-            PlanningAction.PlannedShot = weapon;
-            PlanningAction.PlannedTarget = null;
-            PlanningAction.Shoot = () => Fire(weapon);
-            ProjectPlan();
-        }
-
-        // fills the next tick of the shoot lane without firing
-        public void PlanHoldFire()
-        {
-            PlanningAction.PlannedShot = null;
-            PlanningAction.PlannedTarget = null;
-            PlanningAction.Shoot = null;
-            ProjectPlan();
-        }
-
-        public void SelectTile(HexCoord coord)
-        {
-            SelectedTile = coord;
-            selectionPreview.Show(new List<AimTile> { new AimTile(coord, 1f) },
-                mapManager.Layout);
-        }
-
-        private void ClearSelectedTile()
-        {
-            SelectedTile = null;
-            selectionPreview.Hide();
-        }
-
-        public bool CanPlanRotation(bool clockwise)
-        {
-            int stepsAfterRotation = PlannedAimSteps + (clockwise ? -1 : 1);
-            return Mathf.Abs(stepsAfterRotation) <= aimStepsPerTick;
-        }
-
-        public void PlanRotation(bool clockwise)
-        {
-            if (!CanPlanRotation(clockwise))
-            {
-                return;
-            }
-
-            AimDirection plannedAim = PlanningAction.PlannedAim;
-            SetPlannedAim(clockwise
-                ? plannedAim.Previous()
-                : plannedAim.Next());
-        }
-
-        public void PlanHoldAim()
-        {
-            SetPlannedAim(PreviousPlannedAim);
-        }
-
-        public bool IsPlanningShot(Weapon weapon)
-        {
-            return PlanningAction.PlannedShot == weapon;
-        }
-
-        public bool IsPlanningRotation(bool clockwise)
-        {
-            return clockwise
-                ? PlannedAimSteps < 0
-                : PlannedAimSteps > 0;
-        }
-
-        public bool IsPlanningMove(HexDirection? direction)
-        {
-            return PlanningAction.PlannedDirection == direction;
-        }
-
-        public void PlanNextTick()
-        {
-            if (!CanPlanNextTick)
-            {
-                return;
-            }
-
-            plannedActions.Add(
-                CreateNewDefaultAction(PlanningAction.PlannedAim));
-            ProjectPlan();
-        }
-
-        public int GetUnplannedAmmo(Weapon weapon)
-        {
-            return weapon.Ammo -
-                   plannedActions.Count(action => action.PlannedShot == weapon);
-        }
-
-        // clears the tick being planned currently. if already clear, clears previous tick
-        public void ClearTick()
-        {
-            if (!HasTickChanges && plannedActions.Count > 1)
-            {
-                plannedActions.RemoveAt(plannedActions.Count - 1);
-            }
-
-            plannedActions[^1] = CreateNewDefaultAction(PreviousPlannedAim);
-            ProjectPlan();
-        }
-
-        // clears the entire plan, used for turn start
-        private void ClearPlan()
-        {
-            plannedActions.Clear();
-            plannedActions.Add(CreateNewDefaultAction(CurrentAimDirection));
-            ProjectPlan();
-        }
-
-        private void SetPlannedAim(AimDirection aim)
-        {
-            PlanningAction.PlannedAim = aim;
-            PlanningAction.Aim = () => SetAim(aim);
-            // aim resolves before move, so changing this tick's aim can change whether its move
-            // accelerates. this recalculates the move already planned for the tick
-            UpdatePlannedMove();
-            ProjectPlan();
-        }
-
-        private int GetPlannedNextFireTick()
-        {
-            int plannedNextFireTick = nextFireTick;
-
-            for (int i = 0; i < plannedActions.Count - 1; i++)
-            {
-                Weapon plannedShot = plannedActions[i].PlannedShot;
-
-                if (plannedShot == null)
-                {
-                    continue;
-                }
-
-                int shotTick = TickData.CurrentTick + 1 + i;
-                plannedNextFireTick =
-                    shotTick + 1 + plannedShot.Data.Cooldown;
-            }
-
-            return plannedNextFireTick;
-        }
-
-        #endregion
-
-        #region Resolution
-
-        // game manager runs each tick's callback phase by phase. Fire() checks
-        // cooldown and ammo again the real tick so planning doesn't break rules
-
-        // the plan for a tick of this turn, or null if the player didn't plan that far
-        [CanBeNull]
-        public UnholyAction GetPlannedAction(int tickIndex)
-        {
-            return tickIndex < plannedActions.Count
-                ? plannedActions[tickIndex]
-                : null;
-        }
-
-        // called by game manager once this ticks move has resolved
-        // also moves the live aim preview to where the player ended up
-        public void PickUpGhost()
-        {
-            planGhosts.PickUpNext();
-            ShowLiveAim();
-        }
-
-        private void Fire(Weapon weapon)
-        {
-            if (!CanFire(weapon))
-            {
-                return;
-            }
-
-            if (weapon.Fire(this, this))
-            {
-                nextFireTick = TickData.CurrentTick + 1 + weapon.Data.Cooldown;
-            }
-        }
-
-        // weapon cooldowns are global, no weapon can be fired until the cooldown of the last
-        // fired weapon has expired
-        private bool CanFire(Weapon weapon)
-        {
-            return weapon.HasAmmo && TickData.CurrentTick >= nextFireTick;
-        }
-
-        private void SetAim(AimDirection aim)
-        {
-            CurrentAimDirection = aim;
-            SnapToCoord();
-            ShowLiveAim();
-        }
-
-        public void BeginMovePhase()
-        {
-            driver.TargetSpeed = 1;
-            MoveStartCoord = Coord;
-            tickMovePath.Clear();
-        }
-
-        public void EndMovePhase()
-        {
-            driver.TargetSpeed = 0;
-        }
-
-        // the fired aim's cone from where the player stands now, so a beam follows its shooter
-        // only meaningful after the move phase
-        public List<AimTile> GetBeamTilesFromCurrentCoord(WeaponData weaponData,
-            AimDirection firedAim)
-        {
-            return weaponData.GetAimTiles(mapManager.Map, Coord, firedAim);
-        }
-
-        #endregion
-
-        #region Health
-
-        // armour absorbs its share of the hit first, then the rest comes off health. every damage
-        // source (weapons, beams, harm tiles) comes through here, so they all go through armour
-        public void TakeDamage(int damageAmount)
-        {
-            if (IsDead || damageAmount <= 0)
-            {
-                return;
-            }
-
-            int absorbed = GetArmourAbsorbed(damageAmount, CurrentArmour,
-                armourAbsorbPercent, roundAbsorbUp);
-            CurrentArmour -= absorbed;
-            damageAmount -= absorbed;
-
-            CurrentHealth = Mathf.Max(CurrentHealth - damageAmount, 0);
-
-            if (IsDead)
-            {
-                //TODO: Death SFX and VFX
-            }
-
-            HealthChangedEvent?.Invoke(this);
-        }
-
-        public bool TryHeal(int amount)
-        {
-            if (IsDead || amount <= 0 || CurrentHealth >= maxHealth)
-            {
-                return false;
-            }
-
-            CurrentHealth = Mathf.Min(CurrentHealth + amount, maxHealth);
-            HealthChangedEvent?.Invoke(this);
-            return true;
-        }
-
-        public bool TryAddArmour(int amount)
-        {
-            if (IsDead || amount <= 0 || CurrentArmour >= maxArmour)
-            {
-                return false;
-            }
-
-            CurrentArmour = Mathf.Min(CurrentArmour + amount, maxArmour);
-            HealthChangedEvent?.Invoke(this);
-            return true;
-        }
-
-        // whole-number math so results don't drift. never absorbs more armour than there is.
-        // static so the plan forecast absorbs damage exactly the same way
-        private static int GetArmourAbsorbed(int damageAmount, int armour,
-            int absorbPercent, bool roundUp)
-        {
-            if (armour <= 0)
-            {
-                return 0;
-            }
-
-            int rounding = roundUp ? 99 : 0;
-            int share = (damageAmount * absorbPercent + rounding) / 100;
-            return Mathf.Min(share, armour);
-        }
-
-        // kills outright, e.g. lava or a fall into the void
-        public void Kill()
-        {
-            if (IsDead)
-            {
-                return;
-            }
-
-            CurrentHealth = 0;
-            Debug.Log($"{name} died. RIP");
-            HealthChangedEvent?.Invoke(this);
-        }
-
-        #endregion
-
-        #region Weapon Pickups
-
-        public bool TryGiveWeapon(WeaponData data)
-        {
-            if (IsDead)
-            {
-                return false;
-            }
-
-            Weapon heldWeapon = weapons.Find(weapon => weapon.Data == data);
-
-            if (heldWeapon == null)
-            {
-                weapons.Add(new Weapon(data));
-                return true;
-            }
-
-            // weapons are still picked up if ammo is full, weapon.cs clamps at full
-            // the idea is that a weapon can be "denied" for a time by triggering its respawn
-            heldWeapon.AddAmmo(data.PickupAmmo);
-            return true;
-        }
-
-        // ammo only goes into a weapon the player already holds. the ammo pickup decides whether
-        // it's still taken when the weapon isn't held or is already full
-        public AmmoGiven TryGiveAmmo(WeaponData data, int amount)
-        {
-            if (IsDead || amount <= 0)
-            {
-                return AmmoGiven.Refused;
-            }
-
-            Weapon heldWeapon = weapons.Find(weapon => weapon.Data == data);
-
-            if (heldWeapon == null)
-            {
-                return AmmoGiven.WeaponNotHeld;
-            }
-
-            if (heldWeapon.Ammo >= data.MaxAmmo)
-            {
-                return AmmoGiven.AmmoFull;
-            }
-
-            heldWeapon.AddAmmo(amount);
-            return AmmoGiven.Added;
-        }
-
-        #endregion
-
-        #region Event Handlers
-
-        // player two gets no new turn event on turn end, so resolution
-        // hides the plan as well
-        private void OnNewPhase(TurnPhase newPhase)
-        {
-            if (newPhase == turnPhase)
-            {
-                // Do stuff to enable actions
-                ClearPlan();
-                directionCompass.Show(mapManager.Layout);
-            }
-
-            // Do stuff to disable actions
-            StopProjecting();
-
-            if (turnPhase == TurnPhase.Resolution)
-            {
-                RevealPlan();
-            }
-        }
-
-        #endregion
-
-        // the lambda lets each ResolveMove remember which PlannedAction it's associated with. the
-        // previous version was always pointing at the same PlannedAction.PlannedAim for each tick
-        private UnholyAction CreateNewDefaultAction(AimDirection baseDirection)
-        {
-            UnholyAction action = new(baseDirection)
-            {
-                Move = Move
-            };
-            return action;
+            int steps =
+                ((int)PlanningAction.PlannedAim - (int)PreviousPlannedAim +
+                 AimDirectionCount) % AimDirectionCount;
+
+            return steps > AimDirectionCount / 2
+                ? steps - AimDirectionCount
+                : steps;
         }
     }
+
+    public bool IsHoldingFire => PlanningAction.PlannedShot == null;
+
+    public bool IsHoldingAim =>
+        PlanningAction.PlannedAim == PreviousPlannedAim;
+
+    public bool IsHoldingMove => PlanningAction.PlannedMove.Count == 0;
+
+    private bool HasTickChanges =>
+        !IsHoldingFire || !IsHoldingAim || !IsHoldingMove;
+
+    private bool HasTargetInShotCone => SelectedTile != null &&
+                                        IsInShotCone(SelectedTile.Value);
+
+    public TurnPhase turnPhase;
+
+    #endregion
+
+    #region Unity Lifecycle
+
+    private void Awake()
+    {
+        if (CameraRig == null)
+        {
+            throw new MissingComponentException(
+                $"{name} has no CameraRig assigned.");
+        }
+
+        CameraRig.SetTarget(transform);
+
+        CurrentHealth = maxHealth;
+        CurrentArmour = 0;
+        CurrentWeapon = new Weapon(startingWeapon);
+        weapons.Insert(0, CurrentWeapon);
+    }
+
+    private void OnEnable()
+    {
+        MapManager.LayoutChanged += SnapToCoord;
+        TurnManager.NewPhaseEvent += OnNewPhase;
+        (this as IMovable).Register(this);
+    }
+
+    private void Start()
+    {
+        PlayerSpawned?.Invoke(this);
+    }
+
+    private void OnDisable()
+    {
+        TurnManager.NewPhaseEvent -= OnNewPhase;
+        MapManager.LayoutChanged -= SnapToCoord;
+        (this as IMovable).Unregister(this);
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (_mapManager == null ||
+            CurrentWeapon == null ||
+            CurrentWeapon.Data == null)
+        {
+            return;
+        }
+
+        foreach (AimTile aimTile in CurrentWeapon.Data.GetAimTiles(
+                     _mapManager.Map, Coord, CurrentAimDirection))
+        {
+            Gizmos.color =
+                Color.Lerp(Color.yellow, Color.red, aimTile.Falloff);
+            Gizmos.DrawSphere(
+                _mapManager.Layout.HexToWorld(aimTile.Coord) +
+                Vector3.up * 0.6f, 0.2f);
+        }
+    }
+
+    #endregion
+
+    #region Setup
+
+    // called by the spawner
+    public void Initialize(MapManager mm, HexCoord spawnCoord,
+        AimDirection spawnAim)
+    {
+        Coord = spawnCoord;
+        CurrentAimDirection = spawnAim;
+        momentum = HexCoord.Zero;
+        _mapManager = mm;
+        SnapToCoord(Coord);
+        ClearPlan();
+        Debug.Log("Initialized");
+    }
+
+    private void SnapToCoord() => SnapToCoord(Coord);
+
+    private void SnapToCoord(HexCoord coord)
+    {
+        Pose pose = GetPose(coord, CurrentAimDirection);
+        transform.SetPositionAndRotation(pose.position, pose.rotation);
+
+        if (!_mapManager.Map.IsWalkable(Coord))
+        {
+            throw new ArgumentException(
+                $"{name} is on non walkable coord {Coord}");
+        }
+    }
+
+    #endregion
+
+    #region Aim
+
+    // aim after the first tickCount planned ticks, 0 = real aim
+    private AimDirection GetPlannedAim(int tickCount)
+    {
+        return tickCount > 0
+            ? plannedActions[tickCount - 1].PlannedAim
+            : CurrentAimDirection;
+    }
+
+    private List<AimTile> GetPlannedShotTiles()
+    {
+        int shotTickCount = plannedActions.Count - 1;
+        return CurrentWeapon.Data.GetAimTiles(
+            _mapManager.Map, GetPlannedCoord(shotTickCount),
+            GetPlannedAim(shotTickCount)
+        );
+    }
+
+    // the cone of the shot planned on tick tickIndex, fired from where the player starts that
+    // tick. null when that tick doesn't fire
+    private List<AimTile> GetPlannedShotCone(int tickIndex)
+    {
+        Weapon shot = tickIndex < plannedActions.Count
+            ? plannedActions[tickIndex].PlannedShot
+            : null;
+
+        return shot?.Data.GetAimTiles(
+            _mapManager.Map, GetPlannedCoord(tickIndex),
+            GetPlannedAim(tickIndex)
+        );
+    }
+
+    // during resolution the aim preview follows where the player really is and aims
+    private void ShowLiveAim()
+    {
+        aimPreview.Show(
+            CurrentWeapon.Data.GetAimTiles(_mapManager.Map, Coord,
+                CurrentAimDirection),
+            _mapManager.Layout
+        );
+    }
+
+    public bool IsInShotCone(HexCoord coord)
+    {
+        return GetPlannedShotTiles().Any(aimTile => aimTile.Coord == coord);
+    }
+
+    private Quaternion GetAimRotation(AimDirection aim)
+    {
+        Vector3 aimVector = _mapManager.Layout.HexToWorld(aim.ToOffset()) -
+                            _mapManager.Layout.HexToWorld(HexCoord.Zero);
+
+        return Quaternion.LookRotation(aimVector);
+    }
+
+    #endregion
+
+    #region Plan Projection
+
+    private void ProjectPlan()
+    {
+        int tickCount = plannedActions.Count;
+
+        // ghost i stands where tick i + 1 starts, which is where that tick's shot fires from.
+        // the tick being planned already has the main aim preview, so its ghost skips the cone
+        List<PlanGhost> ghosts = new();
+
+        for (int i = 0; i < tickCount; i++)
+        {
+            List<AimTile> cone =
+                i < tickCount - 1 ? GetPlannedShotCone(i) : null;
+            ghosts.Add(new PlanGhost(GetPlannedPose(i), cone));
+        }
+
+        planGhosts.Show(ghosts, _mapManager.Layout, aimPreview);
+
+        Pose plannedPose = GetPlannedPose(tickCount);
+        transform.SetPositionAndRotation(plannedPose.position,
+            plannedPose.rotation);
+
+        aimPreview.Show(GetPlannedShotTiles(), _mapManager.Layout);
+        plannedBlastPreview.Show(GetPlannedBlastTiles(), _mapManager.Layout);
+
+        UpdateForecast();
+    }
+
+    private void StopProjecting()
+    {
+        planGhosts.Hide();
+        aimPreview.Hide();
+        plannedBlastPreview.Hide();
+        ClearSelectedTile();
+        SnapToCoord();
+        ClearForecast();
+        directionCompass.Hide();
+    }
+
+    private void LerpToCoord() => LerpToCoord(Coord);
+
+    private void LerpToCoord(HexCoord coord)
+    {
+        StopAllCoroutines();
+        var desiredPose = GetPose(coord, CurrentAimDirection);
+        var currentPose = new Pose(transform.position, transform.rotation);
+        float t = TickData.TickDuration / 2;
+        StartCoroutine(LerpPoseOverTime(transform, currentPose, desiredPose,
+            t));
+    }
+
+    IEnumerator LerpPoseOverTime(Transform targetTransform, Pose startPose,
+        Pose endPose, float duration)
+    {
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+
+            Pose currentPose = new Pose(
+                Vector3.Lerp(startPose.position, endPose.position, t),
+                Quaternion.Slerp(startPose.rotation, endPose.rotation, t)
+            );
+            targetTransform.SetPositionAndRotation(currentPose.position,
+                currentPose.rotation);
+
+            yield return null;
+        }
+
+        targetTransform.SetPositionAndRotation(endPose.position,
+            endPose.rotation);
+    }
+
+
+    // resolution plays out for real from here, so the forecast and planned pickups are cleared
+    private void RevealPlan()
+    {
+        plannedBlastPreview.Hide();
+        ClearSelectedTile();
+        SnapToCoord();
+        ClearForecast();
+        ShowLiveAim();
+        directionCompass.Hide();
+
+        // ghost i stands where the player ends tick i, which is where tick i + 1's shot fires
+        // from. each is picked up as its tick resolves, taking its cone with it
+        List<PlanGhost> ghosts = new();
+
+        for (int i = 1; i <= plannedActions.Count; i++)
+        {
+            ghosts.Add(new PlanGhost(GetPlannedPose(i),
+                GetPlannedShotCone(i)));
+        }
+
+        planGhosts.Show(ghosts, _mapManager.Layout, aimPreview);
+    }
+
+    private Pose GetPose(HexCoord coord, AimDirection aim)
+    {
+        var pos = _mapManager.Layout.HexToWorld(coord) +
+                  Vector3.up * heightOffset;
+        var rot = GetAimRotation(aim);
+        return new Pose(pos,rot);
+    }
+
+    private Pose GetPlannedPose(int tickCount)
+    {
+        return GetPose(GetPlannedCoord(tickCount),
+            GetPlannedAim(tickCount));
+    }
+
+    private List<AimTile> GetPlannedBlastTiles()
+    {
+        List<AimTile> blastTiles = new();
+
+        foreach (UnholyAction action in plannedActions)
+        {
+            if (action.PlannedTarget != null &&
+                action.PlannedShot.Data is RocketLauncherData rocketData)
+            {
+                blastTiles.AddRange(
+                    rocketData.GetBlastTiles(_mapManager.Map,
+                        action.PlannedTarget.Value)
+                );
+            }
+        }
+
+        return blastTiles;
+    }
+
+    #endregion
+
+    #region Planning
+
+    // actions gets queued into lanes during the players turn and only take
+    // effect during resolution. nothing in planning changes ammo, aim, or position
+
+    // only changes which weapon the shoot card fires and which weapons aim cone is when
+    // selecting a weapon doesn't have an action cost. ammo/cooldown are checked when a shot
+    // is planned
+    public void SelectWeapon(Weapon weapon)
+    {
+        if (weapon == CurrentWeapon)
+        {
+            return;
+        }
+
+        CurrentWeapon = weapon;
+        ClearSelectedTile();
+
+        PlanHoldFire();
+    }
+
+    // a shot can be queued if the lane has a free tick, there is ammo left
+    // and the planned cooldown has expired by that tick
+    public bool CanPlanShot(Weapon weapon)
+    {
+        return GetUnplannedAmmo(weapon) > 0 &&
+               PlanningTick >= GetPlannedNextFireTick() &&
+               (!weapon.Data.RequiresTarget || HasTargetInShotCone);
+    }
+
+    public void PlanShot(Weapon weapon)
+    {
+        if (!CanPlanShot(weapon))
+        {
+            return;
+        }
+
+        PlanningAction.PlannedShot = weapon;
+        PlanningAction.PlannedTarget = null;
+        PlanningAction.Shoot = () => Fire(weapon);
+        ProjectPlan();
+    }
+
+    // fills the next tick of the shoot lane without firing
+    public void PlanHoldFire()
+    {
+        PlanningAction.PlannedShot = null;
+        PlanningAction.PlannedTarget = null;
+        PlanningAction.Shoot = null;
+        ProjectPlan();
+    }
+
+    public void SelectTile(HexCoord coord)
+    {
+        SelectedTile = coord;
+        selectionPreview.Show(new List<AimTile> { new AimTile(coord, 1f) },
+            _mapManager.Layout);
+    }
+
+    private void ClearSelectedTile()
+    {
+        SelectedTile = null;
+        selectionPreview.Hide();
+    }
+
+    public bool CanPlanRotation(bool clockwise)
+    {
+        int stepsAfterRotation = PlannedAimSteps + (clockwise ? -1 : 1);
+        return Mathf.Abs(stepsAfterRotation) <= aimStepsPerTick;
+    }
+
+    public void PlanRotation(bool clockwise)
+    {
+        if (!CanPlanRotation(clockwise))
+        {
+            return;
+        }
+
+        AimDirection plannedAim = PlanningAction.PlannedAim;
+        SetPlannedAim(clockwise
+            ? plannedAim.Previous()
+            : plannedAim.Next());
+    }
+
+    public void PlanHoldAim()
+    {
+        SetPlannedAim(PreviousPlannedAim);
+    }
+
+    public bool IsPlanningShot(Weapon weapon)
+    {
+        return PlanningAction.PlannedShot == weapon;
+    }
+
+    public bool IsPlanningRotation(bool clockwise)
+    {
+        return clockwise
+            ? PlannedAimSteps < 0
+            : PlannedAimSteps > 0;
+    }
+
+    public bool IsPlanningMove(HexDirection? direction)
+    {
+        return PlanningAction.PlannedDirection == direction;
+    }
+
+    public void PlanNextTick()
+    {
+        if (!CanPlanNextTick)
+        {
+            return;
+        }
+
+        plannedActions.Add(
+            CreateNewDefaultAction(PlanningAction.PlannedAim));
+        ProjectPlan();
+    }
+
+    public int GetUnplannedAmmo(Weapon weapon)
+    {
+        return weapon.Ammo -
+               plannedActions.Count(action => action.PlannedShot == weapon);
+    }
+
+    // clears the tick being planned currently. if already clear, clears previous tick
+    public void ClearTick()
+    {
+        if (!HasTickChanges && plannedActions.Count > 1)
+        {
+            plannedActions.RemoveAt(plannedActions.Count - 1);
+        }
+
+        plannedActions[^1] = CreateNewDefaultAction(PreviousPlannedAim);
+        ProjectPlan();
+    }
+
+    // clears the entire plan, used for turn start
+    private void ClearPlan()
+    {
+        plannedActions.Clear();
+        plannedActions.Add(CreateNewDefaultAction(CurrentAimDirection));
+        ProjectPlan();
+    }
+
+    private void SetPlannedAim(AimDirection aim)
+    {
+        PlanningAction.PlannedAim = aim;
+        PlanningAction.Aim = () => SetAim(aim);
+        // aim resolves before move, so changing this tick's aim can change whether its move
+        // accelerates. this recalculates the move already planned for the tick
+        UpdatePlannedMove();
+        ProjectPlan();
+    }
+
+    private int GetPlannedNextFireTick()
+    {
+        int plannedNextFireTick = nextFireTick;
+
+        for (int i = 0; i < plannedActions.Count - 1; i++)
+        {
+            Weapon plannedShot = plannedActions[i].PlannedShot;
+
+            if (plannedShot == null)
+            {
+                continue;
+            }
+
+            int shotTick = TickData.CurrentTick + 1 + i;
+            plannedNextFireTick =
+                shotTick + 1 + plannedShot.Data.Cooldown;
+        }
+
+        return plannedNextFireTick;
+    }
+
+    #endregion
+
+    #region Resolution
+
+    // game manager runs each tick's callback phase by phase. Fire() checks
+    // cooldown and ammo again the real tick so planning doesn't break rules
+
+    // the plan for a tick of this turn, or null if the player didn't plan that far
+    [CanBeNull]
+    public UnholyAction GetPlannedAction(int tickIndex)
+    {
+        return tickIndex < plannedActions.Count
+            ? plannedActions[tickIndex]
+            : null;
+    }
+
+    // called by game manager once this ticks move has resolved
+    // also moves the live aim preview to where the player ended up
+    public void PickUpGhost()
+    {
+        planGhosts.PickUpNext();
+        ShowLiveAim();
+    }
+
+    private void Fire(Weapon weapon)
+    {
+        if (!CanFire(weapon))
+        {
+            return;
+        }
+
+        if (weapon.Fire(this, this))
+        {
+            nextFireTick = TickData.CurrentTick + 1 + weapon.Data.Cooldown;
+        }
+    }
+
+    // weapon cooldowns are global, no weapon can be fired until the cooldown of the last
+    // fired weapon has expired
+    private bool CanFire(Weapon weapon)
+    {
+        return weapon.HasAmmo && TickData.CurrentTick >= nextFireTick;
+    }
+
+    private void SetAim(AimDirection aim)
+    {
+        CurrentAimDirection = aim;
+        SnapToCoord();
+        ShowLiveAim();
+    }
+
+    public void BeginMovePhase()
+    {
+        driver.TargetSpeed = 1;
+        MoveStartCoord = Coord;
+        tickMovePath.Clear();
+    }
+
+    public void EndMovePhase()
+    {
+        driver.TargetSpeed = 0;
+    }
+
+    // the fired aim's cone from where the player stands now, so a beam follows its shooter
+    // only meaningful after the move phase
+    public List<AimTile> GetBeamTilesFromCurrentCoord(WeaponData weaponData,
+        AimDirection firedAim)
+    {
+        return weaponData.GetAimTiles(_mapManager.Map, Coord, firedAim);
+    }
+
+    #endregion
+
+    #region Health
+
+    // armour absorbs its share of the hit first, then the rest comes off health. every damage
+    // source (weapons, beams, harm tiles) comes through here, so they all go through armour
+    public void TakeDamage(int damageAmount)
+    {
+        if (IsDead || damageAmount <= 0)
+        {
+            return;
+        }
+
+        int absorbed = GetArmourAbsorbed(damageAmount, CurrentArmour,
+            armourAbsorbPercent, roundAbsorbUp);
+        CurrentArmour -= absorbed;
+        damageAmount -= absorbed;
+
+        CurrentHealth = Mathf.Max(CurrentHealth - damageAmount, 0);
+
+        if (IsDead)
+        {
+            //TODO: Death SFX and VFX
+        }
+
+        HealthChangedEvent?.Invoke(this);
+    }
+
+    public bool TryHeal(int amount)
+    {
+        if (IsDead || amount <= 0 || CurrentHealth >= maxHealth)
+        {
+            return false;
+        }
+
+        CurrentHealth = Mathf.Min(CurrentHealth + amount, maxHealth);
+        HealthChangedEvent?.Invoke(this);
+        return true;
+    }
+
+    public bool TryAddArmour(int amount)
+    {
+        if (IsDead || amount <= 0 || CurrentArmour >= maxArmour)
+        {
+            return false;
+        }
+
+        CurrentArmour = Mathf.Min(CurrentArmour + amount, maxArmour);
+        HealthChangedEvent?.Invoke(this);
+        return true;
+    }
+
+    // whole-number math so results don't drift. never absorbs more armour than there is.
+    // static so the plan forecast absorbs damage exactly the same way
+    private static int GetArmourAbsorbed(int damageAmount, int armour,
+        int absorbPercent, bool roundUp)
+    {
+        if (armour <= 0)
+        {
+            return 0;
+        }
+
+        int rounding = roundUp ? 99 : 0;
+        int share = (damageAmount * absorbPercent + rounding) / 100;
+        return Mathf.Min(share, armour);
+    }
+
+    // kills outright, e.g. lava or a fall into the void
+    public void Kill()
+    {
+        if (IsDead)
+        {
+            return;
+        }
+
+        CurrentHealth = 0;
+        Debug.Log($"{name} died. RIP");
+        HealthChangedEvent?.Invoke(this);
+    }
+
+    #endregion
+
+    #region Weapon Pickups
+
+    public bool TryGiveWeapon(WeaponData data)
+    {
+        if (IsDead)
+        {
+            return false;
+        }
+
+        Weapon heldWeapon = weapons.Find(weapon => weapon.Data == data);
+
+        if (heldWeapon == null)
+        {
+            weapons.Add(new Weapon(data));
+            return true;
+        }
+
+        // weapons are still picked up if ammo is full, weapon.cs clamps at full
+        // the idea is that a weapon can be "denied" for a time by triggering its respawn
+        heldWeapon.AddAmmo(data.PickupAmmo);
+        return true;
+    }
+
+    // ammo only goes into a weapon the player already holds. the ammo pickup decides whether
+    // it's still taken when the weapon isn't held or is already full
+    public AmmoGiven TryGiveAmmo(WeaponData data, int amount)
+    {
+        if (IsDead || amount <= 0)
+        {
+            return AmmoGiven.Refused;
+        }
+
+        Weapon heldWeapon = weapons.Find(weapon => weapon.Data == data);
+
+        if (heldWeapon == null)
+        {
+            return AmmoGiven.WeaponNotHeld;
+        }
+
+        if (heldWeapon.Ammo >= data.MaxAmmo)
+        {
+            return AmmoGiven.AmmoFull;
+        }
+
+        heldWeapon.AddAmmo(amount);
+        return AmmoGiven.Added;
+    }
+
+    #endregion
+
+    #region Event Handlers
+
+    // player two gets no new turn event on turn end, so resolution
+    // hides the plan as well
+    private void OnNewPhase(TurnPhase newPhase)
+    {
+        if (newPhase == turnPhase)
+        {
+            // Do stuff to enable actions
+            ClearPlan();
+            directionCompass.Show(_mapManager.Layout);
+        }
+
+        // Do stuff to disable actions
+        StopProjecting();
+
+        if (turnPhase == TurnPhase.Resolution)
+        {
+            RevealPlan();
+        }
+    }
+
+    #endregion
+
+    // the lambda lets each ResolveMove remember which PlannedAction it's associated with. the
+    // previous version was always pointing at the same PlannedAction.PlannedAim for each tick
+    private UnholyAction CreateNewDefaultAction(AimDirection baseDirection)
+    {
+        UnholyAction action = new(baseDirection)
+        {
+            Move = (this as IMovable).Move
+        };
+        return action;
+    }
+}
 }

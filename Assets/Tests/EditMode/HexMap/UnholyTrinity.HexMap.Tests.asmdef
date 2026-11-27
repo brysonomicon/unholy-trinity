@@ -7,7 +7,8 @@
         "UnholyTrinity.HexMap",
         "UnholyTrinity.Pickups",
         "UnholyTrinity.Interfaces",
-        "UnholyTrinity.Players"
+        "UnholyTrinity.Players",
+        "UnholyTrinity.Weapons.Pickups"
     ],
     "includePlatforms": [
         "Editor"

@@ -2,17 +2,11 @@ using System;
 
 namespace UnholyTrinity.Helpers
 {
-    public enum SamType
-    {
-        Shoot,
-        Aim,
-        Move
-    }
     [Serializable]
     public static class TickData
     {
-        public static event Action<SamType> Tick;
-        public static event Action<SamType> Tock;
+        public static event Action<SAMType> Tick;
+        public static event Action<SAMType> Tock;
 
         public static int CurrentTick { get; private set; }
 
@@ -25,12 +19,12 @@ namespace UnholyTrinity.Helpers
             CurrentTick = tick;
         }
 
-        public static void CallTick(SamType tickType)
+        public static void CallTick(SAMType tickType)
         {
             Tick?.Invoke(tickType);
         }
 
-        public static void CallTock(SamType tickType)
+        public static void CallTock(SAMType tickType)
         {
             Tock?.Invoke(tickType);
         }

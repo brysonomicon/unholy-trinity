@@ -39,7 +39,7 @@ namespace UnholyTrinity.Players
         {
             CurrentForecast = BuildForecast();
 
-            PickupManager pickupManager = gm.PickupManager;
+            PickupManager pickupManager = MapManager.Instance.PickupManager;
             if (pickupManager != null)
             {
                 pickupManager.ShowPlannedState(CurrentForecast.Pickups, this);
@@ -52,7 +52,7 @@ namespace UnholyTrinity.Players
         {
             CurrentForecast = null;
 
-            PickupManager pickupManager = gm.PickupManager;
+            PickupManager pickupManager = MapManager.Instance.PickupManager;
             if (pickupManager != null)
             {
                 pickupManager.ShowLiveState(this);
@@ -63,10 +63,10 @@ namespace UnholyTrinity.Players
 
         private PlanForecast BuildForecast()
         {
-            PickupManager pickupManager = gm.PickupManager;
+            PickupManager pickupManager = MapManager.Instance.PickupManager;
             PickupField pickups = pickupManager != null ? pickupManager.Field.Clone() : null;
 
-            HexMap map = mapManager.Map;
+            HexMap map = _mapManager.Map;
             PlannedVitals vitals = new(this);
             HexCoord coord = Coord;
 

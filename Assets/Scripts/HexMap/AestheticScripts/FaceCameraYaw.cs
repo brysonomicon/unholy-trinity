@@ -1,4 +1,3 @@
-using Mono.Cecil.Cil;
 using UnityEngine;
 
 namespace UnholyTrinity.Hex
@@ -10,7 +9,7 @@ namespace UnholyTrinity.Hex
     {
         private Transform _camera;
 
-        private static readonly float XAngle = 90;        
+        private static readonly float XAngle = 90;
         private static readonly float ZAngle = 0;
 
 
@@ -23,10 +22,12 @@ namespace UnholyTrinity.Hex
                 {
                     return;
                 }
+
                 _camera = cam.transform;
             }
 
-            transform.rotation = Quaternion.Euler(XAngle, _camera.eulerAngles.y, ZAngle);
+            transform.rotation =
+                Quaternion.Euler(XAngle, _camera.eulerAngles.y, ZAngle);
         }
     }
 }

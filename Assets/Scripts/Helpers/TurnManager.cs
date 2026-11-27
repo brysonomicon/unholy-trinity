@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnholyTrinity.Helpers;
 
-namespace UnholyTrinity.Players
+namespace UnholyTrinity.Helpers
 {
     public static class TurnManager
     {

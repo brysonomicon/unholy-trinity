@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using System.Linq;
 using NaughtyAttributes;
+using UnholyTrinity.Helpers;
 using UnholyTrinity.Hex;
 using UnholyTrinity.Hex.Interfaces;
 using UnityEngine;
@@ -16,8 +16,9 @@ namespace UnholyTrinity.Players
         public int MoveIndex { get; set; }
 
         public HexTile Tile { get; set; }
-        public List<HexDirection> MoveSteps { get; set; }
-        public void Move() => ResolveMove(plannedActions.First());
+
+        public List<HexDirection> MoveSteps =>
+            plannedActions[TickData.CurrentTick].PlannedMove;
 
         [Header("Movement")] [SerializeField, Min(1)]
         private int baseMomentumMax = 1;
@@ -69,7 +70,7 @@ namespace UnholyTrinity.Players
             {
                 HexCoord next = GetStepDestination(current, steps[i]);
                 blocked = next == current;
-                current = blocked ? next : mapManager.Map.ThroughPortal(next);
+                current = blocked ? next : _mapManager.Map.ThroughPortal(next);
             }
 
             return current;
@@ -100,7 +101,7 @@ namespace UnholyTrinity.Players
 
             // a portal on the way turns the rest of the move and the momentum. it's baked into the
             // plan here so the preview, the next tick's planning and resolution all agree
-            mapManager.Map.RedirectThroughPortals(start, steps,
+            _mapManager.Map.RedirectThroughPortals(start, steps,
                 out int portalRotation);
 
             PlanningAction.PlannedMomentum =
@@ -178,40 +179,7 @@ namespace UnholyTrinity.Players
 
         #region Resolution
 
-        // takes the tick's own action because PlanningAction is always the last planned tick by
-        // the time resolution happens. this is now the only place where Coord and momentum change
-        // and it records each hex entered in tickMovePath, which replaces what Step was doing on
-        // aiming_weapons
-        private IEnumerator<(int, HexCoord)> ResolveMove(UnholyAction action)
-        {
-            var moveSteps = action.PlannedMove;
-            HexCoord current = Coord;
-            // the planned momentum from the planning model becomes the real momentum now
-            // that resolution is happening
-            momentum = action.PlannedMomentum;
-            //First, tell the system how many steps we plan to take, and where we start
-            // This lets the system know our intent.
-            yield return (moveSteps.Count, current);
 
-            //Then iterate through the steps
-            for (int i = 0; i < moveSteps.Count; i++)
-            {
-                var direction = moveSteps[i];
-                //If, for some reason, we can't move any more,
-                //break out and exit the coroutine.
-                if (!TryStep(direction, out current))
-                {
-                    break;
-                }
-
-                Coord = current;
-                tickMovePath.Add(Coord);
-                LerpToCoord(Coord);
-                //Otherwise, tell the system how many more steps there are,
-                //and where we currently expect to be.
-                yield return (moveSteps.Count - i - 1, current);
-            }
-        }
 
         private bool TryStep(HexDirection direction, out HexCoord next)
         {
@@ -224,7 +192,7 @@ namespace UnholyTrinity.Players
             HexDirection direction)
         {
             HexCoord next = from.Neighbor(direction);
-            return mapManager.Map.IsWalkable(next)
+            return _mapManager.Map.IsWalkable(next)
                 ? next
                 : from;
         }

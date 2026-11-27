@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using NaughtyAttributes;
 using Nrjwolf.Tools.AttachAttributes;
@@ -70,7 +69,7 @@ namespace UnholyTrinity.Hex
             TickData.Tick -= OnTick;
         }
 
-        private void OnTick(SamType obj)
+        private void OnTick(SAMType obj)
         {
             AdvanceTicks(1);
         }
