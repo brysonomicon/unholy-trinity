@@ -1,0 +1,16 @@
+{
+    "name": "UnholyTrinity.Turns",
+    "rootNamespace": "",
+    "references": [
+        "GUID:4c876c7d087a741458a6494216558d4f"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
