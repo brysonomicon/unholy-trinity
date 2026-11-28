@@ -3,18 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using NaughtyAttributes;
 using UnholyTrinity.Helpers;
-using UnholyTrinity.Managers.Interfaces;
+using UnholyTrinity.Turns;
 using UnityEngine;
 
 namespace UnholyTrinity.Managers
 {
 [RequireComponent(typeof(GameManager))]
-public class MovementManager : Singleton<MovementManager>,
-    ITickManager<SAMType, List<MoveData>>
+public class MovementManager : Singleton<MovementManager>
 {
-    public SAMType SAMType => SAMType.Move;
-
-    private float TickDuration => TurnManager.Instance.TickDuration;
+    private float TickDuration => TurnManager.TickDuration;
 
     [SerializeField] [Min(0.1f)] [MaxValue(nameof(TickDuration))]
     private float moveDurationSec;

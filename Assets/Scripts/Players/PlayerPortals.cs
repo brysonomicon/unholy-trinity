@@ -19,7 +19,7 @@ namespace UnholyTrinity.Players
             Debug.Log($"{name} went through the portal at {Coord} to {exit}");
 
             Coord = exit;
-            tickMovePath.Add(Coord);
+            _tickMovePath.Add(Coord);
             SnapToCoord(Coord);
         }
 

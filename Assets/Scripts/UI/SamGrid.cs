@@ -1,8 +1,8 @@
 using System;
 using UnholyTrinity.Helpers;
 using UnholyTrinity.Hex;
-using UnholyTrinity.Managers;
 using UnholyTrinity.Players;
+using UnholyTrinity.Turns;
 using UnityEngine;
 
 public class SamGrid : MonoBehaviour
@@ -17,7 +17,7 @@ public class SamGrid : MonoBehaviour
         Clear();
         gameObject.SetActive(true);
 
-        for (int tickIndex = 0; tickIndex < TurnManager.Instance.TicksPerTurn; tickIndex++)
+        for (int tickIndex = 0; tickIndex < TurnManager.TicksPerTurn; tickIndex++)
         {
             int cellTickIndex = tickIndex;
             bool isPlanningTick = tickIndex == current.PlanningTickOfTurn - 1;

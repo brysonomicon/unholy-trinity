@@ -66,11 +66,11 @@ namespace UnholyTrinity.Players
             PickupManager pickupManager = gm.PickupManager;
             PickupField pickups = pickupManager != null ? pickupManager.Field.Clone() : null;
 
-            HexMap map = mapManager.Map;
+            HexMap map = _mapManager.Map;
             PlannedVitals vitals = new(this);
             HexCoord coord = Coord;
 
-            foreach (UnholyAction action in plannedActions)
+            foreach (UnholyAction action in _plannedActions)
             {
                 // pickups respawn before anyone moves
                 pickups?.AdvanceTicks(1);

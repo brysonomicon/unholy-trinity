@@ -4,6 +4,7 @@ using UnholyTrinity.Helpers;
 using UnholyTrinity.Players;
 using UnholyTrinity.Hex;
 using UnholyTrinity.Managers;
+using UnholyTrinity.Turns;
 using UnholyTrinity.Weapons;
 using UnityEngine;
 using UnityEngine.UI;
@@ -26,23 +27,16 @@ public class UIManager : MonoBehaviour
 
     private void Awake()
     {
-        GameManager.NewTurnEvent += OnNextTurn;
         TurnManager.NewPhaseEvent += OnNewPhase;
 
         backButton.onClick.AddListener(OnBackClicked);
         confirmButton.onClick.AddListener(OnConfirmClicked);
-        endTurnButton.onClick.AddListener(() => TurnManager.Instance.EndTurn());
+        endTurnButton.onClick.AddListener(TurnManager.EndTurn);
     }
 
     private void OnDestroy()
     {
-        GameManager.NewTurnEvent -= OnNextTurn;
         TurnManager.NewPhaseEvent -= OnNewPhase;
-    }
-
-    private void OnNextTurn(Player player)
-    {
-        GenerateActionCards(player);
     }
 
     private void OnNewPhase(TurnPhase newPhase)
@@ -54,22 +48,33 @@ public class UIManager : MonoBehaviour
             deckControls.SetActive(false);
             return;
         }
+
         GenerateActionCards(GameManager.Instance.CurrentPlayer);
     }
 
     private void OnBackClicked()
     {
-        GameManager.Instance.CurrentPlayer.StepBackPlanning();
+        var current = GameManager.Instance.CurrentPlayer;
+        if (current == null)
+        {
+            throw new ArgumentException("Back button was clicked when it wasn't a players turn!");
+        }
+
+        current.StepBackPlanning();
         RefreshCards();
     }
 
     private void OnConfirmClicked()
     {
-        Player current = GameManager.Instance.CurrentPlayer;
+        var current = GameManager.Instance.CurrentPlayer;
+        if (current == null)
+        {
+            throw new ArgumentException("Back button was clicked when it wasn't a players turn!");
+        }
 
         if (!current.CanAdvancePlanningStep)
         {
-            TurnManager.Instance.EndTurn();
+            TurnManager.EndTurn();
             return;
         }
 
@@ -80,13 +85,13 @@ public class UIManager : MonoBehaviour
     private void GenerateActionCards(Player current)
     {
         // only the steps not yet confirmed this tick are in the deck
-        for (int stepIndex = SamSteps.Length - 1; stepIndex >= (int)current.PlanningStep; stepIndex --)
+        for (int stepIndex = SamSteps.Length - 1; stepIndex >= (int)current.PlanningStep; stepIndex--)
         {
             LaneCard card = SamSteps[stepIndex] switch
             {
                 SAMType.Shoot => CreateShootCard(),
-                SAMType.Aim => CreateAimCard(),
-                _ => CreateMoveCard(), 
+                SAMType.Aim   => CreateAimCard(),
+                _             => CreateMoveCard(),
             };
 
             int depthInDeck = stepIndex - (int)current.PlanningStep;
@@ -97,12 +102,12 @@ public class UIManager : MonoBehaviour
             PlanAndRefresh(() => current.RewindPlanningTo(tickIndex, step)));
 
         deckControls.SetActive(true);
-        backButton.interactable = 
+        backButton.interactable =
             current.PlanningTickOfTurn > 1 || current.PlanningStep != SAMType.Shoot;
         confirmLabel.text = current.CanAdvancePlanningStep
             ? "Next"
             : "End Turn";
-        
+
         return;
 
         LaneCard CreateShootCard()
@@ -173,14 +178,14 @@ public class UIManager : MonoBehaviour
         void AddMoveOption(LaneCard card, string label, HexDirection? direction)
         {
             card.AddOption(
-                label, 
+                label,
                 () => PlanAndRefresh(() => current.PlanMove(direction)),
                 current.PlanningStep == SAMType.Move,
                 selected: current.IsPlanningMove(direction));
         }
     }
 
-    // lets tile clicks rebuild cards
+    // make the tile clicks rebuild cards
     public void RefreshCards()
     {
         ClearCardSection();

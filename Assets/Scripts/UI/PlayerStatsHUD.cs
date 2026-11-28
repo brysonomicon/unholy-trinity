@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnholyTrinity.Managers;
 using UnholyTrinity.Players;
+using UnholyTrinity.Turns;
 using UnityEngine;
 
 // shows each player's health and armour.
@@ -15,7 +16,7 @@ public class PlayerStatsHUD : MonoBehaviour
         Player.HealthChangedEvent += OnHealthChanged;
         Player.PlanForecastChangedEvent += OnHealthChanged;
         // fires once every player has registered, so it also fills in the starting values
-        GameManager.NewTurnEvent += OnNewTurn;
+        TurnManager.NewPhaseEvent += OnNewPhase;
     }
 
     private void Start()
@@ -27,12 +28,12 @@ public class PlayerStatsHUD : MonoBehaviour
     {
         Player.HealthChangedEvent -= OnHealthChanged;
         Player.PlanForecastChangedEvent -= OnHealthChanged;
-        GameManager.NewTurnEvent -= OnNewTurn;
+        TurnManager.NewPhaseEvent -= OnNewPhase;
     }
 
     private void OnHealthChanged(Player _) => Refresh();
 
-    private void OnNewTurn(Player _) => Refresh();
+    private void OnNewPhase(TurnPhase _) => Refresh();
 
     private void Refresh()
     {

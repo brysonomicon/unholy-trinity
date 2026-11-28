@@ -27,7 +27,7 @@ namespace UnholyTrinity.Players
         // lastMomentum only updated once per turn and didn't work for calculating momentum
         // between ticks
         private HexCoord PreviousPlannedMomentum =>
-            GetPlannedMomentum(plannedActions.Count - 1);
+            GetPlannedMomentum(_plannedActions.Count - 1);
         // [SerializeField] private HexCoord lastMomentum = new(0, 0);
 
         #region Planning
@@ -40,7 +40,7 @@ namespace UnholyTrinity.Players
             for (int i = 0; i < tickCount; i++)
             {
                 plannedCoord = GetMoveEnd(plannedCoord,
-                    plannedActions[i].PlannedMove);
+                    _plannedActions[i].PlannedMove);
             }
 
             return plannedCoord;
@@ -58,7 +58,7 @@ namespace UnholyTrinity.Players
             {
                 HexCoord next = GetStepDestination(current, steps[i]);
                 blocked = next == current;
-                current = blocked ? next : mapManager.Map.ThroughPortal(next);
+                current = blocked ? next : _mapManager.Map.ThroughPortal(next);
             }
 
             return current;
@@ -88,12 +88,12 @@ namespace UnholyTrinity.Players
                 ? UpdatePlannedMomentum(direction.Value)
                 : HexCoord.Zero;
 
-            HexCoord start = GetPlannedCoord(plannedActions.Count - 1);
+            HexCoord start = GetPlannedCoord(_plannedActions.Count - 1);
             List<HexDirection> steps = GetStepListFromMomentum(start, plannedMomentum);
 
             // a portal on the way turns the rest of the move and the momentum. it's baked into the
             // plan here so the preview, the next tick's planning and resolution all agree
-            mapManager.Map.RedirectThroughPortals(start, steps, out int portalRotation);
+            _mapManager.Map.RedirectThroughPortals(start, steps, out int portalRotation);
 
             PlanningAction.PlannedMomentum =
                 plannedMomentum.RotateAround(HexCoord.Zero, portalRotation);
@@ -137,7 +137,7 @@ namespace UnholyTrinity.Players
         private HexCoord GetPlannedMomentum(int tickCount)
         {
             return tickCount > 0
-                ? plannedActions[tickCount - 1].PlannedMomentum
+                ? _plannedActions[tickCount - 1].PlannedMomentum
                 : momentum;
         }
 
@@ -197,7 +197,7 @@ namespace UnholyTrinity.Players
                 }
                 
                 Coord = current;
-                tickMovePath.Add(Coord);
+                _tickMovePath.Add(Coord);
                 LerpToCoord(Coord);
                 //Otherwise, tell the system how many more steps there are,
                 //and where we currently expect to be.
@@ -222,7 +222,7 @@ namespace UnholyTrinity.Players
             HexDirection direction)
         {
             HexCoord next = from.Neighbor(direction);
-            return mapManager.Map.IsWalkable(next)
+            return _mapManager.Map.IsWalkable(next)
                 ? next
                 : from;
         }
