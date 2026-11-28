@@ -63,6 +63,11 @@ public class GameManager : Singleton<GameManager>
             TurnPhase.Resolution => null,
             _                    => throw new ArgumentOutOfRangeException()
         };
+    
+    // creates a new list on every read, so each loop is a snapshot of living players at the 
+    // start of the phase. this way loop order doesn't determine "who shot first" and turns
+    // stay simultaneous
+    private List<Player> LivingPlayers => _players.Where(player => !player.IsDead).ToList();
 
     #endregion
 
@@ -73,12 +78,14 @@ public class GameManager : Singleton<GameManager>
         base.Awake();
         TurnManager.NewPhaseEvent += OnPhaseChanged;
         Player.PlayerSpawned += RegisterPlayer;
+        Player.DiedEvent += OnPlayerDied;
     }
 
     private void OnDestroy()
     {
         TurnManager.NewPhaseEvent -= OnPhaseChanged;
         Player.PlayerSpawned -= RegisterPlayer;
+        Player.DiedEvent -= OnPlayerDied;
     }
 
     #endregion
@@ -128,7 +135,7 @@ public class GameManager : Singleton<GameManager>
             yield return ResolveTick(i);
         }
 
-        yield return (turnStartDelay);
+        yield return new WaitForSeconds(turnStartDelay);
 
         TurnManager.EndTurn();
     }
@@ -145,7 +152,7 @@ public class GameManager : Singleton<GameManager>
         #region shoot phase
 
         yield return TurnManager.CallTick(SAMType.Shoot);
-        foreach (Player player in _players)
+        foreach (Player player in LivingPlayers)
         {
             player.GetPlannedAction(tickIndex)?.Shoot?.Invoke();
         }
@@ -156,7 +163,7 @@ public class GameManager : Singleton<GameManager>
 
         #region aim phase
         yield return TurnManager.CallTick(SAMType.Aim);
-        foreach (Player player in _players)
+        foreach (Player player in LivingPlayers)
         {
             player.GetPlannedAction(tickIndex)?.Aim?.Invoke();
         }
@@ -178,7 +185,7 @@ public class GameManager : Singleton<GameManager>
         HashSet<MoveData> movingObjects = new();
 
         // [CB] TODO: Make a common interface for movement.
-        foreach (Player player in _players)
+        foreach (Player player in LivingPlayers)
         {
             player.BeginMovePhase();
             IEnumerator<(int, HexCoord)> playerMove =
@@ -202,7 +209,7 @@ public class GameManager : Singleton<GameManager>
         }
 
         // OnStop tile effects fire where each player ends up, including players who didn't move
-        foreach (Player player in _players)
+        foreach (Player player in LivingPlayers)
         {
             player.EndMovePhase();
             TileEffects.OnStop(player.Map, LivePickups, player.Coord,
@@ -280,7 +287,7 @@ public class GameManager : Singleton<GameManager>
                 {
                     Debug.Log(
                         $"{shooter.name} hit {player.name} with {weaponData.DisplayName} for {damageAmount} damage");
-                    player.TakeDamage(damageAmount);
+                    player.TakeDamage(damageAmount, shooter);
                 }
                 else
                 {
@@ -330,6 +337,7 @@ public class GameManager : Singleton<GameManager>
     {
         return _players.Any(player =>
             player != shooter &&
+            !player.IsDead &&
             player.Coord == rocket.Coord
         );
     }
@@ -383,7 +391,7 @@ public class GameManager : Singleton<GameManager>
                 {
                     Debug.Log(
                         $"{shooter.name} hit {target.name} with {weaponData.DisplayName} for {damageAmount} damage");
-                    target.TakeDamage(damageAmount);
+                    target.TakeDamage(damageAmount, shooter);
                 }
                 else
                 {
@@ -412,6 +420,15 @@ public class GameManager : Singleton<GameManager>
         {
             StartCoroutine(ResolutionRoutine());
         }
+    }
+
+    private void OnPlayerDied(Player victim, [CanBeNull]Player killer)
+    {
+        bool killedByOpponent = killer != null && killer != victim;
+        string killerName = killer != null 
+            ? killer.name
+            : "the map";
+        Debug.Log($"{victim.name} was killed by {killerName}");
     }
 
     #endregion

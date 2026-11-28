@@ -97,6 +97,9 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
     // raised whenever a player's health or armour changes, so UI can update
     public static event Action<Player> HealthChangedEvent;
 
+    // raised when a player dies, killer can be self, other player or null for map effects
+    public static event Action<Player, Player> DiedEvent;
+
     public IReadOnlyList<HexCoord> TickMovePath => _tickMovePath;
 
     public int PlanningTickOfTurn => _plannedActions.Count;
@@ -853,7 +856,7 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
 
     // armour absorbs its share of the hit first, then the rest comes off health. every damage
     // source (weapons, beams, harm tiles) comes through here, so they all go through armour
-    public void TakeDamage(int damageAmount)
+    public void TakeDamage(int damageAmount, [CanBeNull]Player attacker)
     {
         if (IsDead || damageAmount <= 0)
         {
@@ -869,12 +872,13 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
             $"{name} took {damageAmount} damage (ouch), {absorbed} absorbed by armour, " +
             $"{CurrentHealth} health and {CurrentArmour} armour remaining");
 
+        HealthChangedEvent?.Invoke(this);
+
         if (IsDead)
         {
             Debug.Log($"{name} died. RIP");
+            DiedEvent?.Invoke(this, attacker);
         }
-
-        HealthChangedEvent?.Invoke(this);
     }
 
     public bool TryHeal(int amount)
@@ -932,6 +936,7 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
         CurrentHealth = 0;
         Debug.Log($"{name} died. RIP");
         HealthChangedEvent?.Invoke(this);
+        DiedEvent?.Invoke(this, null);
     }
 
     #endregion

@@ -56,7 +56,7 @@ namespace UnholyTrinity.Tiles
             }
             else if (health.Amount < 0)
             {
-                unit.TakeDamage(-health.Amount);
+                unit.TakeDamage(-health.Amount, null);
             }
         }
     }

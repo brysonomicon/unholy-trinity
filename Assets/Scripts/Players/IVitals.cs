@@ -8,7 +8,8 @@ namespace UnholyTrinity.Players
     {
         bool IsDead { get; }
 
-        void TakeDamage(int damageAmount);
+        // attacker added to tell kills from suicides and for stat tracking
+        void TakeDamage(int damageAmount, Player attacker);
 
         void Kill();
     }

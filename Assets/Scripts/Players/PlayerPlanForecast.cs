@@ -132,7 +132,7 @@ namespace UnholyTrinity.Players
                 }
             }
 
-            public void TakeDamage(int damageAmount)
+            public void TakeDamage(int damageAmount, Player attacker)
             {
                 if (IsDead || damageAmount <= 0)
                 {
