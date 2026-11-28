@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-namespace UnholyTrinity.Helpers
+namespace UnholyTrinity.Turns
 {
 internal static class CoroutineRunner
 {

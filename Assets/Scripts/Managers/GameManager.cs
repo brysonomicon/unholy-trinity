@@ -10,6 +10,7 @@ using UnholyTrinity.Weapons;
 using UnholyTrinity.Hex;
 using UnholyTrinity.Tiles;
 using UnholyTrinity.Helpers;
+using UnholyTrinity.Turns;
 using UnityEngine;
 
 namespace UnholyTrinity.Managers
@@ -24,7 +25,7 @@ public class GameManager : Singleton<GameManager>
     [SerializeField] [GetComponent] private MovementManager moveManager;
 
     // second between ticks so resolution can be watched
-    public float TickDuration => TickData.TickDuration;
+    public float TickDuration => TurnManager.TickDuration;
 
     [MinValue(0.1f)] [MaxValue(nameof(TickDuration))]
     private float shootDuration;
@@ -86,7 +87,7 @@ public class GameManager : Singleton<GameManager>
 
     public void ResetGame()
     {
-        TickData.SetCurrentTick(0);
+        TurnManager.SetCurrentTick(0);
         _players.Clear();
         _rockets.Clear();
         _beams.Clear();
@@ -121,9 +122,9 @@ public class GameManager : Singleton<GameManager>
 
     private IEnumerator ResolutionRoutine()
     {
-        for (int i = 0; i < TickData.TicksPerTurn; i++)
+        for (int i = 0; i < TurnManager.TicksPerTurn; i++)
         {
-            TickData.SetCurrentTick(TickData.CurrentTick + 1);
+            TurnManager.SetCurrentTick(TurnManager.CurrentTick + 1);
             yield return ResolveTick(i);
         }
 
@@ -143,29 +144,29 @@ public class GameManager : Singleton<GameManager>
 
         #region shoot phase
 
-        yield return TickData.CallTick(SAMType.Shoot);
+        yield return TurnManager.CallTick(SAMType.Shoot);
         foreach (Player player in _players)
         {
             player.GetPlannedAction(tickIndex)?.Shoot?.Invoke();
         }
 
         yield return new WaitForSeconds(shootDuration);
-        yield return TickData.CallTock(SAMType.Shoot);
+        yield return TurnManager.CallTock(SAMType.Shoot);
         #endregion
 
         #region aim phase
-        yield return TickData.CallTick(SAMType.Aim);
+        yield return TurnManager.CallTick(SAMType.Aim);
         foreach (Player player in _players)
         {
             player.GetPlannedAction(tickIndex)?.Aim?.Invoke();
         }
 
         yield return new WaitForSeconds(aimDuration);
-        yield return TickData.CallTock(SAMType.Aim);
+        yield return TurnManager.CallTock(SAMType.Aim);
         #endregion
 
         #region move phase
-        yield return TickData.CallTick(SAMType.Move);
+        yield return TurnManager.CallTick(SAMType.Move);
         // respawns come before anyone moves, so a pickup that comes back this tick can be
         // collected this tick. RespawnTicks = 1 means a pickup collected on tick N is
         // available again on tick N + 1
@@ -210,7 +211,7 @@ public class GameManager : Singleton<GameManager>
 
         // LG needs both players end position, so it resolves after everyone moves
         ResolveBeams();
-        yield return TickData.CallTock(SAMType.Move);
+        yield return TurnManager.CallTock(SAMType.Move);
 
         #endregion
     }

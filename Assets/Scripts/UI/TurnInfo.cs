@@ -1,5 +1,5 @@
 using TMPro;
-using UnholyTrinity.Helpers;
+using UnholyTrinity.Turns;
 using UnityEngine;
 
 public class TurnInfo : MonoBehaviour

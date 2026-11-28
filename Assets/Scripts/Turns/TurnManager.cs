@@ -1,13 +1,26 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnholyTrinity.Helpers;
 using UnityEngine;
 
-namespace UnholyTrinity.Helpers
+namespace UnholyTrinity.Turns
 {
-[Serializable]
-public static class TickData
+public enum TurnPhase
 {
+    PlayerOne,
+    PlayerTwo,
+    Resolution
+}
+
+public static class TurnManager
+{
+    public static int Round { get; private set; }
+    public static event Action TurnEndEvent;
+    public static event Action<int> NewRoundEvent;
+
+    public static event Action<TurnPhase> NewPhaseEvent;
+
     public static event Func<SAMType, IEnumerator> Tick;
     public static event Func<SAMType, IEnumerator> Tock;
 
@@ -15,9 +28,57 @@ public static class TickData
     // cooldowns are stored as the tick they expire on
     public static int CurrentTick { get; private set; }
 
-    public static int TicksPerTurn = 3;
+    public const int TicksPerTurn = 3;
 
-    public static float TickDuration = 2;
+    public const float TickDuration = 2;
+
+    public static TurnPhase CurrentPhase => Phase.Peek();
+
+    private static readonly Queue<TurnPhase> Phase = new(new List<TurnPhase>
+    {
+        TurnPhase.PlayerOne,
+        TurnPhase.PlayerTwo,
+        TurnPhase.Resolution,
+    });
+
+    public static void EndTurn()
+    {
+        if (CurrentPhase == TurnPhase.Resolution)
+        {
+            TurnEndEvent?.Invoke();
+        }
+        TurnPhase previous = Phase.Dequeue();
+        Phase.Enqueue(previous);
+        UpdateRound();
+        NewPhaseEvent?.Invoke(CurrentPhase);
+    }
+
+    public static void Reset()
+    {
+        Phase.Clear();
+        Phase.Enqueue(TurnPhase.PlayerOne);
+        Phase.Enqueue(TurnPhase.PlayerTwo);
+        Phase.Enqueue(TurnPhase.Resolution);
+        Round = 0;
+    }
+
+    public static void StartGame()
+    {
+        Reset();
+        UpdateRound();
+        NewPhaseEvent?.Invoke(CurrentPhase);
+    }
+
+    private static void UpdateRound()
+    {
+        if (CurrentPhase != TurnPhase.PlayerOne)
+        {
+            return;
+        }
+
+        Round++;
+        NewRoundEvent?.Invoke(Round);
+    }
 
     public static void SetCurrentTick(int tick)
     {

@@ -5,6 +5,7 @@ using UnholyTrinity.Helpers;
 using Nrjwolf.Tools.AttachAttributes;
 using Unity.Cinemachine;
 using UnholyTrinity.Players;
+using UnholyTrinity.Turns;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -70,7 +71,7 @@ public class CameraManager : Singleton<CameraManager>
 
     private void OnEnable()
     {
-        TickData.Tick += OnTick;
+        TurnManager.Tick += OnTick;
         TurnManager.NewPhaseEvent += OnPhaseChanged;
         Player.PlayerSpawned += RegisterPlayerTracked;
     }
@@ -87,7 +88,7 @@ public class CameraManager : Singleton<CameraManager>
     {
         TurnManager.NewPhaseEvent -= OnPhaseChanged;
         Player.PlayerSpawned -= RegisterPlayerTracked;
-        TickData.Tick -= OnTick;
+        TurnManager.Tick -= OnTick;
         toggleCloseViewAction.performed -= OnToggleInput;
         toggleCloseViewAction.Disable();
     }

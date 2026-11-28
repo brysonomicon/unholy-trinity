@@ -7,6 +7,7 @@ using Nrjwolf.Tools.AttachAttributes;
 using UnholyTrinity.Helpers;
 using UnholyTrinity.Hex;
 using UnholyTrinity.Managers;
+using UnholyTrinity.Turns;
 using UnholyTrinity.Weapons;
 using UnityEngine;
 
@@ -104,7 +105,7 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
     public SAMType PlanningStep { get; private set; } = SAMType.Shoot;
 
     public bool CanPlanNextTick =>
-        _plannedActions.Count < TickData.TicksPerTurn;
+        _plannedActions.Count < TurnManager.TicksPerTurn;
 
     public bool CanAdvancePlanningStep =>
         PlanningStep != SAMType.Move || CanPlanNextTick;
@@ -122,7 +123,7 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
     private UnholyAction PlanningAction => _plannedActions[^1];
 
     // the game tick the action being planned will resolve on
-    private int PlanningTick => TickData.CurrentTick + _plannedActions.Count;
+    private int PlanningTick => TurnManager.CurrentTick + _plannedActions.Count;
 
     // aim from the end of the previous tick, which this tick starts from
     private AimDirection PreviousPlannedAim => GetPlannedAim(_plannedActions.Count - 1);
@@ -179,21 +180,10 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
     private void OnEnable()
     {
         TurnManager.NewPhaseEvent += OnNewPhase;
-        TickData.Tock += OnTock;
+        TurnManager.TurnEndEvent += OnTurnEnd;
+        TurnManager.Tock += OnTock;
         gm = GameManager.Instance;
         MapManager.LayoutChanged += SnapToCoord;
-    }
-
-    private IEnumerator OnTock(SAMType arg)
-    {
-        if (arg == SAMType.Move)
-        {
-            PickUpGhost();
-            ClearPlan();
-            directionCompass.Show(_mapManager.Layout);
-        }
-
-        yield return null;
     }
 
     private void Start()
@@ -204,7 +194,25 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
     private void OnDisable()
     {
         TurnManager.NewPhaseEvent -= OnNewPhase;
+        TurnManager.TurnEndEvent -= OnTurnEnd;
         MapManager.LayoutChanged -= SnapToCoord;
+    }
+
+    private void OnTurnEnd()
+    {
+        ClearPlan();
+        directionCompass.Show(_mapManager.Layout);
+    }
+
+
+    private IEnumerator OnTock(SAMType arg)
+    {
+        if (arg == SAMType.Move)
+        {
+            PickUpGhost();
+        }
+
+        yield return null;
     }
 
     private void OnDrawGizmos()
@@ -357,7 +365,7 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
         StopAllCoroutines();
         var desiredPose = GetPose(coord, CurrentAimDirection);
         var currentPose = new Pose(transform.position, transform.rotation);
-        float t = TickData.TickDuration / 2;
+        float t = TurnManager.TickDuration / 2;
         StartCoroutine(LerpPoseOverTime(transform, currentPose, desiredPose, t));
     }
 
@@ -702,7 +710,7 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
 
             if (plannedShot != null)
             {
-                int shotTick = TickData.CurrentTick + 1 + i;
+                int shotTick = TurnManager.CurrentTick + 1 + i;
                 plannedNextFireTick =
                     shotTick + 1 + plannedShot.Data.Cooldown;
             }
@@ -759,7 +767,7 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
         }
 
         weapon.Fire();
-        _nextFireTick = TickData.CurrentTick + 1 + weapon.Data.Cooldown;
+        _nextFireTick = TurnManager.CurrentTick + 1 + weapon.Data.Cooldown;
         _lastFiredCooldown = weapon.Data.Cooldown;
 
         List<AimTile> aimTiles = weapon.Data.GetAimTiles(_mapManager.Map, Coord, CurrentAimDirection);
@@ -792,7 +800,7 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
         }
 
         weapon.Fire();
-        _nextFireTick = TickData.CurrentTick + 1 + weapon.Data.Cooldown;
+        _nextFireTick = TurnManager.CurrentTick + 1 + weapon.Data.Cooldown;
         _lastFiredCooldown = weapon.Data.Cooldown;
 
         HexCoord landingTile = rocketData.GetLandingTile(aimTiles, aimTiles[targetIndex]);
@@ -809,7 +817,7 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
     // fired weapon has expired
     private bool CanFire(Weapon weapon)
     {
-        return weapon.HasAmmo && TickData.CurrentTick >= _nextFireTick;
+        return weapon.HasAmmo && TurnManager.CurrentTick >= _nextFireTick;
     }
 
     private void SetAim(AimDirection aim)
