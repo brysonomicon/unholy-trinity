@@ -179,8 +179,21 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
     private void OnEnable()
     {
         TurnManager.NewPhaseEvent += OnNewPhase;
+        TickData.Tock += OnTock;
         gm = GameManager.Instance;
         MapManager.LayoutChanged += SnapToCoord;
+    }
+
+    private IEnumerator OnTock(SAMType arg)
+    {
+        if (arg == SAMType.Move)
+        {
+            PickUpGhost();
+            ClearPlan();
+            directionCompass.Show(_mapManager.Layout);
+        }
+
+        yield return null;
     }
 
     private void Start()

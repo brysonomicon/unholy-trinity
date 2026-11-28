@@ -213,12 +213,6 @@ public class GameManager : Singleton<GameManager>
         yield return TickData.CallTock(SAMType.Move);
 
         #endregion
-
-        // absorb ghosts after each turn
-        foreach (Player player in _players)
-        {
-            player.PickUpGhost();
-        }
     }
 
     // runs OnEnter tile effects on each hex the player enters, on the subtick they enter it, so
@@ -294,7 +288,7 @@ public class GameManager : Singleton<GameManager>
             }
         }
     }
-
+    
     public void LaunchRocket(Player shooter, RocketLauncherData rocketData,
         MapManager mapManager, HexCoord target)
     {
@@ -303,15 +297,6 @@ public class GameManager : Singleton<GameManager>
         _rockets.Add((shooter, rocket));
         Debug.Log($"{shooter.name} launched a rocket at {target}");
     }
-
-    // moves all rockets on the map
-    // private void AdvanceRockets()
-    // {
-    //     foreach ((Player shooter, Rocket rocket) in _rockets.ToList())
-    //     {
-    //         AdvanceRocket(shooter, rocket);
-    //     }
-    // }
 
     // advances a single rocket forward by the speed defined in the weapon data
     private IEnumerator<(int, HexCoord)> AdvanceRocket(Player shooter,
