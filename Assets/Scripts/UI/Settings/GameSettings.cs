@@ -39,7 +39,7 @@ public static class GameSettings
 
     public static bool CRTEnabled
     {
-        get => PlayerPrefs.GetInt("CRTEnabled", 1) == 1;
+        get => PlayerPrefs.GetInt("CRTEnabled", 0) == 1;
         set
         {
             PlayerPrefs.SetInt("CRTEnabled", value ? 1 : 0);
