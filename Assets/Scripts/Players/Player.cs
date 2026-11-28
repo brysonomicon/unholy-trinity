@@ -671,7 +671,7 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
         }
     }
 
-    // whether or not a step of a tick has been confirmed so SAM grid knows which cells are filled
+    // whether a step of a tick has been confirmed so SAM grid knows which cells are filled
     public bool IsStepConfirmed(int tickIndex, SAMType step)
     {
         int currentTickIndex = _plannedActions.Count - 1;
@@ -686,7 +686,6 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
         _plannedActions.Clear();
         _plannedActions.Add(CreateNewDefaultAction(CurrentAimDirection));
         PlanningStep = SAMType.Shoot;
-        ProjectPlan();
     }
 
     private void SetPlannedAim(AimDirection aim)
@@ -1004,7 +1003,7 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
         }
         else if (newPhase == turnPhase)
         {
-            ClearPlan();
+            ProjectPlan();
             directionCompass.Show(_mapManager.Layout);
         }
     }
