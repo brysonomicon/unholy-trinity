@@ -429,6 +429,15 @@ public class GameManager : Singleton<GameManager>
             ? killer.name
             : "the map";
         Debug.Log($"{victim.name} was killed by {killerName}");
+
+        if (killedByOpponent)
+        {
+            killer.AddScore(1);
+        }
+        else // killed by self or map
+        {
+            victim.AddScore(-1);
+        }
     }
 
     #endregion

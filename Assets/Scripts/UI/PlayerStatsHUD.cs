@@ -15,6 +15,7 @@ public class PlayerStatsHUD : MonoBehaviour
     {
         Player.HealthChangedEvent += OnHealthChanged;
         Player.PlanForecastChangedEvent += OnHealthChanged;
+        Player.ScoreChangedEvent += OnScoreChanged;
         // fires once every player has registered, so it also fills in the starting values
         TurnManager.NewPhaseEvent += OnNewPhase;
     }
@@ -28,10 +29,13 @@ public class PlayerStatsHUD : MonoBehaviour
     {
         Player.HealthChangedEvent -= OnHealthChanged;
         Player.PlanForecastChangedEvent -= OnHealthChanged;
+        Player.ScoreChangedEvent -= OnScoreChanged;
         TurnManager.NewPhaseEvent -= OnNewPhase;
     }
 
     private void OnHealthChanged(Player _) => Refresh();
+
+    private void OnScoreChanged(Player _) => Refresh();
 
     private void OnNewPhase(TurnPhase _) => Refresh();
 
@@ -62,7 +66,7 @@ public class PlayerStatsHUD : MonoBehaviour
         string healthChange = forecast != null ? FormatChange(forecast.Health - player.CurrentHealth) : string.Empty;
         string armourChange = forecast != null ? FormatChange(forecast.Armour - player.CurrentArmour) : string.Empty;
 
-        text.text = $"{player.name.ToUpperInvariant()}{System.Environment.NewLine}" +
+        text.text = $"{player.name.ToUpperInvariant()}  FRAGS  {player.Score}{System.Environment.NewLine}" +
                     $"HP {player.CurrentHealth}/{player.MaxHealth}{healthChange}{System.Environment.NewLine}" +
                     $"AR {player.CurrentArmour}/{player.MaxArmour}{armourChange}";
     }
