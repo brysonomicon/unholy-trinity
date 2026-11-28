@@ -195,6 +195,7 @@ public partial class Player : MonoBehaviour, IVitals, IWeaponCollector
     {
         TurnManager.NewPhaseEvent -= OnNewPhase;
         TurnManager.TurnEndEvent -= OnTurnEnd;
+        TurnManager.Tock -= OnTock;
         MapManager.LayoutChanged -= SnapToCoord;
     }
 
